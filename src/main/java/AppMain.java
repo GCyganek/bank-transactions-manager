@@ -11,7 +11,6 @@ public class AppMain extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        HibernateSessionService.openSession();
         TransactionsManagerAppController controller = new TransactionsManagerAppController(primaryStage);
         controller.initRootLayout();
     }
