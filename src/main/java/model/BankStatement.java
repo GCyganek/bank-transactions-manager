@@ -113,4 +113,11 @@ public class BankStatement {
     public int hashCode() {
         return Objects.hash(id, accountNumber, periodStartDate, periodEndDate, paidIn, paidOut, accountOwner);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Bank Statement: [(%s), (%s), (%s), (%s), (%s), (%s)]",
+                accountNumber, periodStartDate, periodEndDate,
+                paidIn, paidOut, accountOwner);
+    }
 }

@@ -97,4 +97,10 @@ public class BankTransaction {
     public int hashCode() {
         return Objects.hash(id, description, amount, date, balance);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Transaction: [(%s), (%s), (%s), (%s)]",
+                description, amount, date, balance);
+    }
 }
