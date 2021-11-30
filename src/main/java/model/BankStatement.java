@@ -199,8 +199,8 @@ public class BankStatement {
 
     @Override
     public String toString() {
-        return String.format("Bank Statement: [(%s), (%s), (%s), (%s), (%s), (%s)]",
-                accountNumber, periodStartDate, periodEndDate,
-                paidIn, paidOut, accountOwner);
+        return String.format("Bank Statement: [(%s), (%s), (%s), (%s), (%s), (%s), (%s)]",
+                accountNumber.get(), periodStartDate.get(), periodEndDate.get(),
+                paidIn.get(), paidOut.get(), accountOwner.get(), currency.get());
     }
 }

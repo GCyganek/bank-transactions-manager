@@ -46,6 +46,7 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         statementConfig.setAccountNumberKey(new Cell(19, 1), identity);
         statementConfig.setPaidInKey(new Cell(24, 2), floatToBigDecimal);
         statementConfig.setPaidOutKey(new Cell(24, 3), floatToBigDecimal);
+        statementConfig.setCurrencyKey(new Cell(24, 1), identity);
 
         transactionConfig.setDateKey(1, dateConverter);
         transactionConfig.setDescriptionKey(2, identity);

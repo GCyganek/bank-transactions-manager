@@ -40,6 +40,7 @@ public class SantanderConfigurator extends AbstractBankConfigurator {
         statementConfig.setPeriodStartDateKey(new Cell(1, 2), dateConverter);
         statementConfig.setAccountNumberKey(new Cell(1, 3), identity);
         statementConfig.setAccountOwnerKey(new Cell(1, 4), identity);
+        statementConfig.setCurrencyKey(new Cell(1, 5), identity);
         statementConfig.setPaidInKey(new Cell(1, 6), FloatToBigDecimal);
         statementConfig.setPaidOutKey(new Cell(1, 7), FloatToBigDecimal);
 
