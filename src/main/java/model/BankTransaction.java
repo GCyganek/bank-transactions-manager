@@ -143,6 +143,6 @@ public class BankTransaction {
     @Override
     public String toString() {
         return String.format("Transaction: [(%s), (%s), (%s), (%s)]",
-                description, amount, date, balance);
+                description.get(), amount.get(), date.get(), balance.get());
     }
 }

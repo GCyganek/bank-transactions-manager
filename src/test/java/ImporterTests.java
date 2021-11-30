@@ -65,9 +65,11 @@ public class ImporterTests {
     }
 
     private static void printStatement(BankStatement statement) {
+        System.out.println("==============================================");
         System.out.println(statement);
         for (var t: statement.getBankTransactionSet())
             System.out.println(t);
+        System.out.println("==============================================");
     }
 
 }

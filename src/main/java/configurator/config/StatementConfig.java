@@ -14,6 +14,7 @@ public class StatementConfig<K> implements StatementBuilderConfig<K> {
     private K periodEndDateKey;
     private K paidInKey;
     private K paidOutKey;
+    private K currencyKey;
 
     @Override
     public K getAccountNumberKey() {
@@ -43,6 +44,11 @@ public class StatementConfig<K> implements StatementBuilderConfig<K> {
     @Override
     public K getAccountOwnerKey() {
         return accountOwnerKey;
+    }
+
+    @Override
+    public K getCurrencyKey() {
+        return currencyKey;
     }
 
     private K accountOwnerKey;
@@ -81,9 +87,15 @@ public class StatementConfig<K> implements StatementBuilderConfig<K> {
         addStatementField(accountOwnerKey, converter);
     }
 
+    public void setCurrencyKey(K currencyKey, Converter<?> converter) {
+        this.currencyKey = currencyKey;
+        addStatementField(currencyKey, converter);
+    }
+
     private void addStatementField(K key, Converter<?> converter) {
         statementFields.add(new ParserField<>(key, converter));
     }
+
 
     public List<ParserField<K, ?>> getFields() {
         return statementFields;

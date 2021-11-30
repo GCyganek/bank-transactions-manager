@@ -46,9 +46,10 @@ public class BankStatementBuilder<K, U> {
         BigDecimal paidIn = (BigDecimal)  convertedStatement.get(statementConfig.getPaidInKey());
         BigDecimal paidOut = (BigDecimal)  convertedStatement.get(statementConfig.getPaidOutKey());
         String accountOwner = (String)  convertedStatement.get(statementConfig.getAccountOwnerKey());
+        String currency = (String) convertedStatement.get(statementConfig.getCurrencyKey());
 
         builtStatement = new BankStatement(accountNumber, periodStartDate, periodEndDate,
-                                        paidIn, paidOut, accountOwner);
+                                        paidIn, paidOut, accountOwner, currency);
         return this;
     }
 
