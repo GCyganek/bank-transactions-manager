@@ -33,11 +33,12 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         Converter<LocalDate> dateConverter = new DateConverter("dd.MM.yyyy");
         Converter<BigDecimal> floatToBigDecimal = new FloatToBigDecimalConverter();
 
-        // "-123,464 PLN" -> "-123.464"
+        // "-3 123,464 PLN" -> "-3123.464"
         String regex ="(-?\\d+(.\\d+)?)(\\s*\\D+)?";
         Converter<BigDecimal> stripCurrencyConverter = x -> new BigDecimal(
                 x.replaceAll(",", ".")
-                .replaceAll(regex, "$1"));
+                 .replaceAll(regex, "$1")
+                 .replaceAll(" ", ""));
 
         statementConfig.setAccountOwnerKey(new Cell(10, 1), identity);
         statementConfig.setPeriodStartDateKey(new Cell(15, 1), dateConverter);
@@ -49,7 +50,7 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         transactionConfig.setDateKey(1, dateConverter);
         transactionConfig.setDescriptionKey(2, identity);
         transactionConfig.setAmountKey(5, stripCurrencyConverter);
-        transactionConfig.setBalanceKey(5, stripCurrencyConverter); // TODO NO BALANCE???
+        transactionConfig.setBalanceKey(6, stripCurrencyConverter);
 
         CSVRawDataParser csvRawDataParser = new CSVRawDataParser(';',10, 24, 27);
 

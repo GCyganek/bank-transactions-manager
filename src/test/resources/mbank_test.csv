@@ -1,34 +1,29 @@
-mBank S.A. Bankowoœæ Detaliczna;;;;
-"		Skrytka Pocztowa 2108";;;;
-"		90-959 £ódŸ 2";;;;
-"		www.mBank.pl";;;;
-"		mLinia: 801 300 800";;;;
-"		+48 (42) 6 300 800";;;;
-"		";;;;
-;;;;
-#Klient;;;;
-ANONIM ANONIMOWY;;;;
-;;;;
-Lista operacji;;;;
-;;;;
-#Za okres:;;;;
-01.11.2021;21.11.2021;;;
-;;;;
-#zgodnie z wybranymi filtrami wyszukiwania;;;;
-      #dla rachunków:;;;;
-      eKonto - 23452345234523452345;;;;
-      ;;;;
-      #Lista nie jest dokumentem w rozumieniu art. 7 Ustawy Prawo Bankowe (Dz. U. Nr 140 z 1997 roku, poz.939 z póŸniejszymi zmianami), poniewa¿ operacje mo¿na samodzielnie edytowaæ.;;;;
-      ;;;;
-      #Waluta;#Wp³ywy;#Wydatki;;
-PLN;154234;-12342,84;;
-      ;;;;
-#Data operacji;#Opis operacji;#Rachunek;#Kategoria;#Kwota
-16.11.2021;ZAKUPY 1                                                ;      eKonto - 23452345234523452345;¯ywnoœæ i chemia domowa;-3,20 PLN
-15.11.2021;ZAKUPY 2;      eKonto - 23452345234523452345;Zdrowie i uroda;-300,00 PLN
-12.11.2021;ZAKUPY 3;      eKonto - 23452345234523452345;Bez kategorii;-9,99 PLN
-12.11.2021;WYP£ATA;      eKonto - 23452345234523452345;Wp³ywy - inne;20440,00 PLN
-10.11.2021;ZAKUPY 5;      eKonto - 23452345234523452345;Jedzenie poza domem;-74,45 PLN
-10.11.2021;ZAKUPY 6;      eKonto - 23452345234523452345;¯ywnoœæ i chemia domowa;-233,20 PLN
-10.11.2021;ZAKUPY 7;      eKonto - 23452345234523452345;Bez kategorii;-184,00 PLN
-02.11.2021;ZAKUPY 8;      eKonto - 23452345234523452345;Zdrowie i uroda;-350,00 PLN
+mBank S.A. Bankowoœæ Detaliczna;;;;;
+"		Skrytka Pocztowa 2108";;;;;
+"		90-959 £ódŸ 2";;;;;
+"		www.mBank.pl";;;;;
+"		mLinia: 801 300 800";;;;;
+"		+48 (42) 6 300 800";;;;;
+"		";;;;;
+;;;;;
+#Klient;;;;;
+JAN KOWALSKI;;;;;
+;;;;;
+Lista operacji;;;;;
+;;;;;
+#Za okres:;;;;;
+19.11.2021;30.11.2021;;;;
+;;;;;
+#zgodnie z wybranymi filtrami wyszukiwania;;;;;
+      #dla rachunków:;;;;;
+      eKonto - 52114020040000300276421234;;;;;
+      ;;;;;
+      #Lista nie jest dokumentem w rozumieniu art. 7 Ustawy Prawo Bankowe (Dz. U. Nr 140 z 1997 roku, poz.939 z póŸniejszymi zmianami), poniewa¿ operacje mo¿na samodzielnie edytowaæ.;;;;;
+      ;;;;;
+      #Waluta;#Wp³ywy;#Wydatki;;;
+PLN;0;-263,19;;;
+      ;;;;;
+#Data operacji;#Opis operacji;#Rachunek;#Kategoria;#Kwota;#Saldo po operacji
+26.11.2021;ZAKUPY1;eKonto 5211 ... 1234;¯ywnoœæ i chemia domowa;-3,20 PLN;3 288,91 PLN
+25.11.2021;ZAKUPY2;eKonto 5211 ... 1234;Zdrowie i uroda;-9,99 PLN;3 292,11 PLN
+23.11.2021;ZAKUPY3;eKonto 5211 ... 1234;Zdrowie i uroda;-250,00 PLN;3 302,10 PLN
