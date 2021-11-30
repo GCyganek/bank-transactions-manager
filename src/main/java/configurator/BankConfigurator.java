@@ -4,5 +4,5 @@ import importer.BankParser;
 import model.DocumentType;
 
 public interface BankConfigurator {
-    BankParser<?> configureParser(DocumentType documentType);
+    BankParser<?, ?> getConfiguredParser(DocumentType documentType);
 }

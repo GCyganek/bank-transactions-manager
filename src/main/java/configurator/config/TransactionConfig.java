@@ -1,6 +1,6 @@
 package configurator.config;
 
-import importer.utils.Converter;
+import importer.utils.converters.Converter;
 import importer.utils.ParserField;
 
 import java.util.*;

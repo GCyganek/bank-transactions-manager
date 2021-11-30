@@ -15,6 +15,8 @@ import repository.BankStatementsRepository;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImporterTests {
     BankStatementsRepository repository = new BankStatementsRepository();
@@ -27,7 +29,7 @@ public class ImporterTests {
     @Test
     void tempTest() throws URISyntaxException, IOException {
         BankConfigurator configurator = new SantanderConfigurator(repository);
-        BankParser<?> parser = configurator.configureParser(DocumentType.CSV);
+        BankParser<?, ?> parser = configurator.getConfiguredParser(DocumentType.CSV);
         Loader loader = new LocalFSLoader();
         BankStatement result = parser.parse(loader.load(getSantanderPath()));
         printStatement(result);
@@ -35,7 +37,16 @@ public class ImporterTests {
 
 
     @Test
-    void tempImporterTest() throws URISyntaxException {
+    void tempMbankImporterTest() throws URISyntaxException {
+        Importer importer = new Importer(new BankConfiguratorFactory(repository), new LocalFSLoader());
+        String uri = getMBankPath();
+        importer.importBankStatement(BankType.MBANK, DocumentType.CSV, uri)
+                .subscribeOn(Schedulers.io()) // there is more io type of operations here (reading file, saving to database)
+                .blockingSubscribe(ImporterTests::printStatement);
+    }
+
+    @Test
+    void tempSantanderImporterTest() throws URISyntaxException {
         Importer importer = new Importer(new BankConfiguratorFactory(repository), new LocalFSLoader());
         String uri = getSantanderPath();
         importer.importBankStatement(BankType.SANTANDER, DocumentType.CSV, uri)
@@ -48,9 +59,15 @@ public class ImporterTests {
                ClassLoader.getSystemResource("santander_test.csv").toURI()).toString();
     }
 
+    private static String getMBankPath() throws URISyntaxException {
+        return Paths.get(
+                ClassLoader.getSystemResource("mbank_test.csv").toURI()).toString();
+    }
+
     private static void printStatement(BankStatement statement) {
         System.out.println(statement);
         for (var t: statement.getBankTransactionSet())
             System.out.println(t);
     }
+
 }

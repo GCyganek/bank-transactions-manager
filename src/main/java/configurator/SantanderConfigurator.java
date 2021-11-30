@@ -3,68 +3,61 @@ package configurator;
 import configurator.config.Config;
 import configurator.config.StatementConfig;
 import configurator.config.TransactionConfig;
-import model.BankStatementBuilder;
+import importer.utils.Cell;
 import importer.raw.CSVRawDataParser;
 import importer.BankParser;
-import importer.utils.Converter;
+import importer.utils.converters.Converter;
+import importer.utils.converters.DateConverter;
+import importer.utils.converters.FloatToBigDecimalConverter;
+import importer.utils.converters.IdentityConverter;
+import model.BankType;
 import model.DocumentType;
 import repository.BankStatementsRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class SantanderConfigurator implements BankConfigurator {
+public class SantanderConfigurator extends AbstractBankConfigurator {
 
-    private BankStatementsRepository repository;
+    public SantanderConfigurator(BankStatementsRepository repository) {
+        super(BankType.SANTANDER, repository);
 
-    // TODO not sure about this dependency (here and in builder)
-    public SantanderConfigurator(BankStatementsRepository repository)  {
-        this.repository = repository;
+        this.supportedDocumentTypes.addAll(List.of(DocumentType.CSV));
     }
 
-    private Config<Integer> configureCSV() {
-        StatementConfig<Integer> statementConfig = new StatementConfig<>();
+    private Config<Cell, Integer> getCSVConfig() {
+        StatementConfig<Cell> statementConfig = new StatementConfig<>();
         TransactionConfig<Integer> transactionConfig = new TransactionConfig<>();
 
-        Converter<String> identity = x -> x;
-        Converter<LocalDate> dateConverter = x -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            return LocalDate.parse(x, formatter);
-        };
+        Converter<String> identity = new IdentityConverter();
+        Converter<LocalDate> dateConverter = new DateConverter("dd-MM-yyyy");
+        Converter<BigDecimal> FloatToBigDecimal = new FloatToBigDecimalConverter();
 
-        Converter<BigDecimal> FloatToBigDecimal = x -> new BigDecimal(x.replace(',', '.'));
+        statementConfig.setPeriodEndDateKey(new Cell(1, 1), new DateConverter("yyyy-MM-dd"));
+        statementConfig.setPeriodStartDateKey(new Cell(1, 2), dateConverter);
+        statementConfig.setAccountNumberKey(new Cell(1, 3), identity);
+        statementConfig.setAccountOwnerKey(new Cell(1, 4), identity);
+        statementConfig.setPaidInKey(new Cell(1, 6), FloatToBigDecimal);
+        statementConfig.setPaidOutKey(new Cell(1, 7), FloatToBigDecimal);
 
+        transactionConfig.setDateKey(1, dateConverter);
+        transactionConfig.setDescriptionKey(3, identity);
+        transactionConfig.setAmountKey(6, FloatToBigDecimal);
+        transactionConfig.setBalanceKey(7, FloatToBigDecimal);
 
-        statementConfig.setPeriodEndDateKey(0, LocalDate::parse);
-        statementConfig.setPeriodStartDateKey(1, dateConverter);
-        statementConfig.setAccountNumberKey(2, identity);
-        statementConfig.setAccountOwnerKey(3, identity);
-        statementConfig.setPaidInKey(5, FloatToBigDecimal);
-        statementConfig.setPaidOutKey(6, FloatToBigDecimal);
+        CSVRawDataParser csvRawDataParser = new CSVRawDataParser(',', 1, 1, 2);
 
-        transactionConfig.setDateKey(0, dateConverter);
-        transactionConfig.setDescriptionKey(2, identity);
-        transactionConfig.setAmountKey(5, FloatToBigDecimal);
-        transactionConfig.setBalanceKey(6, FloatToBigDecimal);
-
-        return new Config<>(transactionConfig, statementConfig);
-    }
-
-    private BankParser<Integer> createCSVParser(Config<Integer> config) {
-        CSVRawDataParser csvRawDataParser = new CSVRawDataParser();
-        BankStatementBuilder<Integer> bankStatementBuilder =
-                        new BankStatementBuilder<>(repository,
-                            config.getStatementConfig(),
-                            config.getTransactionConfig());
-
-        return new BankParser<>(csvRawDataParser, config, bankStatementBuilder);
+        return new Config<>(csvRawDataParser, statementConfig, transactionConfig);
     }
 
     @Override
-    public BankParser<?> configureParser(DocumentType documentType) {
+    protected Config<?, ?> getConfig(DocumentType documentType) {
         return switch (documentType) {
-            case CSV -> createCSVParser(configureCSV());
+            case CSV -> getCSVConfig();
+            default -> null; // no compiler error, should never be executed
         };
     }
 }

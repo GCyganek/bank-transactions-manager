@@ -10,9 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class BankStatementBuilder<K> {
+public class BankStatementBuilder<K, U> {
     private final StatementBuilderConfig<K> statementConfig;
-    private final TransactionBuilderConfig<K> transactionConfig;
+    private final TransactionBuilderConfig<U> transactionConfig;
     private final BankStatementsRepository statementsRepo;
 
     private List<BankTransaction> builtTransactions;
@@ -20,7 +20,7 @@ public class BankStatementBuilder<K> {
 
     public BankStatementBuilder(BankStatementsRepository statementsRepository,
                                 StatementBuilderConfig<K> statementConfig,
-                                TransactionBuilderConfig<K> transactionConfig)
+                                TransactionBuilderConfig<U> transactionConfig)
     {
         this.statementsRepo = statementsRepository;
         this.statementConfig = statementConfig;
@@ -28,7 +28,7 @@ public class BankStatementBuilder<K> {
         this.builtTransactions = new LinkedList<>();
     }
 
-    public BankStatementBuilder<K> buildBankTransaction(Map<K, ?> convertedTransaction) {
+    public BankStatementBuilder<K, U> buildBankTransaction(Map<U, ?> convertedTransaction) {
         String description = (String) convertedTransaction.get(transactionConfig.getDescriptionKey());
         BigDecimal amount = (BigDecimal) convertedTransaction.get(transactionConfig.getAmountKey());
         LocalDate date = (LocalDate) convertedTransaction.get(transactionConfig.getDateKey());
@@ -39,7 +39,7 @@ public class BankStatementBuilder<K> {
         return this;
     }
 
-    public BankStatementBuilder<K> buildBankStatement(Map<K, ?> convertedStatement) {
+    public BankStatementBuilder<K, U> buildBankStatement(Map<K, ?> convertedStatement) {
         String accountNumber = (String)  convertedStatement.get(statementConfig.getAccountNumberKey());
         LocalDate periodStartDate = (LocalDate)  convertedStatement.get(statementConfig.getPeriodStartDateKey());
         LocalDate periodEndDate = (LocalDate)  convertedStatement.get(statementConfig.getPeriodEndDateKey());

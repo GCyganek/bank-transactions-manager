@@ -1,5 +1,7 @@
 package importer.utils;
 
+import importer.utils.converters.Converter;
+
 public class ParserField<K, T>{
     private final K key;
     private String parsedValue;
@@ -15,7 +17,7 @@ public class ParserField<K, T>{
     public T convert() {
         if (parsedValue == null)
             throw new IllegalArgumentException("Converting empty value");
-        return converter.convert(parsedValue);
+        return converter.convert(parsedValue.strip());
     }
 
     @Override

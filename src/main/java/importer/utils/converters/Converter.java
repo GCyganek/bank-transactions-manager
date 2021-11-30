@@ -1,4 +1,4 @@
-package importer.utils;
+package importer.utils.converters;
 
 @FunctionalInterface
 public interface Converter<T> {

@@ -14,6 +14,7 @@ public class BankConfiguratorFactory {
     public BankConfigurator createBankConfigurator(BankType bankType) {
         return switch (bankType) {
             case SANTANDER -> new SantanderConfigurator(repository);
+            case MBANK -> new MBankConfigurator(repository);
         };
     }
 }

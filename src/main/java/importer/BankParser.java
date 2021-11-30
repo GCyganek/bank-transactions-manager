@@ -8,15 +8,14 @@ import model.BankStatementBuilder;
 import java.io.IOException;
 import java.io.Reader;
 
-public class BankParser<K>{
-    private RawDataParser<K> rawDataParser;
-    private ParserConfig<K> parserConfig;
-    private BankStatementBuilder<K> builder;
+public class BankParser<K, U>{
+    private final RawDataParser<K, U> rawDataParser;
+    private final ParserConfig<K, U> parserConfig;
+    private final BankStatementBuilder<K, U> builder;
 
-    public BankParser(RawDataParser<K> rawDataParser,
-                      ParserConfig<K> parserConfig,
-                      BankStatementBuilder<K> builder) {
-        this.rawDataParser = rawDataParser;
+    public BankParser(ParserConfig<K, U> parserConfig,
+                      BankStatementBuilder<K, U> builder) {
+        this.rawDataParser = parserConfig.getRawDataParser();
         this.parserConfig = parserConfig;
         this.builder = builder;
     }

@@ -6,10 +6,10 @@ import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 
-public interface RawDataParser<K> {
+public interface RawDataParser<K, U> {
     void parse(Reader reader, List<ParserField<K, ?>> StatementParserFields,
-               List<ParserField<K, ?>> TransactionParserFields);
+               List<ParserField<U, ?>> TransactionParserFields);
 
     Map<K, ?> getConvertedStatement();
-    List<Map<K, ?>> getConvertedTransactions();
+    List<Map<U, ?>> getConvertedTransactions();
 }

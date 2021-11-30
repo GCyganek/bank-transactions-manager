@@ -32,7 +32,7 @@ public class Importer {
             BankConfigurator configurator = configFactory.createBankConfigurator(bankType);
             try {
                 Reader dataReader = loader.load(URI);
-                BankParser<?> parser = configurator.configureParser(documentType);
+                BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
                 BankStatement result = parser.parse(dataReader);
                 emitter.onNext(result);
                 emitter.onComplete();
