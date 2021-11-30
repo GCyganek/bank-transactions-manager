@@ -1,68 +1,110 @@
 package model;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
+@Access(AccessType.PROPERTY)
 @Table(name = BankTransaction.TABLE_NAME)
 public class BankTransaction {
 
     public static final String TABLE_NAME = "bank_transaction";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = Columns.ID)
     private int id;
 
-    @Column(name = Columns.DESCRIPTION, nullable = false, length = 512)
-    private String description;
+    private final StringProperty description = new SimpleStringProperty();
 
-    @Column(name = Columns.AMOUNT, nullable = false)
-    private BigDecimal amount;
+    private final ObjectProperty<BigDecimal> amount = new SimpleObjectProperty<>();
 
-    @Column(name = Columns.DATE, nullable = false)
-    private LocalDate date;
+    private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
 
-    @Column(name = Columns.BALANCE, nullable = false)
-    private BigDecimal balance;
+    private final ObjectProperty<BigDecimal> balance = new SimpleObjectProperty<>();
 
-    @ManyToOne
-    @JoinColumn(name = Columns.STATEMENT_ID)
     private BankStatement bankStatement;
 
     protected BankTransaction() {}
 
     public BankTransaction(final String description, final BigDecimal amount, final LocalDate date, final BigDecimal balance) {
-        this.description = description;
-        this.amount = amount;
-        this.date = date;
-        this.balance = balance;
+        this.description.set(description);
+        this.amount.set(amount);
+        this.date.set(date);
+        this.balance.set(balance);
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = Columns.ID)
     public int getId() {
         return id;
     }
 
+    @Column(name = Columns.DESCRIPTION, nullable = false, length = 512)
     public String getDescription() {
+        return description.get();
+    }
+
+    @Column(name = Columns.AMOUNT, nullable = false)
+    public BigDecimal getAmount() {
+        return amount.get();
+    }
+
+    @Column(name = Columns.DATE, nullable = false)
+    public LocalDate getDate() {
+        return date.get();
+    }
+
+    @Column(name = Columns.BALANCE, nullable = false)
+    public BigDecimal getBalance() {
+        return balance.get();
+    }
+
+    @ManyToOne
+    @JoinColumn(name = Columns.STATEMENT_ID)
+    public BankStatement getBankStatement() {
+        return bankStatement;
+    }
+
+    public StringProperty descriptionProperty() {
         return description;
     }
 
-    public BigDecimal getAmount() {
+    public ObjectProperty<BigDecimal> amountProperty() {
         return amount;
     }
 
-    public LocalDate getDate() {
+    public ObjectProperty<LocalDate> dateProperty() {
         return date;
     }
 
-    public BigDecimal getBalance() {
+    public ObjectProperty<BigDecimal> balanceProperty() {
         return balance;
     }
 
-    public BankStatement getBankStatement() {
-        return bankStatement;
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setDescription(String description) {
+        this.description.set(description);
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount.set(amount);
+    }
+
+    public void setDate(LocalDate date) {
+        this.date.set(date);
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance.set(balance);
     }
 
     public void setBankStatement(BankStatement bankStatement) {
@@ -89,13 +131,13 @@ public class BankTransaction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BankTransaction that = (BankTransaction) o;
-        return id == that.id && description.equals(that.description)
-                && amount.equals(that.amount) && date.equals(that.date) && balance.equals(that.balance);
+        return description.get().equals(that.description.get()) && amount.get().equals(that.amount.get()) &&
+                date.get().equals(that.date.get()) && balance.get().equals(that.balance.get());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, description, amount, date, balance);
+        return Objects.hash(description.get(), amount.get(), date.get(), balance.get());
     }
 
     @Override

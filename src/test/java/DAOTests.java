@@ -35,12 +35,12 @@ public class DAOTests {
     private final BankStatement bankStatementExample1 =
             new BankStatement("1234 1234 1234 1234", LocalDate.of(2021, 11, 21),
                     LocalDate.of(2021, 11, 25), new BigDecimal("250.22"),
-                    new BigDecimal("302.10"), "Jan Kowalski");
+                    new BigDecimal("302.10"), "Jan Kowalski", "PLN");
 
     private final BankStatement bankStatementExample2 =
             new BankStatement("1234 4321 4312 1234", LocalDate.of(2021, 11, 20),
                     LocalDate.of(2021, 11, 26), new BigDecimal("2453.22"),
-                    new BigDecimal("332.10"), "Anna Kowalska");
+                    new BigDecimal("332.10"), "Anna Kowalska", "PLN");
 
     @BeforeEach
     public void before() {
@@ -130,6 +130,9 @@ public class DAOTests {
         assertTrue(bankTransactionSet.contains(bankTransaction2));
         assertEquals(bankTransaction1.getBankStatement(), bankStatement);
         assertEquals(bankTransaction2.getBankStatement(), bankStatement);
+
+        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+        bankStatementsRepository.getAllStatements();
     }
 
     private void checkBankStatement(final Optional<BankStatement> bankStatement) {
@@ -142,6 +145,7 @@ public class DAOTests {
             assertNotNull(bs.getPaidOut());
             assertNotNull(bs.getPeriodStartDate());
             assertNotNull(bs.getPeriodEndDate());
+            assertNotNull(bs.getCurrency());
         });
     }
 

@@ -33,12 +33,12 @@ public class RepositoryTests {
     private final BankStatement bankStatementExample1 =
             new BankStatement("1234 1234 1234 1234", LocalDate.of(2021, 11, 21),
                     LocalDate.of(2021, 11, 25), new BigDecimal("250.22"),
-                    new BigDecimal("302.10"), "Jan Kowalski");
+                    new BigDecimal("302.10"), "Jan Kowalski", "PLN");
 
     private final BankStatement bankStatementExample2 =
             new BankStatement("1234 4321 4312 1234", LocalDate.of(2021, 11, 20),
                     LocalDate.of(2021, 11, 26), new BigDecimal("2453.22"),
-                    new BigDecimal("332.10"), "Anna Kowalska");
+                    new BigDecimal("332.10"), "Anna Kowalska", "PLN");
 
     @AfterEach
     public void after() {
@@ -53,6 +53,8 @@ public class RepositoryTests {
 
         //Then
         List<BankStatement> bankStatements = bankStatementsRepository.getAllStatements();
+        System.out.println(bankStatements.get(0));
+        System.out.println(bankStatements.get(1));
         assertEquals(2, bankStatements.size());
         assertTrue(bankStatements.containsAll(List.of(bankStatementExample1, bankStatementExample2)));
     }
