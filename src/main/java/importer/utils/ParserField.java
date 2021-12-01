@@ -2,7 +2,7 @@ package importer.utils;
 
 import importer.utils.converters.Converter;
 
-public class ParserField<K, T>{
+public class ParserField<K, T> {
     private final K key;
     private String parsedValue;
     private final Converter<T> converter;

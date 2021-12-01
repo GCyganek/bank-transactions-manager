@@ -28,7 +28,7 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
     }
 
     public CSVRawDataParser() {
-        this(',',1, 1, 2);
+        this(',', 1, 1, 2);
     }
 
 
@@ -70,11 +70,11 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         ArrayList<String[]> lines = new ArrayList<>();
 
         // store all so parserFields won't have to be sorted by row
-        for (int i=firstStatementLine; i <= lastStatementLine; i++) {
+        for (int i = firstStatementLine; i <= lastStatementLine; i++) {
             lines.add(linesIter.next());
         }
 
-        for (var field: parserFields) {
+        for (var field : parserFields) {
             Cell cell = field.getKey();
             field.setParsedValue(lines.get(cell.row - firstStatementLine)[cell.col - 1]);
             result.put(cell, field.convert());
@@ -88,7 +88,7 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         Map<Integer, Object> result = new HashMap<>();
         String[] line = linesIter.next();
 
-        for (var field: parserFields) {
+        for (var field : parserFields) {
             Integer column = field.getKey();
             field.setParsedValue(line[column - 1]);
             result.put(column, field.convert());

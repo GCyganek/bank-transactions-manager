@@ -23,6 +23,10 @@ public class TransactionsManagerAppController {
             loader.setLocation(TransactionsManagerAppController.class.getResource("../view/TransactionsManagerView.fxml"));
             BorderPane rootLayout = loader.load();
 
+            TransactionsManagerViewController controller = loader.getController();
+            controller.setAppController(this);
+            controller.fetchDataFromDatabase();
+
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();

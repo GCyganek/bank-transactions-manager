@@ -1,17 +1,16 @@
+import model.BankStatement;
+import model.BankTransaction;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.AfterAll;
-import repository.BankStatementsRepository;
-import repository.dao.BankStatementDao;
-import repository.dao.BankTransactionDao;
-import model.BankStatement;
-import model.BankTransaction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import repository.BankStatementsRepository;
+import repository.dao.BankStatementDao;
+import repository.dao.BankTransactionDao;
 import session.HibernateSessionService;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -137,7 +136,7 @@ public class DAOTests {
 
     private void checkBankStatement(final Optional<BankStatement> bankStatement) {
         assertTrue(bankStatement.isPresent());
-        bankStatement.ifPresent(bs ->  {
+        bankStatement.ifPresent(bs -> {
             assertTrue(bs.getId() > 0);
             assertNotNull(bs.getAccountNumber());
             assertNotNull(bs.getAccountOwner());

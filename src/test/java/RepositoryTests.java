@@ -4,7 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

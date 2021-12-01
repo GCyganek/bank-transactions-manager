@@ -11,7 +11,6 @@ import importer.utils.converters.FloatToBigDecimalConverter;
 import importer.utils.converters.IdentityConverter;
 import model.BankType;
 import model.DocumentType;
-import repository.BankStatementsRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +19,6 @@ import java.util.List;
 public class MBankConfigurator extends AbstractBankConfigurator{
     public MBankConfigurator() {
         super(BankType.MBANK);
-
         this.supportedDocumentTypes.addAll(List.of(DocumentType.CSV));
     }
 
@@ -33,11 +31,11 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         Converter<BigDecimal> floatToBigDecimal = new FloatToBigDecimalConverter();
 
         // "-3 123,464 PLN" -> "-3123.464"
-        String regex ="(-?\\d+(.\\d+)?)(\\s*\\D+)?";
+        String regex = "(-?\\d+(.\\d+)?)(\\s*\\D+)?";
         Converter<BigDecimal> stripCurrencyConverter = x -> new BigDecimal(
                 x.replaceAll(",", ".")
-                 .replaceAll(regex, "$1")
-                 .replaceAll(" ", ""));
+                        .replaceAll(regex, "$1")
+                        .replaceAll(" ", ""));
 
         statementConfig.setAccountOwnerKey(new Cell(10, 1), identity);
         statementConfig.setPeriodStartDateKey(new Cell(15, 1), dateConverter);
@@ -52,7 +50,7 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         transactionConfig.setAmountKey(5, stripCurrencyConverter);
         transactionConfig.setBalanceKey(6, stripCurrencyConverter);
 
-        CSVRawDataParser csvRawDataParser = new CSVRawDataParser(';',10, 24, 27);
+        CSVRawDataParser csvRawDataParser = new CSVRawDataParser(';', 10, 24, 27);
 
         return new Config<>(csvRawDataParser, statementConfig, transactionConfig);
     }

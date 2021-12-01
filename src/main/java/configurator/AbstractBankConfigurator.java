@@ -7,7 +7,7 @@ import model.BankType;
 import model.DocumentType;
 import java.util.HashSet;
 
-public abstract class AbstractBankConfigurator implements BankConfigurator{
+public abstract class AbstractBankConfigurator implements BankConfigurator {
     protected BankType bankType;
     protected HashSet<DocumentType> supportedDocumentTypes;
 

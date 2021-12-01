@@ -29,7 +29,8 @@ public class BankTransaction {
 
     private BankStatement bankStatement;
 
-    protected BankTransaction() {}
+    protected BankTransaction() {
+    }
 
     public BankTransaction(final String description, final BigDecimal amount, final LocalDate date, final BigDecimal balance) {
         this.description.set(description);
@@ -131,8 +132,20 @@ public class BankTransaction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BankTransaction that = (BankTransaction) o;
-        return description.get().equals(that.description.get()) && amount.get().equals(that.amount.get()) &&
-                date.get().equals(that.date.get()) && balance.get().equals(that.balance.get());
+        return propertyEquals(description, that.description)
+                && propertyEquals(amount, that.amount)
+                && propertyEquals(date, that.date)
+                && propertyEquals(balance, that.balance);
+    }
+
+    private boolean propertyEquals(StringProperty property1, StringProperty property2) {
+        if (property1.get() == null) return false;
+        return property1.get().equals(property2.get());
+    }
+
+    private <T> boolean propertyEquals(ObjectProperty<T> property1, ObjectProperty<T> property2) {
+        if (property1.get() == null) return false;
+        return property1.get().equals(property2.get());
     }
 
     @Override

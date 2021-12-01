@@ -28,7 +28,7 @@ public class Importer {
     }
 
     /**
-     * @param bankType  - one of supported banks
+     * @param bankType     - one of supported banks
      * @param documentType - file extension
      * @param URI - uri from where loader should load data
      * @return Observable that emits Bank Transactions, which have reference to imported BankStatement.
