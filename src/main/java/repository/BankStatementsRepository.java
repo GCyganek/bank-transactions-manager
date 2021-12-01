@@ -2,62 +2,23 @@ package repository;
 
 import model.BankStatement;
 import model.BankTransaction;
-import repository.dao.BankStatementDao;
-import session.HibernateSessionService;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class BankStatementsRepository {
+public interface BankStatementsRepository {
+    BankStatement addStatementWithTransactions(BankStatement bankStatement, Collection<BankTransaction> bankTransactions);
 
-    private final BankStatementDao bankStatementDao = new BankStatementDao();
+    BankStatement addBankStatement(BankStatement bankStatement);
 
-    public BankStatement addStatementWithTransactions(BankStatement bankStatement, Collection<BankTransaction> bankTransactions) {
-        bankTransactions.forEach(bankTransaction -> bankTransaction.setBankStatement(bankStatement));
-        bankStatement.getBankTransactionSet().addAll(bankTransactions);
-        return addBankStatement(bankStatement);
-    }
+    Optional<BankStatement> getStatementById(int id);
 
-    public BankStatement addBankStatement(BankStatement bankStatement) {
-        HibernateSessionService.openSession();
-        bankStatementDao.create(bankStatement);
-        HibernateSessionService.closeSession();
-        return bankStatement;
-    }
+    List<BankStatement> getAllStatements();
 
-    public Optional<BankStatement> getStatementById(int id) {
-        HibernateSessionService.openSession();
-        var bankStatement = bankStatementDao.findById(id);
-        HibernateSessionService.closeSession();
-        return bankStatement;
-    }
+    List<BankTransaction> getAllTransactions();
 
-    public List<BankStatement> getAllStatements() {
-        HibernateSessionService.openSession();
-        List<BankStatement> bankStatements = HibernateSessionService.getSession()
-                .createQuery("SELECT bs FROM BankStatement bs", BankStatement.class).getResultList();
-        HibernateSessionService.closeSession();
-        return bankStatements;
-    }
+    void removeStatement(BankStatement bankStatement);
 
-    public List<BankTransaction> getAllTransactions() {
-        HibernateSessionService.openSession();
-        List<BankTransaction> bankTransactions = HibernateSessionService.getSession()
-                .createQuery("SELECT bt FROM BankTransaction bt", BankTransaction.class).getResultList();
-        HibernateSessionService.closeSession();
-        return bankTransactions;
-    }
-
-    public void removeStatement(BankStatement bankStatement) {
-        HibernateSessionService.openSession();
-        bankStatementDao.remove(bankStatement);
-        HibernateSessionService.closeSession();
-    }
-
-    public void removeAllStatements() {
-        Iterable<BankStatement> bankStatements = getAllStatements();
-        bankStatements.forEach(this::removeStatement);
-    }
-
+    void removeAllStatements();
 }

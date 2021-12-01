@@ -9,7 +9,9 @@ import model.BankTransaction;
 import model.BankType;
 import model.DocumentType;
 import repository.BankStatementsRepository;
+import repository.PgBankStatementsRepository;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Optional;
@@ -20,8 +22,8 @@ public class Importer {
     private Loader loader;
     private BankStatement importedStatement;
 
-    // TODO inject
-    public Importer(BankConfiguratorFactory configFactory, BankStatementsRepository repository, Loader loader) {
+    @Inject
+    public Importer(BankConfiguratorFactory configFactory, PgBankStatementsRepository repository, Loader loader) {
         this.configFactory = configFactory;
         this.loader = loader;
         this.repository = repository;
@@ -33,7 +35,7 @@ public class Importer {
      * @param documentType - file extension
      * @param URI - uri from where loader should load data
      * @return Observable that emits Bank Transactions, which have reference to imported BankStatement.
-     *         Data is persisted once stream completes.
+     *         Data is persisted once observable completes. Data in not persisted if any error occurs. //todo
      */
     public Observable<BankTransaction> importBankStatement(BankType bankType,
                                        DocumentType documentType, String URI) throws IOException

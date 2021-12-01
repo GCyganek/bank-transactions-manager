@@ -6,9 +6,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.BankStatementsRepository;
+import repository.PgBankStatementsRepository;
 import repository.dao.BankStatementDao;
+import repository.dao.PgBankStatementDao;
 import repository.dao.BankTransactionDao;
+import repository.dao.PgBankTransactionDao;
 import session.HibernateSessionService;
 
 import java.math.BigDecimal;
@@ -19,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DAOTests {
 
-    private final BankStatementDao bankStatementDao = new BankStatementDao();
+    private final BankStatementDao bankStatementDao = new PgBankStatementDao();
 
-    private final BankTransactionDao bankTransactionDao = new BankTransactionDao();
+    private final BankTransactionDao bankTransactionDao = new PgBankTransactionDao();
 
     private final BankTransaction bankTransactionExample1 =
             new BankTransaction("Przelew 1", new BigDecimal("2512.23"),
@@ -53,7 +55,7 @@ public class DAOTests {
 
     @AfterAll
     public static void afterAll() {
-        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+        PgBankStatementsRepository bankStatementsRepository = new PgBankStatementsRepository(new PgBankStatementDao());
         bankStatementsRepository.removeAllStatements();
 
         HibernateSessionService.openSession();
@@ -130,7 +132,7 @@ public class DAOTests {
         assertEquals(bankTransaction1.getBankStatement(), bankStatement);
         assertEquals(bankTransaction2.getBankStatement(), bankStatement);
 
-        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+        PgBankStatementsRepository bankStatementsRepository = new PgBankStatementsRepository(new PgBankStatementDao());
         bankStatementsRepository.getAllStatements();
     }
 

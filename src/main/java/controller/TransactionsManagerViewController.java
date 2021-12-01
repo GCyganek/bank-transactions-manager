@@ -11,6 +11,7 @@ import javafx.scene.control.TableView;
 import model.BankTransaction;
 import repository.BankStatementsRepository;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -18,9 +19,15 @@ public class TransactionsManagerViewController {
 
     private final ObservableList<BankTransaction> bankTransactions = FXCollections.observableArrayList();
 
-    private final BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+    private final BankStatementsRepository bankStatementsRepository;
+
 
     private TransactionsManagerAppController appController;
+
+    @Inject
+    public TransactionsManagerViewController(BankStatementsRepository bankStatementsRepository) {
+        this.bankStatementsRepository = bankStatementsRepository;
+    }
 
     @FXML
     public TableView<BankTransaction> transactionsTable;

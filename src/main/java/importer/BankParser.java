@@ -25,7 +25,7 @@ public class BankParser<K, U> {
         this.builtStatement = null;
     }
 
-    public Observable<BankTransaction> parse(Reader reader) throws IOException {
+    public Observable<BankTransaction> parse(Reader reader){
         return rawDataParser
                 .parse(reader, parserConfig.getStatementFields(), parserConfig.getTransactionFields())
                 .doOnNext(parsedTransaction -> {

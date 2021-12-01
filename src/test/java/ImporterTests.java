@@ -4,12 +4,12 @@ import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.BankStatement;
-import model.BankTransaction;
 import model.BankType;
 import model.DocumentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import repository.BankStatementsRepository;
+import repository.PgBankStatementsRepository;
+import repository.dao.PgBankStatementDao;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 
 
 public class ImporterTests {
-    BankStatementsRepository repository = new BankStatementsRepository();
+    PgBankStatementsRepository repository = new PgBankStatementsRepository(new PgBankStatementDao());
 
     @AfterEach
     public void after() {

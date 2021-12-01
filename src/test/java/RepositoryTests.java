@@ -2,7 +2,8 @@ import model.BankStatement;
 import model.BankTransaction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import repository.BankStatementsRepository;
+import repository.PgBankStatementsRepository;
+import repository.dao.PgBankStatementDao;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RepositoryTests {
-    private final BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+    private final PgBankStatementsRepository bankStatementsRepository = new PgBankStatementsRepository(new PgBankStatementDao());
 
     private final BankTransaction bankTransactionExample1 =
             new BankTransaction("Przelew 1", new BigDecimal("2512.23"),

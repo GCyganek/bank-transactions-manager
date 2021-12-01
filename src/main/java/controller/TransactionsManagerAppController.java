@@ -1,9 +1,7 @@
 package controller;
 
-import configurator.BankConfiguratorFactory;
+import com.google.inject.Injector;
 import importer.Importer;
-import importer.loader.Loader;
-import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.core.Observable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -12,31 +10,34 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
 import model.DocumentType;
-import repository.BankStatementsRepository;
 
+import javax.inject.Inject;
 import java.io.IOException;
 
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
+    private Importer importer;
 
-    private final Importer importer;
-
-    public TransactionsManagerAppController(Stage primaryStage) {
+    public TransactionsManagerAppController(Stage primaryStage, Importer importer) {
         this.primaryStage = primaryStage;
-
-        BankConfiguratorFactory configuratorFactory = new BankConfiguratorFactory();
-        Loader loader = new LocalFSLoader();
-        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
-        importer = new Importer(configuratorFactory, bankStatementsRepository, loader);
+        this.importer = importer;
     }
 
-    public void initRootLayout() {
+//    @Inject
+//    public void setImporter(Importer importer) {
+//        this.importer = importer;
+//    }
+
+    public void initRootLayout(Injector injector) {
         try {
             this.primaryStage.setTitle("Bank Transactions Manager");
 
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(TransactionsManagerAppController.class.getResource("../view/TransactionsManagerView.fxml"));
+
+            loader.setControllerFactory(injector::getInstance);
+
             BorderPane rootLayout = loader.load();
 
             TransactionsManagerViewController controller = loader.getController();
