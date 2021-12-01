@@ -33,9 +33,9 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         // "-3 123,464 PLN" -> "-3123.464"
         String regex = "(-?\\d+(.\\d+)?)(\\s*\\D+)?";
         Converter<BigDecimal> stripCurrencyConverter = x -> new BigDecimal(
-                x.replaceAll(",", ".")
+                        x.replaceAll(" ", "")
                         .replaceAll(regex, "$1")
-                        .replaceAll(" ", ""));
+                        .replaceAll(",", "."));
 
         statementConfig.setAccountOwnerKey(new Cell(10, 1), identity);
         statementConfig.setPeriodStartDateKey(new Cell(15, 1), dateConverter);

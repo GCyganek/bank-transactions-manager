@@ -1,6 +1,8 @@
 package controller;
 
+import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -28,6 +30,8 @@ public class TransactionsManagerViewController {
     public TransactionsManagerViewController(BankStatementsRepository bankStatementsRepository) {
         this.bankStatementsRepository = bankStatementsRepository;
     }
+
+
 
     @FXML
     public TableView<BankTransaction> transactionsTable;
@@ -67,9 +71,22 @@ public class TransactionsManagerViewController {
     public void handleAddNewBankStatement(ActionEvent actionEvent) {
         appController.showAddStatementView()
                 .subscribeOn(Schedulers.io())
-                .subscribe(bankTransaction -> {
-                    bankTransactions.add(bankTransaction);
-                    System.out.println("Imported Transaction: " + bankTransaction);
+                .subscribe(bankTransaction -> { //TODO do it on Fx scheduler
+                    Platform.runLater(() -> {
+                        bankTransactions.add(bankTransaction);
+                        System.out.println("Imported Transaction: " + bankTransaction);
+                    });
+                }, err -> {
+                    Platform.runLater(() -> {
+                        String reason = "";
+                        if (err instanceof ParserException e) {
+                            reason = e.getReason();
+                        }
+                        this.appController.showErrorWindow(err.getMessage(), reason);
+                    });
                 });
     }
+
+
+
 }

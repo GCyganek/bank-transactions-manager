@@ -4,7 +4,7 @@ public class ParserException extends Exception{
     private final String reason;
 
     public ParserException(String reason) {
-        super(String.format("Failed to parse Statement.\n %s", reason));
+        super("Failed to parse Statement.\nPlease make sure that correct bank type is selected.\n");
         this.reason = reason;
     }
 

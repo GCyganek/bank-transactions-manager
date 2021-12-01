@@ -42,16 +42,17 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
                 .withCSVParser(new CSVParserBuilder().withSeparator(separator).build());
 
         return Observable.create(emitter -> {
+            int lineNum = 1;
+
             try(CSVReader csvReader = csvReaderBuilder.build()) {
                 Iterator<String[]> lineIter = csvReader.iterator();
-                int i = 1;
 
-                for (; lineIter.hasNext() && !emitter.isDisposed(); i++) {
-                    if (i == firstStatementLine) {
+                for (; lineIter.hasNext() && !emitter.isDisposed(); lineNum++) {
+                    if (lineNum == firstStatementLine) {
                         statementFields = parseStatement(lineIter, statementParserFields);
-                        i = lastStatementLine;
+                        lineNum = lastStatementLine;
                     }
-                    else if (i >= firstTransactionsLine) {
+                    else if (lineNum >= firstTransactionsLine) {
                         emitter.onNext(parseTransaction(lineIter, transactionParserFields));
                     }
                     else {
@@ -60,15 +61,22 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
                     }
                 }
 
-                if (i < lastStatementLine) {
-                    emitter.onError(new ParserException("Statement contains fewer lines than expected"));
+                if (lineNum < lastStatementLine) {
+                    emitter.onError(new ParserException(
+                            String.format("Statement contains fewer lines than expected. expected %d",
+                                 lastStatementLine - firstStatementLine + 1)));
                     return;
                 }
 
                 emitter.onComplete();
-            } catch (Exception e) {
+            }
+            catch (ParserException e) {
+                emitter.onError(e);
+            }
+            catch (Exception e) {
                 e.printStackTrace();
-                emitter.onError(new ParserException(e.getMessage()));
+                emitter.onError(new ParserException(
+                        String.format("[Parser Exception in line: %d]\t%s", lineNum, e.getMessage())));
             }
         });
     }
@@ -87,8 +95,11 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
             lines.add(linesIter.next());
         }
 
-        if (i < lastStatementLine)
-            throw new ParserException("Statement contains fewer lines than expected");
+        if (i < lastStatementLine) {
+            throw new ParserException(
+                    String.format("Statement contains fewer lines than expected. got %d expected %d",
+                            i - firstStatementLine + 1, lastStatementLine - firstStatementLine + 1));
+        }
 
 
         for (var field : parserFields) {

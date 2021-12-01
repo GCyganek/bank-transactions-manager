@@ -2,6 +2,7 @@ import configurator.BankConfiguratorFactory;
 import importer.Importer;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
+import importer.utils.converters.Converter;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.BankStatement;
 import model.BankType;
@@ -12,17 +13,18 @@ import repository.BankStatementsRepository;
 import repository.dao.PgBankStatementDao;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 
 public class ImporterTests {
     BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
-
-    @AfterEach
-    public void after() {
-        repository.removeAllStatements();
-    }
+//
+//    @AfterEach
+//    public void after() {
+//        repository.removeAllStatements();
+//    }
 
 
     private Importer getImporter() {
@@ -33,6 +35,7 @@ public class ImporterTests {
 
     @Test
     void tempMbankImporterTest() throws URISyntaxException, IOException {
+        // not really a test, see STDOUT
         Importer importer = getImporter();
         String uri = getMBankPath();
 
@@ -44,6 +47,7 @@ public class ImporterTests {
 
     @Test
     void tempSantanderImporterTest() throws URISyntaxException, IOException {
+        // not really a test, see STDOUT
         Importer importer = getImporter();
         String uri = getSantanderPath();
 
@@ -72,4 +76,15 @@ public class ImporterTests {
         System.out.println("==============================================");
     }
 
+
+    @Test
+    public void _x() {
+        String regex = "(-?\\d+(.\\d+)?)(\\s*\\D+)?";
+        Converter<BigDecimal> stripCurrencyConverter = x -> new BigDecimal(
+                        x.replaceAll(" ", "")
+                        .replaceAll(regex, "$1")
+                        .replaceAll(",", ".")
+                        );
+        System.out.println(stripCurrencyConverter.convert("3 2814,65 PLN"));
+    }
 }

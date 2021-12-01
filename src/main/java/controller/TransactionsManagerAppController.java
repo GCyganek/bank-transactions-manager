@@ -3,8 +3,11 @@ package controller;
 import com.google.inject.Injector;
 import importer.Importer;
 import io.reactivex.rxjava3.core.Observable;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -19,6 +22,7 @@ public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
     private final Importer importer;
+
 
     @Inject
     public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage, Importer importer) {
@@ -80,5 +84,30 @@ public class TransactionsManagerAppController {
             e.printStackTrace();
         }
         return Observable.empty();
+    }
+
+    // TODO refactor it
+    public void showErrorWindow(String errorMsg, String reason) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(TransactionsManagerViewController.class.getResource("../view/ImportErrorView.fxml"));
+            BorderPane page = loader.load();
+
+            Scene scene = new Scene(page);
+            Stage stage = new Stage();
+            stage.setTitle("Error");
+            stage.setScene(scene);
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
+
+            ErrorViewController errorViewController = loader.getController();
+            errorViewController.setStage(stage);
+            errorViewController.setErrorMessage(errorMsg, reason);
+
+            stage.showAndWait();
+        } catch (IOException e) {
+            System.out.println("Can't load new window");
+            e.printStackTrace();
+        }
     }
 }
