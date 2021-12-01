@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+
+
+<BorderPane prefHeight="200.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ErrorViewController">
+    <center>
+    <VBox alignment="TOP_CENTER" prefHeight="400.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <Label fx:id="errorLabel" text="Oops! Something went wrong."/>
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin>
+        <Label text="Reason:"/>
+        <Label fx:id="errorReasonLabel"/>
+
+        <Button fx:id="closeErrBtn" mnemonicParsing="false" onAction="#hideError" prefWidth="150.0" text="Close">
+            <VBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </VBox.margin>
+        </Button>
+    </VBox>
+    </center>
+</BorderPane>

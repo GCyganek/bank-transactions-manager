@@ -1,17 +1,18 @@
+import model.BankStatement;
+import model.BankTransaction;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.AfterAll;
-import repository.BankStatementsRepository;
-import repository.dao.BankStatementDao;
-import repository.dao.BankTransactionDao;
-import model.BankStatement;
-import model.BankTransaction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import repository.BankStatementsRepository;
+import repository.dao.BankStatementDao;
+import repository.dao.PgBankStatementDao;
+import repository.dao.BankTransactionDao;
+import repository.dao.PgBankTransactionDao;
 import session.HibernateSessionService;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -20,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DAOTests {
 
-    private final BankStatementDao bankStatementDao = new BankStatementDao();
+    private final BankStatementDao bankStatementDao = new PgBankStatementDao();
 
-    private final BankTransactionDao bankTransactionDao = new BankTransactionDao();
+    private final BankTransactionDao bankTransactionDao = new PgBankTransactionDao();
 
     private final BankTransaction bankTransactionExample1 =
             new BankTransaction("Przelew 1", new BigDecimal("2512.23"),
@@ -35,12 +36,12 @@ public class DAOTests {
     private final BankStatement bankStatementExample1 =
             new BankStatement("1234 1234 1234 1234", LocalDate.of(2021, 11, 21),
                     LocalDate.of(2021, 11, 25), new BigDecimal("250.22"),
-                    new BigDecimal("302.10"), "Jan Kowalski");
+                    new BigDecimal("302.10"), "Jan Kowalski", "PLN");
 
     private final BankStatement bankStatementExample2 =
             new BankStatement("1234 4321 4312 1234", LocalDate.of(2021, 11, 20),
                     LocalDate.of(2021, 11, 26), new BigDecimal("2453.22"),
-                    new BigDecimal("332.10"), "Anna Kowalska");
+                    new BigDecimal("332.10"), "Anna Kowalska", "PLN");
 
     @BeforeEach
     public void before() {
@@ -54,7 +55,7 @@ public class DAOTests {
 
     @AfterAll
     public static void afterAll() {
-        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository();
+        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository(new PgBankStatementDao());
         bankStatementsRepository.removeAllStatements();
 
         HibernateSessionService.openSession();
@@ -130,11 +131,14 @@ public class DAOTests {
         assertTrue(bankTransactionSet.contains(bankTransaction2));
         assertEquals(bankTransaction1.getBankStatement(), bankStatement);
         assertEquals(bankTransaction2.getBankStatement(), bankStatement);
+
+        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository(new PgBankStatementDao());
+        bankStatementsRepository.getAllStatements();
     }
 
     private void checkBankStatement(final Optional<BankStatement> bankStatement) {
         assertTrue(bankStatement.isPresent());
-        bankStatement.ifPresent(bs ->  {
+        bankStatement.ifPresent(bs -> {
             assertTrue(bs.getId() > 0);
             assertNotNull(bs.getAccountNumber());
             assertNotNull(bs.getAccountOwner());
@@ -142,6 +146,7 @@ public class DAOTests {
             assertNotNull(bs.getPaidOut());
             assertNotNull(bs.getPeriodStartDate());
             assertNotNull(bs.getPeriodEndDate());
+            assertNotNull(bs.getCurrency());
         });
     }
 

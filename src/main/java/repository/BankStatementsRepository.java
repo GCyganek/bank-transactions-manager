@@ -5,17 +5,27 @@ import model.BankTransaction;
 import repository.dao.BankStatementDao;
 import session.HibernateSessionService;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public class BankStatementsRepository {
 
-    private final BankStatementDao bankStatementDao = new BankStatementDao();
+    private final BankStatementDao bankStatementDao;
+
+    @Inject
+    public BankStatementsRepository(BankStatementDao bankStatementDao) {
+        this.bankStatementDao = bankStatementDao;
+    }
 
     public BankStatement addStatementWithTransactions(BankStatement bankStatement, Collection<BankTransaction> bankTransactions) {
-        bankStatement.getBankTransactionSet().addAll(bankTransactions);
         bankTransactions.forEach(bankTransaction -> bankTransaction.setBankStatement(bankStatement));
+        bankStatement.getBankTransactionSet().addAll(bankTransactions);
+        return addBankStatement(bankStatement);
+    }
+
+    public BankStatement addBankStatement(BankStatement bankStatement) {
         HibernateSessionService.openSession();
         bankStatementDao.create(bankStatement);
         HibernateSessionService.closeSession();
