@@ -9,6 +9,7 @@ import model.BankTransaction;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Optional;
 
 public class BankParser<K, U> {
     private final RawDataParser<K, U> rawDataParser;
@@ -29,17 +30,20 @@ public class BankParser<K, U> {
                 .parse(reader, parserConfig.getStatementFields(), parserConfig.getTransactionFields())
                 .doOnNext(parsedTransaction -> {
                     if (builtStatement == null) {
-                        builtStatement = builder.buildBankStatement(rawDataParser.getConvertedStatement());
+                        builtStatement = builder.buildBankStatement(rawDataParser.getConvertedStatement().get());
                     }})
                 .flatMap(parsedTransaction -> Observable.just(builder.buildBankTransaction(parsedTransaction)))
                 .doOnComplete(() -> {
                     if (builtStatement == null) {
-                        builtStatement = builder.buildBankStatement(rawDataParser.getConvertedStatement());
+                        builtStatement = builder.buildBankStatement(rawDataParser.getConvertedStatement().get());
                     }
                 });
     }
 
-    public BankStatement getBuiltStatement() {
-        return builtStatement;
+    /**
+     * @return Optional of created BankStatement,  value is guaranteed to be present after first transaction have been emitted.
+     */
+    public Optional<BankStatement> getBuiltStatement() {
+        return Optional.ofNullable(builtStatement);
     }
 }

@@ -4,6 +4,7 @@ import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.BankStatement;
+import model.BankTransaction;
 import model.BankType;
 import model.DocumentType;
 import org.junit.jupiter.api.AfterEach;
@@ -37,11 +38,8 @@ public class ImporterTests {
 
         importer.importBankStatement(BankType.MBANK, DocumentType.CSV, uri)
                 .subscribeOn(Schedulers.io())
-                .doOnComplete(() -> {
-                    printStatement(importer.getImportedStatement());
-                    System.out.println("Size: " + repository.getAllStatements().size());
-                })
-                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction));
+                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction),
+                        System.out::println);
     }
 
     @Test
@@ -51,11 +49,9 @@ public class ImporterTests {
 
         importer.importBankStatement(BankType.SANTANDER, DocumentType.CSV, uri)
                 .subscribeOn(Schedulers.io())
-                .doOnComplete(() -> {
-                    printStatement(importer.getImportedStatement());
-                    System.out.println("Size: " + repository.getAllStatements().size());
-                })
-                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction));
+                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction),
+                        System.out::println);
+
     }
 
     private static String getSantanderPath() throws URISyntaxException {

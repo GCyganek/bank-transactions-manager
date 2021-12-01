@@ -12,6 +12,7 @@ import repository.BankStatementsRepository;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Optional;
 
 public class Importer {
     private final BankConfiguratorFactory configFactory;
@@ -42,17 +43,19 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
         return parser.parse(dataReader)
                 .doOnNext(bankTransaction -> importedStatement = bankTransaction.getBankStatement())
-                .doOnComplete(() -> {
-                    repository.addBankStatement(parser.getBuiltStatement());
-                    dataReader.close();
-                });
+                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()))
+                .doOnTerminate(() -> dataReader.close());
+
     }
 
     public void setLoader(Loader loader) {
         this.loader = loader;
     }
 
-    public BankStatement getImportedStatement() {
-        return importedStatement;
+    /**
+     * @return Optional of created BankStatement, value is guaranteed to be present after first transaction have been emitted.
+     */
+    public Optional<BankStatement> getImportedStatement() {
+        return Optional.ofNullable(importedStatement);
     }
 }

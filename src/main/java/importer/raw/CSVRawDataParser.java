@@ -3,11 +3,12 @@ package importer.raw;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import importer.exceptions.ParserException;
 import importer.utils.Cell;
 import importer.utils.ParserField;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
@@ -25,6 +26,7 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         this.firstStatementLine = firstStatementLine;
         this.lastStatementLine = lastStatementLine;
         this.firstTransactionsLine = firstTransactionsLine;
+        this.statementFields = null;
     }
 
     public CSVRawDataParser() {
@@ -42,8 +44,9 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         return Observable.create(emitter -> {
             try(CSVReader csvReader = csvReaderBuilder.build()) {
                 Iterator<String[]> lineIter = csvReader.iterator();
+                int i = 1;
 
-                for (int i = 1; lineIter.hasNext() && !emitter.isDisposed(); i++) {
+                for (; lineIter.hasNext() && !emitter.isDisposed(); i++) {
                     if (i == firstStatementLine) {
                         statementFields = parseStatement(lineIter, statementParserFields);
                         i = lastStatementLine;
@@ -57,22 +60,36 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
                     }
                 }
 
+                if (i < lastStatementLine) {
+                    emitter.onError(new ParserException("Statement contains fewer lines than expected"));
+                    return;
+                }
+
                 emitter.onComplete();
-            } catch (IndexOutOfBoundsException | IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                emitter.onError(e);
+                emitter.onError(new ParserException(e.getMessage()));
             }
         });
     }
 
-    private Map<Cell, Object> parseStatement(Iterator<String[]> linesIter, List<ParserField<Cell, ?>> parserFields) {
+    private Map<Cell, Object> parseStatement(Iterator<String[]> linesIter,
+                                             List<ParserField<Cell, ?>> parserFields) throws ParserException
+    {
         Map<Cell, Object> result = new HashMap<>();
         ArrayList<String[]> lines = new ArrayList<>();
 
         // store all so parserFields won't have to be sorted by row
-        for (int i = firstStatementLine; i <= lastStatementLine; i++) {
+
+        int i = firstStatementLine;
+
+        for (; i <= lastStatementLine && linesIter.hasNext(); i++) {
             lines.add(linesIter.next());
         }
+
+        if (i < lastStatementLine)
+            throw new ParserException("Statement contains fewer lines than expected");
+
 
         for (var field : parserFields) {
             Cell cell = field.getKey();
@@ -98,7 +115,8 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
     }
 
     @Override
-    public Map<Cell, ?> getConvertedStatement() {
-        return statementFields;
+    public Optional<Map<Cell, ?>> getConvertedStatement() {
+        return Optional.ofNullable(statementFields);
     }
+
 }
