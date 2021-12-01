@@ -190,11 +190,22 @@ public class BankStatement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BankStatement that = (BankStatement) o;
-        return accountNumber.get().equals(that.accountNumber.get()) &&
-                periodStartDate.get().equals(that.periodStartDate.get()) &&
-                periodEndDate.get().equals(that.periodEndDate.get()) &&
-                paidIn.get().equals(that.paidIn.get()) && paidOut.get().equals(that.paidOut.get()) &&
-                accountOwner.get().equals(that.accountOwner.get()) && currency.get().equals(that.currency.get());
+        return propertyEquals(accountNumber, that.accountNumber) &&
+                propertyEquals(periodEndDate, that.periodEndDate) &&
+                propertyEquals(periodStartDate, that.periodStartDate) &&
+                propertyEquals(paidOut, that.paidOut) &&
+                propertyEquals(paidIn, that.paidIn) &&
+                propertyEquals(accountOwner, that.accountOwner);
+    }
+
+    private boolean propertyEquals(StringProperty property1, StringProperty property2) {
+        if (property1.get() == null) return false;
+        return property1.get().equals(property2.get());
+    }
+
+    private <T> boolean propertyEquals(ObjectProperty<T> property1, ObjectProperty<T> property2) {
+        if (property1.get() == null) return false;
+        return property1.get().equals(property2.get());
     }
 
     @Override
