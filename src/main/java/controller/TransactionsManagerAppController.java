@@ -12,22 +12,19 @@ import model.BankTransaction;
 import model.DocumentType;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
-    private Importer importer;
+    private final Importer importer;
 
-    public TransactionsManagerAppController(Stage primaryStage, Importer importer) {
+    @Inject
+    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage, Importer importer) {
         this.primaryStage = primaryStage;
         this.importer = importer;
     }
-
-//    @Inject
-//    public void setImporter(Importer importer) {
-//        this.importer = importer;
-//    }
 
     public void initRootLayout(Injector injector) {
         try {

@@ -9,7 +9,6 @@ import model.BankTransaction;
 import model.BankType;
 import model.DocumentType;
 import repository.BankStatementsRepository;
-import repository.PgBankStatementsRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -23,7 +22,7 @@ public class Importer {
     private BankStatement importedStatement;
 
     @Inject
-    public Importer(BankConfiguratorFactory configFactory, PgBankStatementsRepository repository, Loader loader) {
+    public Importer(BankConfiguratorFactory configFactory, BankStatementsRepository repository, Loader loader) {
         this.configFactory = configFactory;
         this.loader = loader;
         this.repository = repository;
@@ -45,8 +44,7 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
         return parser.parse(dataReader)
                 .doOnNext(bankTransaction -> importedStatement = bankTransaction.getBankStatement())
-                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()))
-                .doOnTerminate(() -> dataReader.close());
+                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()));
 
     }
 

@@ -7,6 +7,9 @@ import session.HibernateSessionService;
 import javax.persistence.PersistenceException;
 import java.util.Optional;
 
+/**
+  * Postgres DAO
+  */
 public class PgBankStatementDao extends AbstractDao<BankStatement> implements BankStatementDao {
 
     @Override

@@ -8,7 +8,7 @@ import model.BankType;
 import model.DocumentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import repository.PgBankStatementsRepository;
+import repository.BankStatementsRepository;
 import repository.dao.PgBankStatementDao;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 
 
 public class ImporterTests {
-    PgBankStatementsRepository repository = new PgBankStatementsRepository(new PgBankStatementDao());
+    BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
 
     @AfterEach
     public void after() {

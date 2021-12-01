@@ -6,7 +6,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.PgBankStatementsRepository;
+import repository.BankStatementsRepository;
 import repository.dao.BankStatementDao;
 import repository.dao.PgBankStatementDao;
 import repository.dao.BankTransactionDao;
@@ -55,7 +55,7 @@ public class DAOTests {
 
     @AfterAll
     public static void afterAll() {
-        PgBankStatementsRepository bankStatementsRepository = new PgBankStatementsRepository(new PgBankStatementDao());
+        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository(new PgBankStatementDao());
         bankStatementsRepository.removeAllStatements();
 
         HibernateSessionService.openSession();
@@ -132,7 +132,7 @@ public class DAOTests {
         assertEquals(bankTransaction1.getBankStatement(), bankStatement);
         assertEquals(bankTransaction2.getBankStatement(), bankStatement);
 
-        PgBankStatementsRepository bankStatementsRepository = new PgBankStatementsRepository(new PgBankStatementDao());
+        BankStatementsRepository bankStatementsRepository = new BankStatementsRepository(new PgBankStatementDao());
         bankStatementsRepository.getAllStatements();
     }
 

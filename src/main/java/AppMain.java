@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 
 /**
- * In case of "JavaFX runtime components are missing, and are required to run this application" error
+ * In case of error "JavaFX runtime components are missing, and are required to run this application"
  * start app from Main class
  */
 public class AppMain extends Application {
@@ -20,11 +20,11 @@ public class AppMain extends Application {
     @Override
     public void start(Stage primaryStage) {
         Injector injector = Guice.createInjector(
-                new ImporterModule()
+                new ImporterModule(primaryStage)
         );
 
-        TransactionsManagerAppController controller = new TransactionsManagerAppController(primaryStage,
-                injector.getInstance(Importer.class));
+        TransactionsManagerAppController controller =
+                injector.getInstance(TransactionsManagerAppController.class);
         controller.initRootLayout(injector);
     }
 }
