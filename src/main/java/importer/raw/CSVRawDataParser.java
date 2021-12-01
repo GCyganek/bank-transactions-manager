@@ -5,6 +5,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import importer.utils.Cell;
 import importer.utils.ParserField;
+import io.reactivex.rxjava3.core.Observable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -12,7 +13,6 @@ import java.util.*;
 
 public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
     private Map<Cell, ?> statementFields;
-    private List<Map<Integer, ?>> transactionFields;
     private final char separator;
 
     private final int firstStatementLine, lastStatementLine, firstTransactionsLine;
@@ -33,34 +33,36 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
 
 
     @Override
-    public void parse(Reader reader, List<ParserField<Cell, ?>> statementParserFields,
-                      List<ParserField<Integer, ?>> transactionParserFields)
+    public Observable<Map<Integer, ?>> parse(Reader reader, List<ParserField<Cell, ?>> statementParserFields,
+                                             List<ParserField<Integer, ?>> transactionParserFields)
     {
-        transactionFields = new LinkedList<>();
-
         CSVReaderBuilder csvReaderBuilder = new CSVReaderBuilder(reader)
                 .withCSVParser(new CSVParserBuilder().withSeparator(separator).build());
 
-        try(CSVReader csvReader = csvReaderBuilder.build()) {
-            Iterator<String[]> lineIter = csvReader.iterator();
+        return Observable.create(emitter -> {
+            try(CSVReader csvReader = csvReaderBuilder.build()) {
+                Iterator<String[]> lineIter = csvReader.iterator();
 
-            for (int i = 1; lineIter.hasNext(); i++) {
-                if (i == firstStatementLine) {
-                    statementFields = parseStatement(lineIter, statementParserFields);
-                    i = lastStatementLine;
+                for (int i = 1; lineIter.hasNext() && !emitter.isDisposed(); i++) {
+                    if (i == firstStatementLine) {
+                        statementFields = parseStatement(lineIter, statementParserFields);
+                        i = lastStatementLine;
+                    }
+                    else if (i >= firstTransactionsLine) {
+                        emitter.onNext(parseTransaction(lineIter, transactionParserFields));
+                    }
+                    else {
+                        // irrelevant data or empty space
+                        lineIter.next();
+                    }
                 }
-                else if (i >= firstTransactionsLine) {
-                    transactionFields.add(parseTransaction(lineIter, transactionParserFields));
-                }
-                else {
-                    // irrelevant data or empty space
-                    lineIter.next();
-                }
+
+                emitter.onComplete();
+            } catch (IndexOutOfBoundsException | IOException e) {
+                e.printStackTrace();
+                emitter.onError(e);
             }
-        } catch (IndexOutOfBoundsException | IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("failed to parse"); // TODO parser exception or smth
-        }
+        });
     }
 
     private Map<Cell, Object> parseStatement(Iterator<String[]> linesIter, List<ParserField<Cell, ?>> parserFields) {
@@ -98,10 +100,5 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
     @Override
     public Map<Cell, ?> getConvertedStatement() {
         return statementFields;
-    }
-
-    @Override
-    public List<Map<Integer, ?>> getConvertedTransactions() {
-        return transactionFields;
     }
 }

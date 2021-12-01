@@ -15,8 +15,7 @@ import repository.BankStatementsRepository;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class ImporterTests {
     BankStatementsRepository repository = new BankStatementsRepository();
@@ -26,32 +25,39 @@ public class ImporterTests {
         repository.removeAllStatements();
     }
 
-    @Test
-    void tempTest() throws URISyntaxException, IOException {
-        BankConfigurator configurator = new SantanderConfigurator(repository);
-        BankParser<?, ?> parser = configurator.getConfiguredParser(DocumentType.CSV);
+
+    private Importer getImporter() {
+        BankConfiguratorFactory configuratorFactory = new BankConfiguratorFactory();
         Loader loader = new LocalFSLoader();
-        BankStatement result = parser.parse(loader.load(getSantanderPath()));
-        printStatement(result);
+        return new Importer(configuratorFactory, repository, loader);
     }
 
-
     @Test
-    void tempMbankImporterTest() throws URISyntaxException {
-        Importer importer = new Importer(new BankConfiguratorFactory(repository), new LocalFSLoader());
+    void tempMbankImporterTest() throws URISyntaxException, IOException {
+        Importer importer = getImporter();
         String uri = getMBankPath();
+
         importer.importBankStatement(BankType.MBANK, DocumentType.CSV, uri)
-                .subscribeOn(Schedulers.io()) // there is more io type of operations here (reading file, saving to database)
-                .blockingSubscribe(ImporterTests::printStatement);
+                .subscribeOn(Schedulers.io())
+                .doOnComplete(() -> {
+                    printStatement(importer.getImportedStatement());
+                    System.out.println("Size: " + repository.getAllStatements().size());
+                })
+                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction));
     }
 
     @Test
-    void tempSantanderImporterTest() throws URISyntaxException {
-        Importer importer = new Importer(new BankConfiguratorFactory(repository), new LocalFSLoader());
+    void tempSantanderImporterTest() throws URISyntaxException, IOException {
+        Importer importer = getImporter();
         String uri = getSantanderPath();
+
         importer.importBankStatement(BankType.SANTANDER, DocumentType.CSV, uri)
-                .subscribeOn(Schedulers.io()) // there is more io type of operations here (reading file, saving to database)
-                .blockingSubscribe(ImporterTests::printStatement);
+                .subscribeOn(Schedulers.io())
+                .doOnComplete(() -> {
+                    printStatement(importer.getImportedStatement());
+                    System.out.println("Size: " + repository.getAllStatements().size());
+                })
+                .blockingSubscribe(bankTransaction -> System.out.println("Imported Transaction: " + bankTransaction));
     }
 
     private static String getSantanderPath() throws URISyntaxException {

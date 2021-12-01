@@ -14,8 +14,12 @@ public class BankStatementsRepository {
     private final BankStatementDao bankStatementDao = new BankStatementDao();
 
     public BankStatement addStatementWithTransactions(BankStatement bankStatement, Collection<BankTransaction> bankTransactions) {
-        bankStatement.getBankTransactionSet().addAll(bankTransactions);
         bankTransactions.forEach(bankTransaction -> bankTransaction.setBankStatement(bankStatement));
+        bankStatement.getBankTransactionSet().addAll(bankTransactions);
+        return addBankStatement(bankStatement);
+    }
+
+    public BankStatement addBankStatement(BankStatement bankStatement) {
         HibernateSessionService.openSession();
         bankStatementDao.create(bankStatement);
         HibernateSessionService.closeSession();

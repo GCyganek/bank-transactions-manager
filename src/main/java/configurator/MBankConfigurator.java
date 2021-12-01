@@ -3,7 +3,6 @@ package configurator;
 import configurator.config.Config;
 import configurator.config.StatementConfig;
 import configurator.config.TransactionConfig;
-import importer.BankParser;
 import importer.raw.CSVRawDataParser;
 import importer.utils.Cell;
 import importer.utils.converters.Converter;
@@ -19,8 +18,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class MBankConfigurator extends AbstractBankConfigurator{
-    public MBankConfigurator(BankStatementsRepository repository) {
-        super(BankType.MBANK, repository);
+    public MBankConfigurator() {
+        super(BankType.MBANK);
 
         this.supportedDocumentTypes.addAll(List.of(DocumentType.CSV));
     }

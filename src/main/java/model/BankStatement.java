@@ -101,6 +101,11 @@ public class BankStatement {
         this.bankTransactionSet = bankTransactionSet;
     }
 
+    public void addBankTransaction(BankTransaction bankTransaction) {
+        this.bankTransactionSet.add(bankTransaction);
+        bankTransaction.setBankStatement(this);
+    }
+
     public void setId(int id) {
         this.id = id;
     }

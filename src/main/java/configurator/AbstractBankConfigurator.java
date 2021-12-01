@@ -5,17 +5,14 @@ import importer.BankParser;
 import model.BankStatementBuilder;
 import model.BankType;
 import model.DocumentType;
-import repository.BankStatementsRepository;
 import java.util.HashSet;
 
 public abstract class AbstractBankConfigurator implements BankConfigurator{
     protected BankType bankType;
-    protected BankStatementsRepository repository;
     protected HashSet<DocumentType> supportedDocumentTypes;
 
-    public AbstractBankConfigurator(BankType bankType, BankStatementsRepository repository) {
+    public AbstractBankConfigurator(BankType bankType) {
         this.bankType = bankType;
-        this.repository = repository;
         this.supportedDocumentTypes = new HashSet<>();
     }
 
@@ -32,8 +29,7 @@ public abstract class AbstractBankConfigurator implements BankConfigurator{
 
     private <K, U> BankParser<K, U> configureParser(Config<K, U> config) {
         BankStatementBuilder<K, U> bankStatementBuilder =
-                new BankStatementBuilder<>(repository,
-                        config.getStatementConfig(),
+                new BankStatementBuilder<>(config.getStatementConfig(),
                         config.getTransactionConfig());
 
         return new BankParser<>(config, bankStatementBuilder);
