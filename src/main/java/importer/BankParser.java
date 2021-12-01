@@ -8,7 +8,7 @@ import model.BankStatementBuilder;
 import java.io.IOException;
 import java.io.Reader;
 
-public class BankParser<K, U>{
+public class BankParser<K, U> {
     private final RawDataParser<K, U> rawDataParser;
     private final ParserConfig<K, U> parserConfig;
     private final BankStatementBuilder<K, U> builder;
@@ -24,7 +24,7 @@ public class BankParser<K, U>{
         rawDataParser.parse(reader, parserConfig.getStatementFields(), parserConfig.getTransactionFields());
         builder.buildBankStatement(rawDataParser.getConvertedStatement());
 
-        for (var convertedTransaction: rawDataParser.getConvertedTransactions()) {
+        for (var convertedTransaction : rawDataParser.getConvertedTransactions()) {
             builder.buildBankTransaction(convertedTransaction);
         }
 

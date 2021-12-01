@@ -6,9 +6,10 @@ import model.BankStatementBuilder;
 import model.BankType;
 import model.DocumentType;
 import repository.BankStatementsRepository;
+
 import java.util.HashSet;
 
-public abstract class AbstractBankConfigurator implements BankConfigurator{
+public abstract class AbstractBankConfigurator implements BankConfigurator {
     protected BankType bankType;
     protected BankStatementsRepository repository;
     protected HashSet<DocumentType> supportedDocumentTypes;

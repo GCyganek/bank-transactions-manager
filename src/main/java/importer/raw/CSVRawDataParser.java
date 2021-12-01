@@ -28,31 +28,28 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
     }
 
     public CSVRawDataParser() {
-        this(',',1, 1, 2);
+        this(',', 1, 1, 2);
     }
 
 
     @Override
     public void parse(Reader reader, List<ParserField<Cell, ?>> statementParserFields,
-                      List<ParserField<Integer, ?>> transactionParserFields)
-    {
+                      List<ParserField<Integer, ?>> transactionParserFields) {
         transactionFields = new LinkedList<>();
 
         CSVReaderBuilder csvReaderBuilder = new CSVReaderBuilder(reader)
                 .withCSVParser(new CSVParserBuilder().withSeparator(separator).build());
 
-        try(CSVReader csvReader = csvReaderBuilder.build()) {
+        try (CSVReader csvReader = csvReaderBuilder.build()) {
             Iterator<String[]> lineIter = csvReader.iterator();
 
             for (int i = 1; lineIter.hasNext(); i++) {
                 if (i == firstStatementLine) {
                     statementFields = parseStatement(lineIter, statementParserFields);
                     i = lastStatementLine;
-                }
-                else if (i >= firstTransactionsLine) {
+                } else if (i >= firstTransactionsLine) {
                     transactionFields.add(parseTransaction(lineIter, transactionParserFields));
-                }
-                else {
+                } else {
                     // irrelevant data or empty space
                     lineIter.next();
                 }
@@ -68,11 +65,11 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         ArrayList<String[]> lines = new ArrayList<>();
 
         // store all so parserFields won't have to be sorted by row
-        for (int i=firstStatementLine; i <= lastStatementLine; i++) {
+        for (int i = firstStatementLine; i <= lastStatementLine; i++) {
             lines.add(linesIter.next());
         }
 
-        for (var field: parserFields) {
+        for (var field : parserFields) {
             Cell cell = field.getKey();
             field.setParsedValue(lines.get(cell.row - firstStatementLine)[cell.col - 1]);
             result.put(cell, field.convert());
@@ -86,7 +83,7 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
         Map<Integer, Object> result = new HashMap<>();
         String[] line = linesIter.next();
 
-        for (var field: parserFields) {
+        for (var field : parserFields) {
             Integer column = field.getKey();
             field.setParsedValue(line[column - 1]);
             result.put(column, field.convert());

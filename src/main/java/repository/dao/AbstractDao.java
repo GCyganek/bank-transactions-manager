@@ -15,7 +15,7 @@ public abstract class AbstractDao<T> {
         transaction.commit();
     }
 
-     void update(final T object) throws PersistenceException {
+    void update(final T object) throws PersistenceException {
         Session session = HibernateSessionService.getSession();
         Transaction transaction = session.beginTransaction();
         session.update(object);

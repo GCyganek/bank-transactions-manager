@@ -3,9 +3,8 @@ package configurator;
 import configurator.config.Config;
 import configurator.config.StatementConfig;
 import configurator.config.TransactionConfig;
-import importer.utils.Cell;
 import importer.raw.CSVRawDataParser;
-import importer.BankParser;
+import importer.utils.Cell;
 import importer.utils.converters.Converter;
 import importer.utils.converters.DateConverter;
 import importer.utils.converters.FloatToBigDecimalConverter;
@@ -16,9 +15,7 @@ import repository.BankStatementsRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SantanderConfigurator extends AbstractBankConfigurator {
 

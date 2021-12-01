@@ -22,9 +22,9 @@ public class Importer {
     }
 
     /**
-     * @param bankType  - one of supported banks
+     * @param bankType     - one of supported banks
      * @param documentType - file extension
-     * @param URI - uri from where loader should load data
+     * @param URI          - uri from where loader should load data
      * @return Observable that emits single BankStatement, which have been imported and persisted in database
      */
     public Observable<BankStatement> importBankStatement(BankType bankType, DocumentType documentType, String URI) {

@@ -11,5 +11,6 @@ public interface RawDataParser<K, U> {
                List<ParserField<U, ?>> TransactionParserFields);
 
     Map<K, ?> getConvertedStatement();
+
     List<Map<U, ?>> getConvertedTransactions();
 }

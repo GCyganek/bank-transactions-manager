@@ -1,7 +1,6 @@
 import controller.TransactionsManagerAppController;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import session.HibernateSessionService;
 
 public class AppMain extends Application {
 

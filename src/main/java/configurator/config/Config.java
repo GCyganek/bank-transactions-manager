@@ -5,15 +5,14 @@ import importer.utils.ParserField;
 
 import java.util.List;
 
-public class Config <K, U> implements ParserConfig<K, U>{
+public class Config<K, U> implements ParserConfig<K, U> {
     private final StatementConfig<K> statementConfig;
     private final TransactionConfig<U> transactionConfig;
     private final RawDataParser<K, U> rawDataParser;
 
     public Config(RawDataParser<K, U> rawDataParser,
                   StatementConfig<K> statementConfig,
-                  TransactionConfig<U> transactionConfig)
-    {
+                  TransactionConfig<U> transactionConfig) {
         this.rawDataParser = rawDataParser;
         this.transactionConfig = transactionConfig;
         this.statementConfig = statementConfig;

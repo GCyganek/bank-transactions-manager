@@ -37,7 +37,8 @@ public class BankStatement {
 
     private Set<BankTransaction> bankTransactionSet = new HashSet<>();
 
-    protected BankStatement() { }
+    protected BankStatement() {
+    }
 
     public BankStatement(final String accountNumber, final LocalDate periodStartDate, final LocalDate periodEndDate,
                          final BigDecimal paidIn, final BigDecimal paidOut, final String accountOwner, final String currency) {

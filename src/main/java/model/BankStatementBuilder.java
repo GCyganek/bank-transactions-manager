@@ -20,8 +20,7 @@ public class BankStatementBuilder<K, U> {
 
     public BankStatementBuilder(BankStatementsRepository statementsRepository,
                                 StatementBuilderConfig<K> statementConfig,
-                                TransactionBuilderConfig<U> transactionConfig)
-    {
+                                TransactionBuilderConfig<U> transactionConfig) {
         this.statementsRepo = statementsRepository;
         this.statementConfig = statementConfig;
         this.transactionConfig = transactionConfig;
@@ -40,16 +39,16 @@ public class BankStatementBuilder<K, U> {
     }
 
     public BankStatementBuilder<K, U> buildBankStatement(Map<K, ?> convertedStatement) {
-        String accountNumber = (String)  convertedStatement.get(statementConfig.getAccountNumberKey());
-        LocalDate periodStartDate = (LocalDate)  convertedStatement.get(statementConfig.getPeriodStartDateKey());
-        LocalDate periodEndDate = (LocalDate)  convertedStatement.get(statementConfig.getPeriodEndDateKey());
-        BigDecimal paidIn = (BigDecimal)  convertedStatement.get(statementConfig.getPaidInKey());
-        BigDecimal paidOut = (BigDecimal)  convertedStatement.get(statementConfig.getPaidOutKey());
-        String accountOwner = (String)  convertedStatement.get(statementConfig.getAccountOwnerKey());
+        String accountNumber = (String) convertedStatement.get(statementConfig.getAccountNumberKey());
+        LocalDate periodStartDate = (LocalDate) convertedStatement.get(statementConfig.getPeriodStartDateKey());
+        LocalDate periodEndDate = (LocalDate) convertedStatement.get(statementConfig.getPeriodEndDateKey());
+        BigDecimal paidIn = (BigDecimal) convertedStatement.get(statementConfig.getPaidInKey());
+        BigDecimal paidOut = (BigDecimal) convertedStatement.get(statementConfig.getPaidOutKey());
+        String accountOwner = (String) convertedStatement.get(statementConfig.getAccountOwnerKey());
         String currency = (String) convertedStatement.get(statementConfig.getCurrencyKey());
 
         builtStatement = new BankStatement(accountNumber, periodStartDate, periodEndDate,
-                                        paidIn, paidOut, accountOwner, currency);
+                paidIn, paidOut, accountOwner, currency);
         return this;
     }
 

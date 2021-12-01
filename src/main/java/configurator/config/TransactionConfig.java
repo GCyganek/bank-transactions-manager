@@ -1,9 +1,10 @@
 package configurator.config;
 
-import importer.utils.converters.Converter;
 import importer.utils.ParserField;
+import importer.utils.converters.Converter;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class TransactionConfig<K> implements TransactionBuilderConfig<K> {
     private final List<ParserField<K, ?>> transactionFields;

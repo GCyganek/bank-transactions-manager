@@ -12,11 +12,10 @@ import model.DocumentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
-import java.io.*;
+
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ImporterTests {
     BankStatementsRepository repository = new BankStatementsRepository();
@@ -55,8 +54,8 @@ public class ImporterTests {
     }
 
     private static String getSantanderPath() throws URISyntaxException {
-       return Paths.get(
-               ClassLoader.getSystemResource("santander_test.csv").toURI()).toString();
+        return Paths.get(
+                ClassLoader.getSystemResource("santander_test.csv").toURI()).toString();
     }
 
     private static String getMBankPath() throws URISyntaxException {
@@ -67,7 +66,7 @@ public class ImporterTests {
     private static void printStatement(BankStatement statement) {
         System.out.println("==============================================");
         System.out.println(statement);
-        for (var t: statement.getBankTransactionSet())
+        for (var t : statement.getBankTransactionSet())
             System.out.println(t);
         System.out.println("==============================================");
     }
