@@ -6,6 +6,7 @@ import repository.dao.BankStatementDao;
 import session.HibernateSessionService;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,16 +42,23 @@ public class BankStatementsRepository {
 
     public List<BankStatement> getAllStatements() {
         HibernateSessionService.openSession();
-        List<BankStatement> bankStatements = HibernateSessionService.getSession()
-                .createQuery("SELECT bs FROM BankStatement bs", BankStatement.class).getResultList();
+        List<BankStatement> bankStatements = bankStatementDao.getAllStatements();
         HibernateSessionService.closeSession();
         return bankStatements;
     }
 
     public List<BankTransaction> getAllTransactions() {
         HibernateSessionService.openSession();
-        List<BankTransaction> bankTransactions = HibernateSessionService.getSession()
-                .createQuery("SELECT bt FROM BankTransaction bt", BankTransaction.class).getResultList();
+
+        List<BankStatement> bankStatements = getAllStatements();
+
+        List<BankTransaction> bankTransactions = new ArrayList<>();
+        for (BankStatement bankStatement : bankStatements) {
+            var bankStatementId = bankStatement.getId();
+            var bankStatementTransactions = bankStatementDao.getAllTransactionsFromStatement(bankStatementId);
+            bankTransactions.addAll(bankStatementTransactions);
+        }
+
         HibernateSessionService.closeSession();
         return bankTransactions;
     }

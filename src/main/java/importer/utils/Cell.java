@@ -1,13 +1,6 @@
 package importer.utils;
 
-public class Cell {
-    public final int row;
-    public final int col;
-
-    public Cell(int row, int col) {
-        this.row = row;
-        this.col = col;
-    }
+public record Cell(int row, int col) {
 
     @Override
     public boolean equals(Object other) {

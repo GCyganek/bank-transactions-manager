@@ -7,7 +7,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.BankStatement;
 import model.BankType;
 import model.DocumentType;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
 import repository.dao.PgBankStatementDao;
@@ -20,11 +20,12 @@ import java.nio.file.Paths;
 
 public class ImporterTests {
     BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
-//
-//    @AfterEach
-//    public void after() {
-//        repository.removeAllStatements();
-//    }
+
+    @AfterAll
+    public static void afterAll() {
+        BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
+        repository.removeAllStatements();
+    }
 
 
     private Importer getImporter() {

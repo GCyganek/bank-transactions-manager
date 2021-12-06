@@ -60,12 +60,7 @@ public class TransactionsManagerAppController {
             loader.setLocation(TransactionsManagerViewController.class.getResource("../view/AddStatementView.fxml"));
             BorderPane page = loader.load();
 
-            Scene scene = new Scene(page);
-            Stage stage = new Stage();
-            stage.setTitle("New transaction");
-            stage.setScene(scene);
-            stage.initOwner(primaryStage);
-            stage.initModality(Modality.WINDOW_MODAL);
+            Stage stage = buildStage("New transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
 
             AddStatementViewController addStatementViewController = loader.getController();
             addStatementViewController.setStage(stage);
@@ -93,12 +88,7 @@ public class TransactionsManagerAppController {
             loader.setLocation(TransactionsManagerViewController.class.getResource("../view/ImportErrorView.fxml"));
             BorderPane page = loader.load();
 
-            Scene scene = new Scene(page);
-            Stage stage = new Stage();
-            stage.setTitle("Error");
-            stage.setScene(scene);
-            stage.initOwner(primaryStage);
-            stage.initModality(Modality.WINDOW_MODAL);
+            Stage stage = buildStage("Error", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
 
             ErrorViewController errorViewController = loader.getController();
             errorViewController.setStage(stage);
@@ -109,5 +99,14 @@ public class TransactionsManagerAppController {
             System.out.println("Can't load new window");
             e.printStackTrace();
         }
+    }
+
+    private Stage buildStage(String title, Scene scene, Stage initOwner, Modality initModality) {
+        Stage stage = new Stage();
+        stage.setTitle(title);
+        stage.setScene(scene);
+        stage.initOwner(initOwner);
+        stage.initModality(initModality);
+        return stage;
     }
 }

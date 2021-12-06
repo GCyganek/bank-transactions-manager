@@ -4,6 +4,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import model.util.ModelUtil;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -190,22 +191,12 @@ public class BankStatement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BankStatement that = (BankStatement) o;
-        return propertyEquals(accountNumber, that.accountNumber) &&
-                propertyEquals(periodEndDate, that.periodEndDate) &&
-                propertyEquals(periodStartDate, that.periodStartDate) &&
-                propertyEquals(paidOut, that.paidOut) &&
-                propertyEquals(paidIn, that.paidIn) &&
-                propertyEquals(accountOwner, that.accountOwner);
-    }
-
-    private boolean propertyEquals(StringProperty property1, StringProperty property2) {
-        if (property1.get() == null) return false;
-        return property1.get().equals(property2.get());
-    }
-
-    private <T> boolean propertyEquals(ObjectProperty<T> property1, ObjectProperty<T> property2) {
-        if (property1.get() == null) return false;
-        return property1.get().equals(property2.get());
+        return ModelUtil.propertyEquals(accountNumber, that.accountNumber) &&
+                ModelUtil.propertyEquals(periodEndDate, that.periodEndDate) &&
+                ModelUtil.propertyEquals(periodStartDate, that.periodStartDate) &&
+                ModelUtil.propertyEquals(paidOut, that.paidOut) &&
+                ModelUtil.propertyEquals(paidIn, that.paidIn) &&
+                ModelUtil.propertyEquals(accountOwner, that.accountOwner);
     }
 
     @Override

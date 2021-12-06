@@ -5,6 +5,7 @@ import model.BankTransaction;
 import session.HibernateSessionService;
 
 import javax.persistence.PersistenceException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,5 +54,19 @@ public class PgBankStatementDao extends AbstractDao<BankStatement> implements Ba
         } catch (PersistenceException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<BankStatement> getAllStatements() {
+        return HibernateSessionService.getSession()
+                .createQuery("SELECT bs FROM BankStatement bs", BankStatement.class).getResultList();
+    }
+
+    @Override
+    public List<BankTransaction> getAllTransactionsFromStatement(int id) {
+        return HibernateSessionService.getSession()
+                .createQuery("SELECT bt FROM BankTransaction bt WHERE bt.bankStatement.id = :id", BankTransaction.class)
+                .setParameter("id", id)
+                .getResultList();
     }
 }

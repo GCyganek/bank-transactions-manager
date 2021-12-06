@@ -4,6 +4,7 @@ import model.BankTransaction;
 import session.HibernateSessionService;
 
 import javax.persistence.PersistenceException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,5 +33,11 @@ public class PgBankTransactionDao extends AbstractDao<BankTransaction> implement
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<BankTransaction> getAll() {
+        return HibernateSessionService.getSession()
+                .createQuery("SELECT bt FROM BankTransaction bt", BankTransaction.class).getResultList();
     }
 }

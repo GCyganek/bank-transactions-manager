@@ -22,14 +22,6 @@ public class RepositoryTests {
             new BankTransaction("Przelew 2", new BigDecimal("23.23"),
                     LocalDate.of(2021, 11, 23), new BigDecimal("2332.00"));
 
-    private final BankTransaction bankTransactionExample3 =
-            new BankTransaction("Przelew 3", new BigDecimal("2512.23"),
-                    LocalDate.of(2021, 11, 22), new BigDecimal("2990.00"));
-
-    private final BankTransaction bankTransactionExample4 =
-            new BankTransaction("Przelew 4", new BigDecimal("23.23"),
-                    LocalDate.of(2021, 11, 23), new BigDecimal("2332.00"));
-
     private final BankStatement bankStatementExample1 =
             new BankStatement("1234 1234 1234 1234", LocalDate.of(2021, 11, 21),
                     LocalDate.of(2021, 11, 25), new BigDecimal("250.22"),

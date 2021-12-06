@@ -4,6 +4,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import model.util.ModelUtil;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -132,20 +133,10 @@ public class BankTransaction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BankTransaction that = (BankTransaction) o;
-        return propertyEquals(description, that.description)
-                && propertyEquals(amount, that.amount)
-                && propertyEquals(date, that.date)
-                && propertyEquals(balance, that.balance);
-    }
-
-    private boolean propertyEquals(StringProperty property1, StringProperty property2) {
-        if (property1.get() == null) return false;
-        return property1.get().equals(property2.get());
-    }
-
-    private <T> boolean propertyEquals(ObjectProperty<T> property1, ObjectProperty<T> property2) {
-        if (property1.get() == null) return false;
-        return property1.get().equals(property2.get());
+        return ModelUtil.propertyEquals(description, that.description)
+                && ModelUtil.propertyEquals(amount, that.amount)
+                && ModelUtil.propertyEquals(date, that.date)
+                && ModelUtil.propertyEquals(balance, that.balance);
     }
 
     @Override

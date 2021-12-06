@@ -3,6 +3,7 @@ package repository.dao;
 import model.BankStatement;
 import model.BankTransaction;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BankStatementDao {
@@ -13,4 +14,8 @@ public interface BankStatementDao {
     void addTransaction(BankStatement bankStatement, BankTransaction bankTransaction);
 
     void remove(BankStatement bankStatement);
+
+    List<BankStatement> getAllStatements();
+
+    List<BankTransaction> getAllTransactionsFromStatement(int id);
 }

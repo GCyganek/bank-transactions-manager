@@ -104,7 +104,7 @@ public class CSVRawDataParser implements RawDataParser<Cell, Integer> {
 
         for (var field : parserFields) {
             Cell cell = field.getKey();
-            field.setParsedValue(lines.get(cell.row - firstStatementLine)[cell.col - 1]);
+            field.setParsedValue(lines.get(cell.row() - firstStatementLine)[cell.col() - 1]);
             result.put(cell, field.convert());
         }
 
