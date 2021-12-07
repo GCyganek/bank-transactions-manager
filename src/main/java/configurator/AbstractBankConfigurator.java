@@ -1,8 +1,12 @@
 package configurator;
 
-import configurator.config.Config;
+import configurator.config.util.ConfigWrapper;
+import configurator.config.StatementBuilderConfig;
+import configurator.config.TransactionBuilderConfig;
 import importer.BankParser;
+import importer.raw.RawDataParser;
 import model.BankStatementBuilder;
+import model.BankTransactionBuilder;
 import model.BankType;
 import model.DocumentType;
 import java.util.HashSet;
@@ -18,20 +22,26 @@ public abstract class AbstractBankConfigurator implements BankConfigurator {
 
     @Override
     public BankParser<?, ?> getConfiguredParser(DocumentType documentType) {
-        if (!supportedDocumentTypes.contains(documentType))
-            throw new UnsupportedOperationException(
-                    String.format("%s is not supported for %s\n", documentType, bankType));
-
         return configureParser(getConfig(documentType));
     }
 
-    protected abstract Config<?, ?> getConfig(DocumentType documentType);
+    protected UnsupportedOperationException getInvalidDocumentTypeError(DocumentType documentType) {
+        return new UnsupportedOperationException(
+                String.format("%s is not supported for %s\n", documentType, bankType));
+    }
 
-    private <K, U> BankParser<K, U> configureParser(Config<K, U> config) {
-        BankStatementBuilder<K, U> bankStatementBuilder =
-                new BankStatementBuilder<>(config.getStatementConfig(),
-                        config.getTransactionConfig());
+    protected abstract ConfigWrapper<?, ?> getConfig(DocumentType documentType);
 
-        return new BankParser<>(config, bankStatementBuilder);
+    private <K, U> BankParser<K, U> configureParser(ConfigWrapper<K, U> config) {
+        StatementBuilderConfig<K> statementBuilderConfig = config.statementBuilderConfig();
+        TransactionBuilderConfig<U> transactionBuilderConfig = config.transactionBuilderConfig();
+        RawDataParser<K, U> rawDataParser = config.rawDataParser();
+
+        BankStatementBuilder<K> bankStatementBuilder = new BankStatementBuilder<>(config.statementBuilderConfig());
+
+        BankTransactionBuilder<U> bankTransactionBuilder = new BankTransactionBuilder<>(config.transactionBuilderConfig());
+
+        return new BankParser<>(rawDataParser, statementBuilderConfig.getFields(), transactionBuilderConfig.getFields(),
+                bankStatementBuilder, bankTransactionBuilder);
     }
 }

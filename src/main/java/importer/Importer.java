@@ -44,7 +44,7 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
         return parser.parse(dataReader)
                 .doOnNext(bankTransaction -> importedStatement = bankTransaction.getBankStatement())
-                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()));
+                .doOnComplete(() -> repository.addBankStatement(importedStatement));
 
     }
 
@@ -52,10 +52,4 @@ public class Importer {
         this.loader = loader;
     }
 
-    /**
-     * @return Optional of created BankStatement, value is guaranteed to be present after first transaction have been emitted.
-     */
-    public Optional<BankStatement> getImportedStatement() {
-        return Optional.ofNullable(importedStatement);
-    }
 }

@@ -1,8 +1,8 @@
 package configurator;
 
-import configurator.config.Config;
-import configurator.config.StatementConfig;
-import configurator.config.TransactionConfig;
+import configurator.config.util.ConfigWrapper;
+import configurator.config.StatementBuilderConfig;
+import configurator.config.TransactionBuilderConfig;
 import importer.raw.CSVRawDataParser;
 import importer.utils.Cell;
 import importer.utils.converters.Converter;
@@ -22,9 +22,9 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         this.supportedDocumentTypes.addAll(List.of(DocumentType.CSV));
     }
 
-    public Config<Cell, Integer> getCSVConfig() {
-        StatementConfig<Cell> statementConfig = new StatementConfig<>();
-        TransactionConfig<Integer> transactionConfig = new TransactionConfig<>();
+    public ConfigWrapper<Cell, Integer> getCSVConfig() {
+        StatementBuilderConfig<Cell> statementBuilderConfig = new StatementBuilderConfig<>();
+        TransactionBuilderConfig<Integer> transactionBuilderConfig = new TransactionBuilderConfig<>();
 
         Converter<String> identity = new IdentityConverter();
         Converter<LocalDate> dateConverter = new DateConverter("dd.MM.yyyy");
@@ -37,29 +37,29 @@ public class MBankConfigurator extends AbstractBankConfigurator{
                         .replaceAll(regex, "$1")
                         .replaceAll(",", "."));
 
-        statementConfig.setAccountOwnerKey(new Cell(10, 1), identity);
-        statementConfig.setPeriodStartDateKey(new Cell(15, 1), dateConverter);
-        statementConfig.setPeriodEndDateKey(new Cell(15, 2), dateConverter);
-        statementConfig.setAccountNumberKey(new Cell(19, 1), identity);
-        statementConfig.setPaidInKey(new Cell(24, 2), floatToBigDecimal);
-        statementConfig.setPaidOutKey(new Cell(24, 3), floatToBigDecimal);
-        statementConfig.setCurrencyKey(new Cell(24, 1), identity);
+        statementBuilderConfig.setAccountOwnerKey(new Cell(10, 1), identity);
+        statementBuilderConfig.setPeriodStartDateKey(new Cell(15, 1), dateConverter);
+        statementBuilderConfig.setPeriodEndDateKey(new Cell(15, 2), dateConverter);
+        statementBuilderConfig.setAccountNumberKey(new Cell(19, 1), identity);
+        statementBuilderConfig.setPaidInKey(new Cell(24, 2), floatToBigDecimal);
+        statementBuilderConfig.setPaidOutKey(new Cell(24, 3), floatToBigDecimal);
+        statementBuilderConfig.setCurrencyKey(new Cell(24, 1), identity);
 
-        transactionConfig.setDateKey(1, dateConverter);
-        transactionConfig.setDescriptionKey(2, identity);
-        transactionConfig.setAmountKey(5, stripCurrencyConverter);
-        transactionConfig.setBalanceKey(6, stripCurrencyConverter);
+        transactionBuilderConfig.setDateKey(1, dateConverter);
+        transactionBuilderConfig.setDescriptionKey(2, identity);
+        transactionBuilderConfig.setAmountKey(5, stripCurrencyConverter);
+        transactionBuilderConfig.setBalanceKey(6, stripCurrencyConverter);
 
         CSVRawDataParser csvRawDataParser = new CSVRawDataParser(';', 10, 24, 27);
 
-        return new Config<>(csvRawDataParser, statementConfig, transactionConfig);
+        return new ConfigWrapper<>(csvRawDataParser, statementBuilderConfig, transactionBuilderConfig);
     }
 
     @Override
-    protected Config<?, ?> getConfig(DocumentType documentType) {
+    protected ConfigWrapper<?, ?> getConfig(DocumentType documentType) {
         return switch (documentType) {
             case CSV -> getCSVConfig();
-            default -> null; // no compiler error, should never be executed
+            default -> throw getInvalidDocumentTypeError(documentType);
         };
     }
 }
