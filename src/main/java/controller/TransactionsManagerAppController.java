@@ -81,7 +81,6 @@ public class TransactionsManagerAppController {
         return Observable.empty();
     }
 
-    // TODO refactor it
     public void showErrorWindow(String errorMsg, String reason) {
         try {
             FXMLLoader loader = new FXMLLoader();

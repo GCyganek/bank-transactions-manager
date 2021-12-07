@@ -1,3 +1,6 @@
+import IOC.TestingModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import configurator.BankConfiguratorFactory;
 import importer.Importer;
 import importer.loader.Loader;
@@ -10,6 +13,8 @@ import model.DocumentType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
+import repository.dao.BankStatementDao;
+import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
 
 import java.io.IOException;
@@ -19,11 +24,14 @@ import java.nio.file.Paths;
 
 
 public class ImporterTests {
-    BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
+
+    private static final Injector injector = Guice.createInjector(new TestingModule());
+
+    private final BankStatementsRepository repository = injector.getInstance(BankStatementsRepository.class);
 
     @AfterAll
     public static void afterAll() {
-        BankStatementsRepository repository = new BankStatementsRepository(new PgBankStatementDao());
+        BankStatementsRepository repository = injector.getInstance(BankStatementsRepository.class);
         repository.removeAllStatements();
     }
 

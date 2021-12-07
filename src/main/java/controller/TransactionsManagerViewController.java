@@ -31,8 +31,6 @@ public class TransactionsManagerViewController {
         this.bankStatementsRepository = bankStatementsRepository;
     }
 
-
-
     @FXML
     public TableView<BankTransaction> transactionsTable;
 

@@ -3,6 +3,7 @@ package repository;
 import model.BankStatement;
 import model.BankTransaction;
 import repository.dao.BankStatementDao;
+import repository.dao.BankTransactionDao;
 import session.HibernateSessionService;
 
 import javax.inject.Inject;
@@ -14,10 +15,12 @@ import java.util.Optional;
 public class BankStatementsRepository {
 
     private final BankStatementDao bankStatementDao;
+    private final BankTransactionDao bankTransactionDao;
 
     @Inject
-    public BankStatementsRepository(BankStatementDao bankStatementDao) {
+    public BankStatementsRepository(BankStatementDao bankStatementDao, BankTransactionDao bankTransactionDao) {
         this.bankStatementDao = bankStatementDao;
+        this.bankTransactionDao = bankTransactionDao;
     }
 
     public BankStatement addStatementWithTransactions(BankStatement bankStatement, Collection<BankTransaction> bankTransactions) {
@@ -49,16 +52,7 @@ public class BankStatementsRepository {
 
     public List<BankTransaction> getAllTransactions() {
         HibernateSessionService.openSession();
-
-        List<BankStatement> bankStatements = getAllStatements();
-
-        List<BankTransaction> bankTransactions = new ArrayList<>();
-        for (BankStatement bankStatement : bankStatements) {
-            var bankStatementId = bankStatement.getId();
-            var bankStatementTransactions = bankStatementDao.getAllTransactionsFromStatement(bankStatementId);
-            bankTransactions.addAll(bankStatementTransactions);
-        }
-
+        List<BankTransaction> bankTransactions = bankTransactionDao.getAll();
         HibernateSessionService.closeSession();
         return bankTransactions;
     }

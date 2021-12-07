@@ -1,3 +1,6 @@
+import IOC.TestingModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import model.BankStatement;
 import model.BankTransaction;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +15,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RepositoryTests {
-    private final BankStatementsRepository bankStatementsRepository = new BankStatementsRepository(new PgBankStatementDao());
+
+    private static final Injector injector = Guice.createInjector(new TestingModule());
+
+    private final BankStatementsRepository bankStatementsRepository = injector.getInstance(BankStatementsRepository.class);
 
     private final BankTransaction bankTransactionExample1 =
             new BankTransaction("Przelew 1", new BigDecimal("2512.23"),

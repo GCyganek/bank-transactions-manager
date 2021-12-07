@@ -6,7 +6,6 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
-import repository.BankStatementsRepository;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
