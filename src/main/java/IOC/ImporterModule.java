@@ -13,6 +13,7 @@ import repository.dao.PgBankStatementDao;
 import repository.dao.PgBankTransactionDao;
 
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 public class ImporterModule extends AbstractModule {
 
@@ -23,6 +24,7 @@ public class ImporterModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     BankConfiguratorFactory provideBankConfiguratorFactory() {
         return new BankConfiguratorFactory();
     }
@@ -33,11 +35,13 @@ public class ImporterModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     BankStatementDao provideBankStatementDao() {
         return new PgBankStatementDao();
     }
 
     @Provides
+    @Singleton
     BankTransactionDao provideBankTransactionDao() {
         return new PgBankTransactionDao();
     }

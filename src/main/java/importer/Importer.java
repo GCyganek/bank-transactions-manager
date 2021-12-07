@@ -48,16 +48,11 @@ public class Importer {
                 .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()))
                 .doFinally(dataReader::close);
 
+
     }
 
     public void setLoader(Loader loader) {
         this.loader = loader;
     }
 
-    /**
-     * @return Optional of created BankStatement, value is guaranteed to be present after first transaction have been emitted.
-     */
-    public Optional<BankStatement> getImportedStatement() {
-        return Optional.ofNullable(importedStatement);
-    }
 }
