@@ -25,6 +25,10 @@ public abstract class AbstractBankConfigurator implements BankConfigurator {
         return configureParser(getConfig(documentType));
     }
 
+    public HashSet<DocumentType> getSupportedDocumentTypes() {
+        return supportedDocumentTypes;
+    }
+
     protected UnsupportedOperationException getInvalidDocumentTypeError(DocumentType documentType) {
         return new UnsupportedOperationException(
                 String.format("%s is not supported for %s\n", documentType, bankType));

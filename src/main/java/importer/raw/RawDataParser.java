@@ -13,7 +13,6 @@ public interface RawDataParser<K, U> {
     /**
      * Field's key has to be hashable and should allow parser to map underlying data to ParserField.
      * Field's converter has to allow conversion from string to whatever type underlying data is.
-     * Reader is closed before observable terminates.
      *
      * @return Observable of map containing parsed transactions, i.e.
      *         key of given parserField will map to value obtained from converter provided in that field.

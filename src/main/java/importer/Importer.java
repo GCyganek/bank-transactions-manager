@@ -4,7 +4,6 @@ import configurator.BankConfigurator;
 import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.functions.Action;
 import model.BankStatement;
 import model.BankTransaction;
 import model.BankType;
@@ -14,7 +13,6 @@ import repository.BankStatementsRepository;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Optional;
 
 public class Importer {
     private final BankConfiguratorFactory configFactory;
