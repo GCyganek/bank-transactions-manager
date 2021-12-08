@@ -6,7 +6,6 @@ import model.BankTransaction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
-import repository.dao.PgBankStatementDao;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

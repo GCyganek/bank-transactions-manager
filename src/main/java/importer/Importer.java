@@ -4,7 +4,6 @@ import configurator.BankConfigurator;
 import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
-import model.BankStatement;
 import model.BankTransaction;
 import model.BankType;
 import model.DocumentType;
@@ -18,14 +17,12 @@ public class Importer {
     private final BankConfiguratorFactory configFactory;
     private final BankStatementsRepository repository;
     private Loader loader;
-    private BankStatement importedStatement;
 
     @Inject
     public Importer(BankConfiguratorFactory configFactory, BankStatementsRepository repository, Loader loader) {
         this.configFactory = configFactory;
         this.loader = loader;
         this.repository = repository;
-        this.importedStatement = null;
     }
 
     /**
@@ -41,11 +38,10 @@ public class Importer {
         BankConfigurator configurator = configFactory.createBankConfigurator(bankType);
         Reader dataReader = loader.load(URI);
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
-        return parser.parse(dataReader)
-                .doOnNext(bankTransaction -> importedStatement = bankTransaction.getBankStatement())
-                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement().get()))
-                .doFinally(dataReader::close);
 
+        return parser.parse(dataReader)
+                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement()))
+                .doFinally(dataReader::close);
 
     }
 

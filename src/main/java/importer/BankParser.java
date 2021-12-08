@@ -1,5 +1,6 @@
 package importer;
 
+import importer.exceptions.ParserException;
 import importer.raw.RawDataParser;
 import importer.utils.ParserField;
 import io.reactivex.rxjava3.core.Observable;
@@ -40,23 +41,17 @@ public class BankParser<K, U> {
     public Observable<BankTransaction> parse(Reader reader){
         return rawDataParser
                 .parse(reader, statementFields, transactionFields)
-                .doOnNext(parsedTransaction -> {
-                    if (builtStatement == null) {
-                        builtStatement = statementBuilder.buildBankStatement(rawDataParser.getConvertedStatement().get());
-                    }})
-                .flatMap(parsedTransaction ->
-                        Observable.just(transactionBuilder.buildBankTransaction(builtStatement, parsedTransaction)))
-                .doOnComplete(() -> {
-                    if (builtStatement == null) {
-                        builtStatement = statementBuilder.buildBankStatement(rawDataParser.getConvertedStatement().get());
-                    }
-                });
+                .map(parsedTransaction ->
+                        transactionBuilder.buildBankTransaction(getBuiltStatement(), parsedTransaction));
     }
 
-    /**
-     * @return Optional of created BankStatement,  value is guaranteed to be present after first transaction have been emitted.
-     */
-    public Optional<BankStatement> getBuiltStatement() {
-        return Optional.ofNullable(builtStatement);
+    public BankStatement getBuiltStatement() throws ParserException {
+        if (this.builtStatement == null) {
+            this.builtStatement = statementBuilder.buildBankStatement(
+                    rawDataParser.getConvertedStatement().orElseThrow(() ->
+                            new ParserException("Transaction was emitted before statement")));
+        }
+
+        return builtStatement;
     }
 }

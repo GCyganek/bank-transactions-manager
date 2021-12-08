@@ -24,7 +24,7 @@ public interface RawDataParser<K, U> {
 
 
     /**
-     * @return Optional of parsedStatement, value is guaranteed to be present after first transaction have been emitted.
+     * @return Optional of parsedStatement, value is guaranteed to be present after first transaction had been emitted.
      */
     Optional<Map<K, ?>> getConvertedStatement();
 }
