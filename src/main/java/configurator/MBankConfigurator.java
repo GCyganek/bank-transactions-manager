@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class MBankConfigurator extends AbstractBankConfigurator{
-    private static final String dateFormat = "dd.MM.yyyy";
-    private static final String stripCurrencyRegex = "(-?\\d+(\\.\\d+)?)(\\s*\\D+)?";
+    private static final String DATE_FORMAT = "dd.MM.yyyy";
+    private static final String STRIP_CURRENCY_REGEX = "(-?\\d+(\\.\\d+)?)(\\s*\\D+)?";
 
     private final Pattern stripCurrencyPattern;
 
     public MBankConfigurator() {
         super(BankType.MBANK);
         this.supportedDocumentTypes.addAll(List.of(DocumentType.CSV));
-        stripCurrencyPattern = Pattern.compile(stripCurrencyRegex);
+        stripCurrencyPattern = Pattern.compile(STRIP_CURRENCY_REGEX);
     }
 
     public ConfigWrapper<Cell, Integer> getCSVConfig() {
@@ -41,7 +41,7 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         StatementBuilderConfig<Cell> statementBuilderConfig = new StatementBuilderConfig<>();
 
         Converter<String> identity = new IdentityConverter();
-        Converter<LocalDate> dateConverter = new DateConverter(dateFormat);
+        Converter<LocalDate> dateConverter = new DateConverter(DATE_FORMAT);
         Converter<BigDecimal> floatToBigDecimal = new FloatToBigDecimalConverter();
 
         statementBuilderConfig.setAccountOwnerKey(new Cell(10, 1), identity);
@@ -59,7 +59,7 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         TransactionBuilderConfig<Integer> transactionBuilderConfig = new TransactionBuilderConfig<>();
 
         Converter<String> identity = new IdentityConverter();
-        Converter<LocalDate> dateConverter = new DateConverter(dateFormat);
+        Converter<LocalDate> dateConverter = new DateConverter(DATE_FORMAT);
 
         // "-3 123,464 PLN" -> "-3123.464"
         Converter<BigDecimal> stripCurrencyConverter = x -> {
@@ -70,7 +70,6 @@ public class MBankConfigurator extends AbstractBankConfigurator{
         transactionBuilderConfig.setDateKey(1, dateConverter);
         transactionBuilderConfig.setDescriptionKey(2, identity);
         transactionBuilderConfig.setAmountKey(5, stripCurrencyConverter);
-        transactionBuilderConfig.setBalanceKey(6, stripCurrencyConverter);
 
         return transactionBuilderConfig;
     }

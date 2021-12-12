@@ -17,9 +17,8 @@ public class BankTransactionBuilder<K> {
         String description = (String) convertedTransaction.get(config.getDescriptionKey());
         BigDecimal amount = (BigDecimal) convertedTransaction.get(config.getAmountKey());
         LocalDate date = (LocalDate) convertedTransaction.get(config.getDateKey());
-        BigDecimal balance = (BigDecimal) convertedTransaction.get(config.getBalanceKey());
 
-        BankTransaction bankTransaction = new BankTransaction(description, amount, date, balance);
+        BankTransaction bankTransaction = new BankTransaction(description, amount, date);
         bankStatement.addBankTransaction(bankTransaction);
 
         return bankTransaction;

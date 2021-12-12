@@ -26,18 +26,18 @@ public class BankTransaction {
 
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
 
-    private final ObjectProperty<BigDecimal> balance = new SimpleObjectProperty<>();
+    private final ObjectProperty<TransactionCategory> category = new SimpleObjectProperty<>();
 
     private BankStatement bankStatement;
 
     protected BankTransaction() {
     }
 
-    public BankTransaction(final String description, final BigDecimal amount, final LocalDate date, final BigDecimal balance) {
+    public BankTransaction(final String description, final BigDecimal amount, final LocalDate date) {
         this.description.set(description);
         this.amount.set(amount);
         this.date.set(date);
-        this.balance.set(balance);
+        this.category.set(TransactionCategory.UNCATEGORIZED);
     }
 
     @Id
@@ -62,9 +62,9 @@ public class BankTransaction {
         return date.get();
     }
 
-    @Column(name = Columns.BALANCE, nullable = false)
-    public BigDecimal getBalance() {
-        return balance.get();
+    @Column(name = Columns.CATEGORY, nullable = false)
+    public TransactionCategory getCategory() {
+        return category.get();
     }
 
     @ManyToOne
@@ -85,8 +85,8 @@ public class BankTransaction {
         return date;
     }
 
-    public ObjectProperty<BigDecimal> balanceProperty() {
-        return balance;
+    public ObjectProperty<TransactionCategory> categoryProperty() {
+        return category;
     }
 
     public void setId(int id) {
@@ -105,8 +105,8 @@ public class BankTransaction {
         this.date.set(date);
     }
 
-    public void setBalance(BigDecimal balance) {
-        this.balance.set(balance);
+    public void setCategory(TransactionCategory category) {
+        this.category.set(category);
     }
 
     public void setBankStatement(BankStatement bankStatement) {
@@ -123,7 +123,9 @@ public class BankTransaction {
 
         public static final String DATE = "date";
 
-        public static final String BALANCE = "balance";
+        public static final String CATEGORY = "category";
+
+        public static final String HASHCODE = "hashcode";
 
         public static final String STATEMENT_ID = "statement_id";
     }
@@ -136,17 +138,17 @@ public class BankTransaction {
         return ModelUtil.propertyEquals(description, that.description)
                 && ModelUtil.propertyEquals(amount, that.amount)
                 && ModelUtil.propertyEquals(date, that.date)
-                && ModelUtil.propertyEquals(balance, that.balance);
+                && ModelUtil.propertyEquals(category, that.category);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(description.get(), amount.get(), date.get(), balance.get());
+        return Objects.hash(description.get(), amount.get(), date.get(), category.get());
     }
 
     @Override
     public String toString() {
         return String.format("Transaction: [(%s), (%s), (%s), (%s)]",
-                description.get(), amount.get(), date.get(), balance.get());
+                description.get(), amount.get(), date.get(), category.get());
     }
 }

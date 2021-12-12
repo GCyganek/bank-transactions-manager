@@ -17,8 +17,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class SantanderConfigurator extends AbstractBankConfigurator {
-    private static final String statementBeginDateFormat = "yyyy-MM-dd";
-    private static final String transactionDateFormat = "dd-MM-yyyy";
+    private static final String STATEMENT_BEGIN_DATE_FORMAT = "yyyy-MM-dd";
+    private static final String TRANSACTION_DATE_FORMAT = "dd-MM-yyyy";
 
 
     public SantanderConfigurator() {
@@ -39,13 +39,12 @@ public class SantanderConfigurator extends AbstractBankConfigurator {
         TransactionBuilderConfig<Integer> transactionBuilderConfig = new TransactionBuilderConfig<>();
 
         Converter<String> identity = new IdentityConverter();
-        Converter<LocalDate> dateConverter = new DateConverter(transactionDateFormat);
+        Converter<LocalDate> dateConverter = new DateConverter(TRANSACTION_DATE_FORMAT);
         Converter<BigDecimal> FloatToBigDecimal = new FloatToBigDecimalConverter();
 
         transactionBuilderConfig.setDateKey(1, dateConverter);
         transactionBuilderConfig.setDescriptionKey(3, identity);
         transactionBuilderConfig.setAmountKey(6, FloatToBigDecimal);
-        transactionBuilderConfig.setBalanceKey(7, FloatToBigDecimal);
 
         return transactionBuilderConfig;
     }
@@ -54,10 +53,10 @@ public class SantanderConfigurator extends AbstractBankConfigurator {
         StatementBuilderConfig<Cell> statementBuilderConfig = new StatementBuilderConfig<>();
 
         Converter<String> identity = new IdentityConverter();
-        Converter<LocalDate> dateConverter = new DateConverter(transactionDateFormat);
+        Converter<LocalDate> dateConverter = new DateConverter(TRANSACTION_DATE_FORMAT);
         Converter<BigDecimal> FloatToBigDecimal = new FloatToBigDecimalConverter();
 
-        statementBuilderConfig.setPeriodEndDateKey(new Cell(1, 1), new DateConverter(statementBeginDateFormat));
+        statementBuilderConfig.setPeriodEndDateKey(new Cell(1, 1), new DateConverter(STATEMENT_BEGIN_DATE_FORMAT));
         statementBuilderConfig.setPeriodStartDateKey(new Cell(1, 2), dateConverter);
         statementBuilderConfig.setAccountNumberKey(new Cell(1, 3), identity);
         statementBuilderConfig.setAccountOwnerKey(new Cell(1, 4), identity);
