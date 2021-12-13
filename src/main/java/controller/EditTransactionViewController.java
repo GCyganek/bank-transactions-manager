@@ -10,7 +10,9 @@ import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
 import model.BankTransaction;
 import model.TransactionCategory;
+import repository.BankStatementsRepository;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -23,7 +25,16 @@ public class EditTransactionViewController {
 
     private Stage stage;
 
+    private BigDecimal finalAmount;
+
+    private final BankStatementsRepository bankStatementsRepository;
+
     private BankTransaction bankTransaction;
+
+    @Inject
+    public EditTransactionViewController(BankStatementsRepository bankStatementsRepository) {
+        this.bankStatementsRepository = bankStatementsRepository;
+    }
 
     @FXML
     public TextField amountTextField;
@@ -42,6 +53,8 @@ public class EditTransactionViewController {
 
     @FXML
     public Button cancelButton;
+
+    public BigDecimal getFinalAmount() { return finalAmount; }
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -65,20 +78,32 @@ public class EditTransactionViewController {
     }
 
     public void handleOkAction(ActionEvent actionEvent) {
-        updateBankTransaction();
+        try {
+            updateBankTransaction();
+        } catch (ParseException e) {
+            System.out.println("Error while parsing string to BigDecimal: " + e.getMessage());
+        }
+
+        finalAmount = bankTransaction.getAmount();
         stage.close();
     }
 
     public void handleCancelAction(ActionEvent actionEvent) {
+        finalAmount = bankTransaction.getAmount();
         stage.close();
     }
 
-    private void updateBankTransaction() {
+    private void updateBankTransaction() throws ParseException {
+        // TODO: check if date is in connected BankStatement's range
+        bankTransaction.setDate(stringToDate());
+        bankTransaction.setDescription(descriptionTextField.getText());
+        bankTransaction.setAmount(stringToBigDecimal());
+        bankTransaction.setCategory(categoryComboBox.getValue());
 
+        bankStatementsRepository.updateTransaction(bankTransaction);
     }
 
     private String dateToString() {
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
         return converter.toString(bankTransaction.getDate());
@@ -88,5 +113,11 @@ public class EditTransactionViewController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
         return converter.fromString(dateTextField.getText());
+    }
+
+    private BigDecimal stringToBigDecimal() throws ParseException {
+        DecimalFormat decimalFormatter = new DecimalFormat();
+        decimalFormatter.setParseBigDecimal(true);
+        return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
     }
 }

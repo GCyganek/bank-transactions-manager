@@ -3,11 +3,8 @@ package controller;
 import com.google.inject.Injector;
 import importer.Importer;
 import io.reactivex.rxjava3.core.Observable;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
@@ -18,11 +15,14 @@ import model.DocumentType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
     private final Importer importer;
+    private Injector injector;
 
     @Inject
     public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage, Importer importer) {
@@ -32,6 +32,8 @@ public class TransactionsManagerAppController {
 
     public void initRootLayout(Injector injector) {
         try {
+            this.injector = injector;
+
             this.primaryStage.setTitle("Bank Transactions Manager");
 
             FXMLLoader fxmlLoader = new FXMLLoader();
@@ -100,10 +102,13 @@ public class TransactionsManagerAppController {
         }
     }
 
-    public void showEditTransactionWindow(BankTransaction bankTransaction) {
+    public Optional<BigDecimal> showEditTransactionWindow(BankTransaction bankTransaction) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(TransactionsManagerAppController.class.getResource("../view/EditTransactionView.fxml"));
+
+            fxmlLoader.setControllerFactory(injector::getInstance);
+
             AnchorPane page = fxmlLoader.load();
 
             Stage stage = buildStage("Edit transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
@@ -114,9 +119,13 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
 
+            return Optional.of(editTransactionViewController.getFinalAmount());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return Optional.empty();
     }
 
     private Stage buildStage(String title, Scene scene, Stage initOwner, Modality initModality) {

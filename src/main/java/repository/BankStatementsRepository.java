@@ -67,4 +67,16 @@ public class BankStatementsRepository {
         bankStatements.forEach(this::removeStatement);
     }
 
+    public void updateTransaction(BankTransaction bankTransaction) {
+        HibernateSessionService.openSession();
+        bankTransactionDao.updateTransaction(bankTransaction);
+        HibernateSessionService.closeSession();
+    }
+
+    public void removeTransaction(BankTransaction bankTransaction) {
+        HibernateSessionService.openSession();
+        bankTransactionDao.remove(bankTransaction);
+        HibernateSessionService.closeSession();
+    }
+
 }

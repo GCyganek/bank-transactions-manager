@@ -29,6 +29,7 @@ public class TransactionsManagerViewController {
     private TransactionsManagerAppController appController;
 
     private BigDecimal balance = BigDecimal.ZERO;
+
     @Inject
     public TransactionsManagerViewController(BankStatementsRepository bankStatementsRepository) {
         this.bankStatementsRepository = bankStatementsRepository;
@@ -79,10 +80,7 @@ public class TransactionsManagerViewController {
     public void fetchDataFromDatabase() {
         bankTransactions.addAll(bankStatementsRepository.getAllTransactions());
         transactionsTable.setItems(bankTransactions);
-        bankTransactions.forEach(bankTransaction -> {
-            System.out.println(bankTransaction.hashCode());
-            addToBalance(bankTransaction.getAmount());
-        });
+        bankTransactions.forEach(bankTransaction -> addToBalance(bankTransaction.getAmount()));
         updateBalanceTextView();
     }
 
@@ -92,8 +90,16 @@ public class TransactionsManagerViewController {
 
     public void handleEditBankTransaction(ActionEvent actionEvent) {
         BankTransaction bankTransaction = transactionsTable.getSelectionModel().getSelectedItem();
+        BigDecimal amountBeforeEdit = bankTransaction.getAmount();
+
         if (bankTransaction != null) {
-            appController.showEditTransactionWindow(bankTransaction);
+            appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
+                if (amountAfterEdit.doubleValue() != amountBeforeEdit.doubleValue()) {
+                    // TODO: poprawie, na ten moment nie znam zasad matematyki XDD
+                    addToBalance(amountBeforeEdit.subtract(amountAfterEdit));
+                    updateBalanceTextView();
+                }
+            });
         }
     }
 
