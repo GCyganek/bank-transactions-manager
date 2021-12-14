@@ -15,6 +15,8 @@ public interface BankStatementDao {
 
     void remove(BankStatement bankStatement);
 
+    void updateStatement(BankStatement bankStatement);
+
     List<BankStatement> getAllStatements();
 
     List<BankTransaction> getAllTransactionsFromStatement(int id);

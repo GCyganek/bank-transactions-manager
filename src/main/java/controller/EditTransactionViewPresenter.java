@@ -8,6 +8,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
+import model.BankStatement;
 import model.BankTransaction;
 import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
@@ -94,13 +95,35 @@ public class EditTransactionViewPresenter {
     }
 
     private void updateBankTransaction() throws ParseException {
-        // TODO: check if date is in connected BankStatement's range
         bankTransaction.setDate(stringToDate());
         bankTransaction.setDescription(descriptionTextField.getText());
         bankTransaction.setAmount(stringToBigDecimal());
         bankTransaction.setCategory(categoryComboBox.getValue());
 
         bankStatementsRepository.updateTransaction(bankTransaction);
+
+        if (checkStatementDateUpdateNeeded()) {
+            bankStatementsRepository.updateStatement(bankTransaction.getBankStatement());
+        }
+    }
+
+    private boolean checkStatementDateUpdateNeeded() {
+        BankStatement bankStatement = bankTransaction.getBankStatement();
+        LocalDate statementPeriodEndDate = bankStatement.getPeriodEndDate();
+        LocalDate statementPeriodStartDate = bankStatement.getPeriodStartDate();
+        LocalDate transactionDate = bankTransaction.getDate();
+
+        if (transactionDate.isAfter(statementPeriodEndDate)) {
+            bankStatement.setPeriodEndDate(transactionDate);
+            return true;
+        }
+
+        if (transactionDate.isBefore(statementPeriodStartDate)) {
+            bankStatement.setPeriodStartDate(transactionDate);
+            return true;
+        }
+
+        return false;
     }
 
     private String dateToString() {

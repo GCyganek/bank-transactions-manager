@@ -57,6 +57,15 @@ public class PgBankStatementDao extends AbstractDao<BankStatement> implements Ba
     }
 
     @Override
+    public void updateStatement(BankStatement bankStatement) {
+        try {
+            update(bankStatement);
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public List<BankStatement> getAllStatements() {
         return HibernateSessionService.getSession()
                 .createQuery("SELECT bs FROM BankStatement bs", BankStatement.class).getResultList();
