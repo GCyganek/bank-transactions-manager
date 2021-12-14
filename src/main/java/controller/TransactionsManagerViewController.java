@@ -95,7 +95,6 @@ public class TransactionsManagerViewController {
         if (bankTransaction != null) {
             appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
                 if (amountAfterEdit.doubleValue() != amountBeforeEdit.doubleValue()) {
-                    // TODO: poprawie, na ten moment nie znam zasad matematyki XDD
                     addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
                     updateBalanceTextView();
                 }

@@ -79,4 +79,9 @@ public class BankStatementsRepository {
         HibernateSessionService.closeSession();
     }
 
+    public void updateStatement(BankStatement bankStatement) {
+        HibernateSessionService.openSession();
+        bankStatementDao.updateStatement(bankStatement);
+        HibernateSessionService.closeSession();
+    }
 }
