@@ -1,6 +1,8 @@
-package model;
+package model.builder;
 
 import configurator.config.TransactionBuilderConfig;
+import model.BankStatement;
+import model.BankTransaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

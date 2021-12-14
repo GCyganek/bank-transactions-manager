@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import model.util.ModelUtil;
+import model.util.TransactionCategory;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

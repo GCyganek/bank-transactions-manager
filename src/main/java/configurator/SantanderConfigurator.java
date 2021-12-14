@@ -9,8 +9,8 @@ import importer.utils.converters.Converter;
 import importer.utils.converters.DateConverter;
 import importer.utils.converters.FloatToBigDecimalConverter;
 import importer.utils.converters.IdentityConverter;
-import model.BankType;
-import model.DocumentType;
+import model.util.BankType;
+import model.util.DocumentType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

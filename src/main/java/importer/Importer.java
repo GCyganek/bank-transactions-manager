@@ -5,8 +5,8 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
 import model.BankTransaction;
-import model.BankType;
-import model.DocumentType;
+import model.util.BankType;
+import model.util.DocumentType;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;

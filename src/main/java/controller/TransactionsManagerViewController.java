@@ -2,7 +2,7 @@ package controller;
 
 import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import javafx.application.Platform;
+import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import model.BankTransaction;
-import model.TransactionCategory;
+import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
@@ -106,19 +106,18 @@ public class TransactionsManagerViewController {
     public void handleAddNewBankStatement(ActionEvent actionEvent) {
         appController.showAddStatementView()
                 .subscribeOn(Schedulers.io())
-                .subscribe(bankTransaction -> { //TODO do it on Fx scheduler
-                    Platform.runLater(() -> {
-                        bankTransactions.add(bankTransaction);
-                        System.out.println("Imported Transaction: " + bankTransaction);
-                        addToBalance(bankTransaction.getAmount());
-                    });
-                }, err -> Platform.runLater(() -> {
+                .observeOn(JavaFxScheduler.platform())
+                .subscribe(bankTransaction -> {
+                    bankTransactions.add(bankTransaction);
+                    System.out.println("Imported Transaction: " + bankTransaction);
+                    addToBalance(bankTransaction.getAmount());
+                }, err -> {
                     String reason = "";
                     if (err instanceof ParserException e) {
                         reason = e.getReason();
                     }
                     this.appController.showErrorWindow(err.getMessage(), reason);
-                }), () -> Platform.runLater(this::updateBalanceTextView));
+                }, this::updateBalanceTextView);
     }
 
 }

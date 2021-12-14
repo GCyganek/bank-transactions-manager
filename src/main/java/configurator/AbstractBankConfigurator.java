@@ -5,10 +5,10 @@ import configurator.config.StatementBuilderConfig;
 import configurator.config.TransactionBuilderConfig;
 import importer.BankParser;
 import importer.raw.RawDataParser;
-import model.BankStatementBuilder;
-import model.BankTransactionBuilder;
-import model.BankType;
-import model.DocumentType;
+import model.builder.BankStatementBuilder;
+import model.builder.BankTransactionBuilder;
+import model.util.BankType;
+import model.util.DocumentType;
 import java.util.HashSet;
 
 public abstract class AbstractBankConfigurator implements BankConfigurator {

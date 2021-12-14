@@ -9,8 +9,9 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import model.BankStatement;
 import model.BankTransaction;
-import model.BankType;
-import model.DocumentType;
+import model.util.BankType;
+import model.util.DocumentType;
+import model.util.TransactionCategory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,8 +20,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import repository.BankStatementsRepository;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-
-import org.mockito.Mock;
 
 
 import java.io.IOException;
@@ -114,15 +113,15 @@ public class ImporterTests {
 
     private static Stream<Arguments> correctStatementTransactionsDataSource() {
         String[] santanderCSVExpectedValues = {
-                "Transaction: [(DOP. VISA 326551******6835 PŁATNOŚĆ KARTĄ 39.41 PLN JMP S.A. SKLEP 3647 WARSZAWA), (-39.41), (2021-11-24), (958.53)]",
-                "Transaction: [(przelew zalegly), (-5.00), (2021-11-22), (1252.94)]",
-                "Transaction: [(Przelew środków), (824.00), (2021-11-03), (126.15)]"
+                "Transaction: [(DOP. VISA 326551******6835 PŁATNOŚĆ KARTĄ 39.41 PLN JMP S.A. SKLEP 3647 WARSZAWA), (-39.41), (2021-11-24), (Uncategorized)]",
+                "Transaction: [(przelew zalegly), (-5.00), (2021-11-22), (Uncategorized)]",
+                "Transaction: [(Przelew środków), (824.00), (2021-11-03), (Uncategorized)]"
         };
 
         String[] mbankCSVExpectedValues = {
-                "Transaction: [(ZAKUPY1), (-3.20), (2021-11-26), (3288.91)]",
-                "Transaction: [(ZAKUPY2), (-9.99), (2021-11-25), (3292.11)]",
-                "Transaction: [(ZAKUPY3), (-250.00), (2021-11-23), (3302.10)]"
+                "Transaction: [(ZAKUPY1), (-3.20), (2021-11-26), (Uncategorized)]",
+                "Transaction: [(ZAKUPY2), (-9.99), (2021-11-25), (Uncategorized)]",
+                "Transaction: [(ZAKUPY3), (-250.00), (2021-11-23), (Uncategorized)]"
         };
 
         return Stream.of(

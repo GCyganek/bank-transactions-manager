@@ -1,6 +1,6 @@
 package configurator;
 
-import model.BankType;
+import model.util.BankType;
 
 public class BankConfiguratorFactory {
     public BankConfigurator createBankConfigurator(BankType bankType) {

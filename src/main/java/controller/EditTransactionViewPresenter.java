@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
 import model.BankTransaction;
-import model.TransactionCategory;
+import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class EditTransactionViewController {
+public class EditTransactionViewPresenter {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd";
 
@@ -32,7 +32,7 @@ public class EditTransactionViewController {
     private BankTransaction bankTransaction;
 
     @Inject
-    public EditTransactionViewController(BankStatementsRepository bankStatementsRepository) {
+    public EditTransactionViewPresenter(BankStatementsRepository bankStatementsRepository) {
         this.bankStatementsRepository = bankStatementsRepository;
     }
 

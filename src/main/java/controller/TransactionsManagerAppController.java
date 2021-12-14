@@ -10,7 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
-import model.DocumentType;
+import model.util.DocumentType;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -113,13 +113,13 @@ public class TransactionsManagerAppController {
 
             Stage stage = buildStage("Edit transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
 
-            EditTransactionViewController editTransactionViewController = fxmlLoader.getController();
-            editTransactionViewController.setStage(stage);
-            editTransactionViewController.setData(bankTransaction);
+            EditTransactionViewPresenter editTransactionViewPresenter = fxmlLoader.getController();
+            editTransactionViewPresenter.setStage(stage);
+            editTransactionViewPresenter.setData(bankTransaction);
 
             stage.showAndWait();
 
-            return Optional.of(editTransactionViewController.getFinalAmount());
+            return Optional.of(editTransactionViewPresenter.getFinalAmount());
 
         } catch (IOException e) {
             e.printStackTrace();
