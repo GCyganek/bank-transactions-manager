@@ -119,7 +119,9 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
 
-            return Optional.of(editTransactionViewController.getFinalAmount());
+            if (editTransactionViewController.isEditApproved()) {
+                return Optional.of(editTransactionViewController.getFinalAmount());
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

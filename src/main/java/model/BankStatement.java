@@ -168,6 +168,14 @@ public class BankStatement {
         return currency;
     }
 
+    public void addToPaidIn(BigDecimal valueToAdd) {
+        setPaidIn(getPaidIn().add(valueToAdd));
+    }
+
+    public void addToPaidOut(BigDecimal valueToAdd) {
+        setPaidOut(getPaidOut().add(valueToAdd));
+    }
+
     public static class Columns {
         public static final String ID = "id";
 
