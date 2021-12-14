@@ -53,4 +53,8 @@ public class BankParser<K, U> {
 
         return builtStatement;
     }
+
+    public boolean isStatementParsed() {
+        return this.builtStatement != null;
+    }
 }

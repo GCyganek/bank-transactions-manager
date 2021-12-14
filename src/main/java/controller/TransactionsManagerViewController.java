@@ -1,7 +1,11 @@
 package controller;
 
+import importer.Importer;
 import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import model.TransactionsManager;
+import model.util.BankType;
+import model.util.DocumentType;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -17,22 +21,26 @@ import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
+import javax.print.Doc;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class TransactionsManagerViewController {
 
-    private final ObservableList<BankTransaction> bankTransactions = FXCollections.observableArrayList();
-
-    private final BankStatementsRepository bankStatementsRepository;
+    private final ObservableList<BankTransaction> bankTransactions;
+    private final TransactionsManager transactionsManager;
+    private final Importer importer;
 
     private TransactionsManagerAppController appController;
 
-    private BigDecimal balance = BigDecimal.ZERO;
 
     @Inject
-    public TransactionsManagerViewController(BankStatementsRepository bankStatementsRepository) {
-        this.bankStatementsRepository = bankStatementsRepository;
+    public TransactionsManagerViewController(TransactionsManager transactionsManager, Importer importer) {
+        this.transactionsManager = transactionsManager;
+        this.importer = importer;
+
+        this.bankTransactions = this.transactionsManager.fetchDataFromDatabase();
     }
 
     @FXML
@@ -61,6 +69,11 @@ public class TransactionsManagerViewController {
 
     @FXML
     private void initialize() {
+        transactionsTable.setItems(bankTransactions);
+
+        balanceTextField.textProperty().bind(transactionsManager
+                .balanceProperty().asString("Transactions Balance: %.00f"));
+
         dateColumn.setCellValueFactory(dataValue -> dataValue.getValue().dateProperty());
         descriptionColumn.setCellValueFactory(dataValue -> dataValue.getValue().descriptionProperty());
         amountColumn.setCellValueFactory(dataValue -> dataValue.getValue().amountProperty());
@@ -69,20 +82,6 @@ public class TransactionsManagerViewController {
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
     }
 
-    private void addToBalance(BigDecimal amount) {
-        balance = balance.add(amount);
-    }
-
-    private void updateBalanceTextView() {
-        balanceTextField.setText("Transactions Balance: " + balance);
-    }
-
-    public void fetchDataFromDatabase() {
-        bankTransactions.addAll(bankStatementsRepository.getAllTransactions());
-        transactionsTable.setItems(bankTransactions);
-        bankTransactions.forEach(bankTransaction -> addToBalance(bankTransaction.getAmount()));
-        updateBalanceTextView();
-    }
 
     public void setAppController(TransactionsManagerAppController appController) {
         this.appController = appController;
@@ -96,28 +95,65 @@ public class TransactionsManagerViewController {
             appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
                 if (amountAfterEdit.doubleValue() != amountBeforeEdit.doubleValue()) {
                     // TODO: poprawie, na ten moment nie znam zasad matematyki XDD
-                    addToBalance(amountBeforeEdit.subtract(amountAfterEdit));
-                    updateBalanceTextView();
+                    transactionsManager.addToBalance(amountBeforeEdit.subtract(amountAfterEdit));
                 }
             });
         }
     }
 
     public void handleAddNewBankStatement(ActionEvent actionEvent) {
-        appController.showAddStatementView()
-                .subscribeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.platform())
-                .subscribe(bankTransaction -> {
-                    bankTransactions.add(bankTransaction);
-                    System.out.println("Imported Transaction: " + bankTransaction);
-                    addToBalance(bankTransaction.getAmount());
-                }, err -> {
-                    String reason = "";
-                    if (err instanceof ParserException e) {
-                        reason = e.getReason();
-                    }
-                    this.appController.showErrorWindow(err.getMessage(), reason);
-                }, this::updateBalanceTextView);
+        try {
+            AddStatementViewController addStatementViewController = appController.showAddStatementView();
+
+            if (addStatementViewController.checkIfFileAvailable()) {
+                BankType selectedBank = addStatementViewController.getBankType();
+                DocumentType selectedDocType = DocumentType.CSV;
+                String filePath = addStatementViewController.getFile().getAbsolutePath();
+
+                handleImport(selectedBank, selectedDocType, filePath);
+            }
+        } catch (IOException e) {
+            System.out.println("Failed to load window");
+            e.printStackTrace();
+        }
+    }
+
+    private void handleImport(BankType selectedBank, DocumentType selectedDocType, String uri) {
+        int sessionId = transactionsManager.startImportSession();
+
+        try {
+            importer.importBankStatement(selectedBank, selectedDocType, uri)
+                    .subscribeOn(Schedulers.io())
+                    .filter(transaction   -> transactionsManager.isValid(sessionId, transaction))
+                    .doOnNext(transaction -> transaction.getBankStatement().addBankTransaction(transaction))
+                    .doOnNext(transaction -> transactionsManager.addTransaction(sessionId, transaction))
+                    .observeOn(JavaFxScheduler.platform())
+                    .subscribe(transactionsManager::addToView,
+                          err -> handleImportError(err, sessionId),
+                          () -> handleImportComplete(sessionId, uri));
+
+        } catch (IOException e) {
+            this.appController.showErrorWindow("Failed to read statement from " + uri, e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void handleImportError(Throwable err, int sessionId) {
+        String reason = "";
+        if (err instanceof ParserException e) {
+            reason = e.getReason();
+        }
+        this.appController.showErrorWindow(err.getMessage(), reason);
+        this.transactionsManager.revertImport(sessionId);
+    }
+
+    private void handleImportComplete(int sessionId, String uri) {
+        int filteredCount = transactionsManager.completeImport(sessionId);
+        if (filteredCount > 0) {
+            this.appController
+                    .showErrorWindow("Failed to import some transactions from: " + uri,
+                            "Duplicated Transactions: " + filteredCount);
+        }
     }
 
 }

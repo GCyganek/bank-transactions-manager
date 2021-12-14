@@ -110,6 +110,7 @@ public class BankTransaction {
         this.category.set(category);
     }
 
+    // don't set bidirectional reference here (i.e. don't add this transaction to bankStatement's set)
     public void setBankStatement(BankStatement bankStatement) {
         this.bankStatement = bankStatement;
     }

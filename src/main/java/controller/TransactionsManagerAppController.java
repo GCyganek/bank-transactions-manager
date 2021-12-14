@@ -21,13 +21,11 @@ import java.util.Optional;
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
-    private final Importer importer;
     private Injector injector;
 
     @Inject
-    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage, Importer importer) {
+    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.importer = importer;
     }
 
     public void initRootLayout(Injector injector) {
@@ -45,7 +43,6 @@ public class TransactionsManagerAppController {
 
             TransactionsManagerViewController controller = fxmlLoader.getController();
             controller.setAppController(this);
-            controller.fetchDataFromDatabase();
 
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
@@ -56,8 +53,7 @@ public class TransactionsManagerAppController {
         }
     }
 
-    public Observable<BankTransaction> showAddStatementView() {
-        try {
+    public AddStatementViewController showAddStatementView() throws IOException {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/AddStatementView.fxml"));
             BorderPane page = fxmlLoader.load();
@@ -69,18 +65,8 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
 
-            if (addStatementViewController.checkIfFileAvailable()) {
-                return importer.importBankStatement(addStatementViewController.getBankType(), DocumentType.CSV,
-                        addStatementViewController.getFile().getAbsolutePath());
-            }
+            return addStatementViewController;
 
-            return Observable.empty();
-
-        } catch (IOException e) {
-            System.out.println("Can't load new window");
-            e.printStackTrace();
-        }
-        return Observable.empty();
     }
 
     public void showErrorWindow(String errorMsg, String reason) {

@@ -9,9 +9,9 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import model.BankStatement;
 import model.BankTransaction;
+import model.TransactionsManager;
 import model.util.BankType;
 import model.util.DocumentType;
-import model.util.TransactionCategory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import repository.BankStatementsRepository;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 
 import java.io.IOException;
@@ -33,6 +32,8 @@ public class ImporterTests {
     private static final String testDirectory = "src/test/resources/";
 
     private final BankConfiguratorFactory configuratorFactory = injector.getInstance(BankConfiguratorFactory.class);
+
+    private final TransactionsManager transactionsManager = injector.getInstance(TransactionsManager.class);
 
     @AfterEach
     public void afterEach() {
@@ -155,10 +156,10 @@ public class ImporterTests {
         return injector.getInstance(Importer.class);
     }
 
-    private static Flowable<BankTransaction> importAsFlowable(BankType bankType,
+    private Flowable<BankTransaction> importAsFlowable(BankType bankType,
                                           DocumentType documentType, String uri) throws IOException
     {
-            return getImporter().importBankStatement(bankType, documentType, uri)
-                .toFlowable(BackpressureStrategy.BUFFER);
+        return getImporter().importBankStatement(bankType, documentType, uri)
+            .toFlowable(BackpressureStrategy.BUFFER);
     }
 }

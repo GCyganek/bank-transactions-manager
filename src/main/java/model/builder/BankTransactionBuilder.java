@@ -21,7 +21,7 @@ public class BankTransactionBuilder<K> {
         LocalDate date = (LocalDate) convertedTransaction.get(config.getDateKey());
 
         BankTransaction bankTransaction = new BankTransaction(description, amount, date);
-        bankStatement.addBankTransaction(bankTransaction);
+        bankTransaction.setBankStatement(bankStatement);
 
         return bankTransaction;
     }
