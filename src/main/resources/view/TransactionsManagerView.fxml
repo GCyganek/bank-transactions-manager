@@ -14,12 +14,12 @@
             <BorderPane.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </BorderPane.margin>
-            <Button fx:id="addButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleAddNewBankStatement" text="Add new bank statement">
+            <Button fx:id="addButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleAddNewBankStatement" prefWidth="150.0" text="Add new bank statement">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </VBox.margin>
             </Button>
-            <Button fx:id="editButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleEditBankTransaction" text="Edit bank transaction">
+            <Button fx:id="editButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleEditBankTransaction" prefWidth="150.0" text="Edit bank transaction">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </VBox.margin>

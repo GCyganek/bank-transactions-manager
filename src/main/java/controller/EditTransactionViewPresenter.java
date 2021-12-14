@@ -26,11 +26,13 @@ public class EditTransactionViewPresenter {
 
     private Stage stage;
 
-    private BigDecimal finalAmount;
+    private BankTransaction bankTransaction;
 
     private final BankStatementsRepository bankStatementsRepository;
 
-    private BankTransaction bankTransaction;
+    private BigDecimal finalAmount;
+
+    private boolean editApproved = false;
 
     @Inject
     public EditTransactionViewPresenter(BankStatementsRepository bankStatementsRepository) {
@@ -67,6 +69,10 @@ public class EditTransactionViewPresenter {
         updateCategoryComboBox();
     }
 
+    public boolean isEditApproved() {
+        return editApproved;
+    }
+
     private void updateCategoryComboBox() {
         categoryComboBox.getItems().addAll(TransactionCategory.values());
         categoryComboBox.getSelectionModel().select(bankTransaction.getCategory());
@@ -86,15 +92,17 @@ public class EditTransactionViewPresenter {
         }
 
         finalAmount = bankTransaction.getAmount();
+        editApproved = true;
         stage.close();
     }
 
     public void handleCancelAction(ActionEvent actionEvent) {
-        finalAmount = bankTransaction.getAmount();
         stage.close();
     }
 
     private void updateBankTransaction() throws ParseException {
+        BigDecimal amountBeforeEdit = bankTransaction.getAmount();
+
         bankTransaction.setDate(stringToDate());
         bankTransaction.setDescription(descriptionTextField.getText());
         bankTransaction.setAmount(stringToBigDecimal());
@@ -102,9 +110,55 @@ public class EditTransactionViewPresenter {
 
         bankStatementsRepository.updateTransaction(bankTransaction);
 
-        if (checkStatementDateUpdateNeeded()) {
+        if (checkStatementPaidInOutUpdateNeeded(amountBeforeEdit) || checkStatementDateUpdateNeeded()) {
             bankStatementsRepository.updateStatement(bankTransaction.getBankStatement());
         }
+    }
+
+    private String dateToString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
+        return converter.toString(bankTransaction.getDate());
+    }
+
+    private LocalDate stringToDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
+        return converter.fromString(dateTextField.getText());
+    }
+
+    private BigDecimal stringToBigDecimal() throws ParseException {
+        DecimalFormat decimalFormatter = new DecimalFormat();
+        decimalFormatter.setParseBigDecimal(true);
+        return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
+    }
+
+    private boolean checkStatementPaidInOutUpdateNeeded(BigDecimal amountBeforeEdit) {
+        BigDecimal amountAfterEdit = bankTransaction.getAmount();
+
+        if (amountAfterEdit.compareTo(amountBeforeEdit) == 0) return false;
+
+        BankStatement bankStatement = bankTransaction.getBankStatement();
+
+        if (amountAfterEdit.compareTo(BigDecimal.ZERO) > 0) {
+            if (amountBeforeEdit.compareTo(BigDecimal.ZERO) > 0) {
+                bankStatement.addToPaidIn(amountAfterEdit.subtract(amountBeforeEdit));
+            } else {
+                bankStatement.addToPaidOut(amountBeforeEdit.negate());
+                bankStatement.addToPaidIn(amountAfterEdit);
+            }
+        }
+
+        else  {
+            if (amountBeforeEdit.compareTo(BigDecimal.ZERO) >= 0) {
+                bankStatement.addToPaidIn(amountBeforeEdit.negate());
+                bankStatement.addToPaidOut(amountAfterEdit);
+            } else {
+                bankStatement.addToPaidOut(amountAfterEdit.subtract(amountBeforeEdit));
+            }
+        }
+
+        return true;
     }
 
     private boolean checkStatementDateUpdateNeeded() {
@@ -124,23 +178,5 @@ public class EditTransactionViewPresenter {
         }
 
         return false;
-    }
-
-    private String dateToString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
-        return converter.toString(bankTransaction.getDate());
-    }
-
-    private LocalDate stringToDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
-        return converter.fromString(dateTextField.getText());
-    }
-
-    private BigDecimal stringToBigDecimal() throws ParseException {
-        DecimalFormat decimalFormatter = new DecimalFormat();
-        decimalFormatter.setParseBigDecimal(true);
-        return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
     }
 }
