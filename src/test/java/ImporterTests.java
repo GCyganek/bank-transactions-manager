@@ -133,7 +133,7 @@ public class ImporterTests {
 
     // ugh
     private static Stream<Arguments> correctStatementStatementDataSource() {
-        String santanderCSVExpectedValue = "Bank Statement: [(55 1245 1234 0001 0100 1244 6341), (2021-11-03), (2021-11-25), (1237.15), (948.53), (JAKUB NOWAK UL. CIEMNA 2/38 12-500 ZALNO), (PLN)]";
+        String santanderCSVExpectedValue = "Bank Statement: [(55 1245 1234 0001 0100 1244 6341), (2021-11-03), (2021-11-25), (824.00), (-44.41), (JAKUB NOWAK UL. CIEMNA 2/38 12-500 ZALNO), (PLN)]";
 
         String mbankCSVExpectedValue = "Bank Statement: [(eKonto - 52114020040000300276421234), (2021-11-19), (2021-11-30), (0), (-263.19), (JAN KOWALSKI), (PLN)]";
 

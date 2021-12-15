@@ -44,6 +44,7 @@ public class TransactionsManager {
         transactionObservableList = FXCollections.observableArrayList();
         transactions = new TreeSet<>(transactionComparator);
         balance = new SimpleObjectProperty<>();
+        balance.set(BigDecimal.ZERO);
 
         importSessions = new HashMap<>();
         filteredTransactionsCounts = new HashMap<>();
@@ -128,7 +129,7 @@ public class TransactionsManager {
     /**
      * Removes every transaction from both view and model already added in this import session, has to be used at most once.
      */
-    public synchronized void revertImport(int sessionId) {
+    public synchronized void reverseImport(int sessionId) {
         List<BankTransaction> addedTransactions = importSessions.remove(sessionId);
         filteredTransactionsCounts.remove(sessionId);
 
@@ -190,9 +191,19 @@ public class TransactionsManager {
         return balance;
     }
 
+    // for tests only
+    public TreeSet<BankTransaction> getTransactions() {
+        return transactions;
+    }
+
+    public ObservableList<BankTransaction> getTransactionObservableList() {
+        return transactionObservableList;
+    }
+
     public void addToBalance(BigDecimal amount) {
         balance.set(balance.getValue().add(amount));
     }
+
 
     private BigDecimal getTotalBalance(List<BankTransaction> transactions) {
         return transactions.stream()

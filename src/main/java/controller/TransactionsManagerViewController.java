@@ -141,7 +141,7 @@ public class TransactionsManagerViewController {
             reason = e.getReason();
         }
         this.appController.showErrorWindow(err.getMessage(), reason);
-        this.transactionsManager.revertImport(sessionId);
+        this.transactionsManager.reverseImport(sessionId);
     }
 
     private void handleImportComplete(int sessionId, String uri) {
