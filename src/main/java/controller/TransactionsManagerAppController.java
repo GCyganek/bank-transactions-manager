@@ -102,6 +102,7 @@ public class TransactionsManagerAppController {
             EditTransactionViewPresenter editTransactionViewPresenter = fxmlLoader.getController();
             editTransactionViewPresenter.setStage(stage);
             editTransactionViewPresenter.setData(bankTransaction);
+            editTransactionViewPresenter.setAppController(this);
 
             stage.showAndWait();
 

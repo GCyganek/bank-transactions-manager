@@ -8,7 +8,6 @@ import model.util.BankType;
 import model.util.DocumentType;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -18,10 +17,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import model.BankTransaction;
 import model.util.TransactionCategory;
-import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
-import javax.print.Doc;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -134,6 +131,7 @@ public class TransactionsManagerViewController {
         } catch (IOException e) {
             this.appController.showErrorWindow("Failed to read statement from " + uri, e.getMessage());
             e.printStackTrace();
+            transactionsManager.clearSession(sessionId);
         }
     }
 

@@ -19,9 +19,12 @@ public final class ModelUtil {
     }
 
     public static Comparator<BankTransaction> getDateComparator() {
+        // TODO refactor if possible
         return (o1, o2) -> {
             if (o1.getDate().equals(o2.getDate())) {
                 if (o1.getAmount().equals(o2.getAmount())) {
+                    if (o1.getDescription().equals(o2.getDescription()))
+                        return o1.getCategory().compareTo(o2.getCategory());
                     return o1.getDescription().compareTo(o2.getDescription()) ;
                 }
                 return o1.getAmount().compareTo(o2.getAmount());

@@ -8,8 +8,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
+import jdk.jfr.Category;
 import model.BankStatement;
 import model.BankTransaction;
+import model.TransactionsManager;
 import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
@@ -28,15 +30,17 @@ public class EditTransactionViewPresenter {
 
     private BankTransaction bankTransaction;
 
-    private final BankStatementsRepository bankStatementsRepository;
+    private final TransactionsManager transactionsManager;
 
     private BigDecimal finalAmount;
 
     private boolean editApproved = false;
 
+    private TransactionsManagerAppController appController;
+
     @Inject
-    public EditTransactionViewPresenter(BankStatementsRepository bankStatementsRepository) {
-        this.bankStatementsRepository = bankStatementsRepository;
+    public EditTransactionViewPresenter(TransactionsManager transactionsManager) {
+        this.transactionsManager = transactionsManager;
     }
 
     @FXML
@@ -101,19 +105,27 @@ public class EditTransactionViewPresenter {
     }
 
     private void updateBankTransaction() throws ParseException {
-        BigDecimal amountBeforeEdit = bankTransaction.getAmount();
+            LocalDate editedDate = stringToDate();
+            String editedDescription = descriptionTextField.getText();
+            BigDecimal editedAmount = stringToBigDecimal();
+            TransactionCategory editedCategory = categoryComboBox.getValue();
 
-        bankTransaction.setDate(stringToDate());
-        bankTransaction.setDescription(descriptionTextField.getText());
-        bankTransaction.setAmount(stringToBigDecimal());
-        bankTransaction.setCategory(categoryComboBox.getValue());
+            BankTransaction editedTransaction = new BankTransaction(editedDescription, editedAmount, editedDate);
+            editedTransaction.setCategory(editedCategory);
+            editedTransaction.setBankStatement(bankTransaction.getBankStatement());
 
-        bankStatementsRepository.updateTransaction(bankTransaction);
+            if (editedTransaction.equals(bankTransaction))
+                return;
 
-        if (checkStatementPaidInOutUpdateNeeded(amountBeforeEdit) || checkStatementDateUpdateNeeded()) {
-            bankStatementsRepository.updateStatement(bankTransaction.getBankStatement());
-        }
+            if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
+                appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
+            }
     }
+
+    public void setAppController(TransactionsManagerAppController appController) {
+        this.appController = appController;
+    }
+
 
     private String dateToString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
@@ -133,50 +145,6 @@ public class EditTransactionViewPresenter {
         return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
     }
 
-    private boolean checkStatementPaidInOutUpdateNeeded(BigDecimal amountBeforeEdit) {
-        BigDecimal amountAfterEdit = bankTransaction.getAmount();
 
-        if (amountAfterEdit.compareTo(amountBeforeEdit) == 0) return false;
 
-        BankStatement bankStatement = bankTransaction.getBankStatement();
-
-        if (amountAfterEdit.compareTo(BigDecimal.ZERO) > 0) {
-            if (amountBeforeEdit.compareTo(BigDecimal.ZERO) > 0) {
-                bankStatement.addToPaidIn(amountAfterEdit.subtract(amountBeforeEdit));
-            } else {
-                bankStatement.addToPaidOut(amountBeforeEdit.negate());
-                bankStatement.addToPaidIn(amountAfterEdit);
-            }
-        }
-
-        else  {
-            if (amountBeforeEdit.compareTo(BigDecimal.ZERO) >= 0) {
-                bankStatement.addToPaidIn(amountBeforeEdit.negate());
-                bankStatement.addToPaidOut(amountAfterEdit);
-            } else {
-                bankStatement.addToPaidOut(amountAfterEdit.subtract(amountBeforeEdit));
-            }
-        }
-
-        return true;
-    }
-
-    private boolean checkStatementDateUpdateNeeded() {
-        BankStatement bankStatement = bankTransaction.getBankStatement();
-        LocalDate statementPeriodEndDate = bankStatement.getPeriodEndDate();
-        LocalDate statementPeriodStartDate = bankStatement.getPeriodStartDate();
-        LocalDate transactionDate = bankTransaction.getDate();
-
-        if (transactionDate.isAfter(statementPeriodEndDate)) {
-            bankStatement.setPeriodEndDate(transactionDate);
-            return true;
-        }
-
-        if (transactionDate.isBefore(statementPeriodStartDate)) {
-            bankStatement.setPeriodStartDate(transactionDate);
-            return true;
-        }
-
-        return false;
-    }
 }

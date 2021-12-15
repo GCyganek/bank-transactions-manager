@@ -11,7 +11,7 @@ import model.util.DocumentType;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.concurrent.TimeUnit;
+
 
 public class Importer {
     private final BankConfiguratorFactory configFactory;
@@ -37,6 +37,7 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
 
         return parser.parse(dataReader)
+//                .doOnNext(x -> Thread.sleep(2500)) // emulate heavy computation
                 .doFinally(dataReader::close);
     }
 
