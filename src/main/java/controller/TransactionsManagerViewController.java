@@ -120,9 +120,7 @@ public class TransactionsManagerViewController {
         try {
             importer.importBankStatement(selectedBank, selectedDocType, uri)
                     .subscribeOn(Schedulers.io())
-                    .filter(transaction   -> transactionsManager.isValid(sessionId, transaction))
-                    .doOnNext(transaction -> transaction.getBankStatement().addBankTransaction(transaction))
-                    .doOnNext(transaction -> transactionsManager.addTransaction(sessionId, transaction))
+                    .filter(transaction -> transactionsManager.tryToAddTransaction(sessionId, transaction))
                     .observeOn(JavaFxScheduler.platform())
                     .subscribe(transactionsManager::addToView,
                           err -> handleImportError(err, sessionId),

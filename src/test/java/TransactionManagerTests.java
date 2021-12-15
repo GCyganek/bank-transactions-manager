@@ -6,10 +6,8 @@ import model.BankTransaction;
 import model.TransactionsManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
 import repository.BankStatementsRepository;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,10 +40,10 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        boolean isValid = manager.isValid(sid, bankTransaction);
+        boolean isAdded = manager.tryToAddTransaction(sid, bankTransaction);
 
         // then
-        assertTrue(isValid);
+        assertTrue(isAdded);
     }
 
     @Test
@@ -55,11 +53,11 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, bankTransaction);
-        boolean isValid = manager.isValid(sid, bankTransaction);
+        manager.tryToAddTransaction(sid, bankTransaction);
+        boolean isAdded = manager.tryToAddTransaction(sid, bankTransaction);
 
         // then
-        assertFalse(isValid);
+        assertFalse(isAdded);
     }
 
     @Test
@@ -69,7 +67,7 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        transactions.forEach(transaction -> manager.addTransaction(sid, transaction));
+        transactions.forEach(transaction -> manager.tryToAddTransaction(sid, transaction));
         TreeSet<BankTransaction> addedTransactions = manager.getTransactions();
 
         // then
@@ -84,7 +82,7 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
 
         List<BankTransaction> addedTransactions = manager.getTransactionObservableList();
 
@@ -100,7 +98,7 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
         manager.addToView(transaction);
 
         List<BankTransaction> addedTransactions = manager.getTransactionObservableList();
@@ -116,7 +114,7 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
         manager.addToView(transaction);
 
         // then
@@ -131,7 +129,7 @@ public class TransactionManagerTests {
 
         // when
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
 
         // then
         assertEquals(BigDecimal.ZERO, manager.balanceProperty().getValue());
@@ -143,7 +141,7 @@ public class TransactionManagerTests {
         // given
         List<BankTransaction> transactions = getTestTransactions();
         int sid = manager.startImportSession();
-        transactions.forEach(transaction -> manager.addTransaction(sid, transaction));
+        transactions.forEach(transaction -> manager.tryToAddTransaction(sid, transaction));
         transactions.forEach(transaction -> manager.addToView(transaction));
 
         // when
@@ -165,7 +163,7 @@ public class TransactionManagerTests {
         // given
         BankTransaction transaction = getTestTransaction();
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
         manager.addToView(transaction);
 
         BankTransaction editedTransaction = copyBankTransaction(transaction);
@@ -188,30 +186,35 @@ public class TransactionManagerTests {
         // given
         BankTransaction transaction = getTestTransaction();
         int sid = manager.startImportSession();
-        manager.addTransaction(sid, transaction);
+        manager.tryToAddTransaction(sid, transaction);
         manager.addToView(transaction);
 
         BankTransaction copy = copyBankTransaction(transaction);
 
         BankTransaction editedTransaction = copyBankTransaction(transaction);
         editedTransaction.setDescription(editedTransaction.getDescription() + "different");
+        manager.completeImport(sid);
 
         // when
         manager.updateTransaction(transaction, editedTransaction);
-        boolean isValid = manager.isValid(copy);
+        int nextSid = manager.startImportSession();
+        boolean isAdded = manager.tryToAddTransaction(nextSid, copy);
 
         // then
-        assertTrue(isValid);
+        assertTrue(isAdded);
     }
 
     private BankTransaction getTestTransaction() {
        BankTransaction transaction = new BankTransaction("abc", BigDecimal.valueOf(123), LocalDate.now());
-       BankStatement statement = mock(BankStatement.class);
-       when(statement.getPeriodStartDate()).thenReturn(LocalDate.now());
-       when(statement.getPeriodEndDate()).thenReturn(LocalDate.now());
-
-       transaction.setBankStatement(statement);
+       transaction.setBankStatement(getMockStatement());
        return transaction;
+    }
+
+    private BankStatement getMockStatement() {
+        BankStatement statement = mock(BankStatement.class);
+        when(statement.getPeriodStartDate()).thenReturn(LocalDate.now());
+        when(statement.getPeriodEndDate()).thenReturn(LocalDate.now());
+        return statement;
     }
 
     private BankTransaction copyBankTransaction(BankTransaction transaction) {
@@ -226,6 +229,11 @@ public class TransactionManagerTests {
         BankTransaction bankTransaction1 = getTestTransaction();
         BankTransaction bankTransaction2 = new BankTransaction("bcd", BigDecimal.valueOf(123), LocalDate.now());
         BankTransaction bankTransaction3 = new BankTransaction("bcd", BigDecimal.valueOf(777), LocalDate.now());
-        return List.of(bankTransaction1, bankTransaction2, bankTransaction3);
+        BankStatement statement = getMockStatement();
+
+        List<BankTransaction> result = List.of(bankTransaction1, bankTransaction2, bankTransaction3);
+        result.forEach(transaction -> transaction.setBankStatement(statement));
+
+        return result;
     }
 }

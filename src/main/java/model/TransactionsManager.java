@@ -79,26 +79,30 @@ public class TransactionsManager {
         return transactionObservableList;
     }
 
-    public synchronized boolean isValid(int sessionId, BankTransaction transaction) {
-        boolean valid = isValid(transaction);
-        if (!valid) {
-            // increment counter
-            filteredTransactionsCounts.merge(sessionId, 1, Integer::sum);
-        }
-        return valid;
-    }
-
     public boolean isValid(BankTransaction bankTransaction) {
        return isUnique(bankTransaction);
     }
 
-    public synchronized void addTransaction(int sessionId, BankTransaction transaction) {
+    /**
+     * Adds transaction to model only if it is valid, these 2 actions have to be done in one call to prevent race condition.
+     * @return true if transaction was added to model and thus can be added to view
+     */
+    public synchronized boolean tryToAddTransaction(int sessionId, BankTransaction transaction) {
+        if (!isValid(transaction)) {
+            filteredTransactionsCounts.merge(sessionId, 1, Integer::sum);
+            return false;
+        }
+
         List<BankTransaction> session = importSessions.get(sessionId);
         session.add(transaction);
 
-        statementToSession.put(transaction.getBankStatement(), sessionId);
+        BankStatement statement = transaction.getBankStatement();
+        statement.addBankTransaction(transaction);
 
+        statementToSession.put(statement, sessionId);
         transactions.add(transaction);
+
+        return true;
     }
 
     // must be called from GUI thread
