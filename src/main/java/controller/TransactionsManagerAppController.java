@@ -1,8 +1,6 @@
 package controller;
 
 import com.google.inject.Injector;
-import importer.Importer;
-import io.reactivex.rxjava3.core.Observable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -10,7 +8,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
-import model.util.DocumentType;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -66,6 +63,27 @@ public class TransactionsManagerAppController {
             stage.showAndWait();
 
             return addStatementViewController;
+
+    }
+
+    public void showStatisticsView() {
+
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/StatisticsView.fxml"));
+            AnchorPane page = fxmlLoader.load();
+
+            Stage stage = buildStage("Statistics", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
+
+            StatisticsViewController statisticsViewController = fxmlLoader.getController();
+            statisticsViewController.setStage(stage);
+            statisticsViewController.showData();
+
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="350.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.StatisticsViewController">
+   <children>
+      <TabPane prefHeight="350.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Incomes/Outcomes">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="600.0">
+                     <children>
+                        <BarChart fx:id="barChart" layoutX="30.0" layoutY="10.0" legendVisible="false" prefHeight="300.0" prefWidth="300.0">
+                          <xAxis>
+                            <CategoryAxis side="BOTTOM" />
+                          </xAxis>
+                          <yAxis>
+                            <NumberAxis side="LEFT" />
+                          </yAxis>
+                        </BarChart>
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Incomes in categories">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="600.0">
+                     <children>
+                        <PieChart fx:id="pieChart" labelsVisible="false" layoutX="50.0" layoutY="10.0" legendSide="RIGHT" prefHeight="300.0" prefWidth="500.0" />
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

@@ -62,6 +62,9 @@ public class TransactionsManagerViewController {
     public Button editButton;
 
     @FXML
+    public Button statsButton;
+
+    @FXML
     public TextField balanceTextField;
 
     @FXML
@@ -95,6 +98,10 @@ public class TransactionsManagerViewController {
                 }
             });
         }
+    }
+
+    public void handleShowStatistics(ActionEvent actionEvent) {
+        appController.showStatisticsView();
     }
 
     public void handleAddNewBankStatement(ActionEvent actionEvent) {
