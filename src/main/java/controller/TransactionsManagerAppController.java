@@ -71,6 +71,9 @@ public class TransactionsManagerAppController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/StatisticsView.fxml"));
+
+            fxmlLoader.setControllerFactory(injector::getInstance);
+
             AnchorPane page = fxmlLoader.load();
 
             Stage stage = buildStage("Statistics", new Scene(page), primaryStage, Modality.WINDOW_MODAL);

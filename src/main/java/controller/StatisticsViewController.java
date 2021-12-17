@@ -4,11 +4,30 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.converter.LocalDateStringConverter;
+import model.TransactionsManager;
+import model.util.TransactionCategory;
+
+import javax.inject.Inject;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 public class StatisticsViewController {
 
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
+
+    private final TransactionsManager transactionsManager;
+
     private Stage stage;
+
+    @Inject
+    public StatisticsViewController(TransactionsManager transactionsManager) {
+        this.transactionsManager = transactionsManager;
+    }
 
     @FXML
     public BarChart<String, Number> barChart;
@@ -16,32 +35,58 @@ public class StatisticsViewController {
     @FXML
     public PieChart pieChart;
 
+    @FXML
+    public TextField fromDateTextField;
+
+    @FXML
+    public TextField toDateTextField;
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
     public void showData() {
         incomeOutcomeChart();
-        categoryIncomeChart();
+        updateTextFields();
+        categoryOutcomeChart();
+    }
+
+    private void updateTextFields() {
+        fromDateTextField.setText(dateToString());
+        toDateTextField.setText(dateToString());
     }
 
     public void incomeOutcomeChart() {
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Income", 2000));
-        series.getData().add(new XYChart.Data<>("Outcome", 1000));
+        series.getData().add(new XYChart.Data<>("Income", transactionsManager.getTotalIncome()));
+        series.getData().add(new XYChart.Data<>("Outcome", transactionsManager.getTotalOutcome()));
 
         barChart.getData().addAll(series);
     }
 
-    public void categoryIncomeChart() {
+    public void categoryOutcomeChart() {
 
-        ObservableList<PieChart.Data> pieChartData =
-                FXCollections.observableArrayList(
-                        new PieChart.Data("Health and beauty", 30),
-                        new PieChart.Data("Food", 50),
-                        new PieChart.Data("Clothes and shoes", 10));
+        HashMap<TransactionCategory, BigDecimal> map = transactionsManager.getOutcomesInCategories();
+
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
+        for(TransactionCategory category: map.keySet()) {
+            pieChartData.add(new PieChart.Data(category.toString(), map.get(category).doubleValue()));
+        }
 
         pieChart.setData(pieChartData);
+    }
+
+    private String dateToString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
+        return converter.toString(stringToDate());
+    }
+
+    private LocalDate stringToDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
+        return converter.fromString("2000-02-20");
     }
 }

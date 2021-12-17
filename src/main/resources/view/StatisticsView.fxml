@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -20,10 +21,25 @@
                             <NumberAxis side="LEFT" />
                           </yAxis>
                         </BarChart>
+                        <VBox layoutX="362.0" layoutY="33.0" prefHeight="253.0" prefWidth="193.0">
+                           <children>
+                              <Label text="From">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="fromDateTextField" />
+                              <Label text="To">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="toDateTextField" />
+                           </children></VBox>
                      </children></AnchorPane>
             </content>
           </Tab>
-          <Tab text="Incomes in categories">
+          <Tab text="Outcomes in categories">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="600.0">
                      <children>

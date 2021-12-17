@@ -4,6 +4,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
@@ -213,6 +214,36 @@ public class TransactionsManager {
         return transactions.stream()
                 .map(BankTransaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTotalIncome() {
+        return transactions.stream()
+                .map(BankTransaction::getAmount)
+                .filter(x -> x.compareTo(BigDecimal.ZERO) > 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTotalOutcome() {
+        return BigDecimal.ZERO.subtract(transactions.stream()
+                                        .map(BankTransaction::getAmount)
+                                        .filter(x -> x.compareTo(BigDecimal.ZERO) < 0)
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories() {
+        HashMap<TransactionCategory, BigDecimal> map = new HashMap<>();
+
+        for(TransactionCategory category: TransactionCategory.values()) {
+            map.put(category, BigDecimal.ZERO);
+        }
+
+        for(BankTransaction transaction: transactions) {
+            if(transaction.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+                map.put(transaction.getCategory(), map.get(transaction.getCategory()).subtract(transaction.getAmount()));
+            }
+        }
+
+        return map;
     }
 
     private boolean isUnique(BankTransaction transaction) {
