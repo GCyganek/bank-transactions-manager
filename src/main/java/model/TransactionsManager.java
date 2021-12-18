@@ -230,6 +230,20 @@ public class TransactionsManager {
                                         .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
+    public LocalDate getCurrentStartDate() {
+        return transactions.stream()
+                .map(BankTransaction::getDate)
+                .min(LocalDate::compareTo)
+                .orElse(LocalDate.of(2000,1,1));
+    }
+
+    public LocalDate getCurrentEndDate() {
+        return transactions.stream()
+                .map(BankTransaction::getDate)
+                .max(LocalDate::compareTo)
+                .orElse(LocalDate.of(2000,1,1));
+    }
+
     public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories() {
         HashMap<TransactionCategory, BigDecimal> map = new HashMap<>();
 

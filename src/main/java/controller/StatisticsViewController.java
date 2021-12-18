@@ -52,8 +52,8 @@ public class StatisticsViewController {
     }
 
     private void updateTextFields() {
-        fromDateTextField.setText(dateToString());
-        toDateTextField.setText(dateToString());
+        fromDateTextField.setText(dateToString(transactionsManager.getCurrentStartDate()));
+        toDateTextField.setText(dateToString(transactionsManager.getCurrentEndDate()));
     }
 
     public void incomeOutcomeChart() {
@@ -78,15 +78,15 @@ public class StatisticsViewController {
         pieChart.setData(pieChartData);
     }
 
-    private String dateToString() {
+    private String dateToString(LocalDate date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
-        return converter.toString(stringToDate());
+        return converter.toString(date);
     }
 
-    private LocalDate stringToDate() {
+    private LocalDate stringToDate(String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
-        return converter.fromString("2000-02-20");
+        return converter.fromString(date);
     }
 }
