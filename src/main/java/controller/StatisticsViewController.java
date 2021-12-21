@@ -5,10 +5,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
 import model.TransactionStatsManager;
-import model.TransactionsManager;
 import model.util.TransactionCategory;
 
 import javax.inject.Inject;
@@ -77,6 +77,12 @@ public class StatisticsViewController {
         }
 
         pieChart.setData(pieChartData);
+
+        pieChart.getData().forEach(data -> {
+            String percentage = String.format("%.2f%%", (data.getPieValue() / statsManager.getTotalOutcome().doubleValue()));
+            Tooltip toolTip = new Tooltip(percentage);
+            Tooltip.install(data.getNode(), toolTip);
+        });
     }
 
     private String dateToString(LocalDate date) {
