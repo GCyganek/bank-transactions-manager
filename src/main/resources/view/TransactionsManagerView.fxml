@@ -51,5 +51,14 @@
             <TextField fx:id="balanceTextField" alignment="CENTER" text="Transactions Balance:" />
          </children>
       </VBox>
+
+       <fx:define>
+           <ContextMenu fx:id="contextMenu">
+               <items>
+                   <MenuItem text="Edit Transaction" onAction="#handleEditBankTransaction"/>
+               </items>
+           </ContextMenu>
+       </fx:define>
    </center>
+
 </BorderPane>

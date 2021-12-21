@@ -1,9 +1,10 @@
 package controller;
 
+import controller.util.ContextMenuRowFactory;
 import importer.Importer;
 import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import model.TransactionStatsManager;
+import javafx.scene.control.*;
 import model.TransactionsManager;
 import model.util.BankType;
 import model.util.DocumentType;
@@ -13,10 +14,6 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import model.BankTransaction;
 import model.util.TransactionCategory;
 
@@ -71,6 +68,9 @@ public class TransactionsManagerViewController {
     public TextField balanceTextField;
 
     @FXML
+    public ContextMenu contextMenu;
+
+    @FXML
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
 
@@ -83,6 +83,8 @@ public class TransactionsManagerViewController {
         categoryColumn.setCellValueFactory(dataValue -> dataValue.getValue().categoryProperty());
 
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
+        transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
     }
 
 
