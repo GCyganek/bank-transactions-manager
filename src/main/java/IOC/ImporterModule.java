@@ -6,9 +6,8 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
-import model.BankTransaction;
+import model.TransactionStatsManager;
 import model.TransactionsManager;
-import model.util.ModelUtil;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
@@ -16,7 +15,6 @@ import repository.dao.PgBankTransactionDao;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Comparator;
 
 public class ImporterModule extends AbstractModule {
 
@@ -24,6 +22,12 @@ public class ImporterModule extends AbstractModule {
 
     public ImporterModule(Stage primaryStage) {
         this.primaryStage = primaryStage;
+    }
+
+    @Override
+    protected void configure() {
+        bind(TransactionsManager.class).asEagerSingleton();
+        bind(TransactionStatsManager.class).asEagerSingleton();
     }
 
     @Provides

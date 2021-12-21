@@ -7,6 +7,7 @@ import javafx.scene.chart.*;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
+import model.TransactionStatsManager;
 import model.TransactionsManager;
 import model.util.TransactionCategory;
 
@@ -20,13 +21,13 @@ public class StatisticsViewController {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd";
 
-    private final TransactionsManager transactionsManager;
+    private final TransactionStatsManager statsManager;
 
     private Stage stage;
 
     @Inject
-    public StatisticsViewController(TransactionsManager transactionsManager) {
-        this.transactionsManager = transactionsManager;
+    public StatisticsViewController(TransactionStatsManager statsManager) {
+        this.statsManager = statsManager;
     }
 
     @FXML
@@ -52,22 +53,22 @@ public class StatisticsViewController {
     }
 
     private void updateTextFields() {
-        fromDateTextField.setText(dateToString(transactionsManager.getCurrentStartDate()));
-        toDateTextField.setText(dateToString(transactionsManager.getCurrentEndDate()));
+        fromDateTextField.setText(dateToString(statsManager.getCurrentStartDate()));
+        toDateTextField.setText(dateToString(statsManager.getCurrentEndDate()));
     }
 
     public void incomeOutcomeChart() {
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Income", transactionsManager.getTotalIncome()));
-        series.getData().add(new XYChart.Data<>("Outcome", transactionsManager.getTotalOutcome()));
+        series.getData().add(new XYChart.Data<>("Income", statsManager.getTotalIncome()));
+        series.getData().add(new XYChart.Data<>("Outcome", statsManager.getTotalOutcome()));
 
         barChart.getData().addAll(series);
     }
 
     public void categoryOutcomeChart() {
 
-        HashMap<TransactionCategory, BigDecimal> map = transactionsManager.getOutcomesInCategories();
+        HashMap<TransactionCategory, BigDecimal> map = statsManager.getOutcomesInCategories();
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
@@ -82,11 +83,5 @@ public class StatisticsViewController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
         return converter.toString(date);
-    }
-
-    private LocalDate stringToDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
-        return converter.fromString(date);
     }
 }

@@ -3,6 +3,7 @@ package controller;
 import importer.Importer;
 import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import model.TransactionStatsManager;
 import model.TransactionsManager;
 import model.util.BankType;
 import model.util.DocumentType;
@@ -39,6 +40,7 @@ public class TransactionsManagerViewController {
         this.importer = importer;
 
         this.bankTransactions = this.transactionsManager.fetchDataFromDatabase();
+
     }
 
     @FXML

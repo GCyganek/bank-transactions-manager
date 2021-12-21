@@ -14,7 +14,9 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 
@@ -63,7 +65,7 @@ public class TransactionManagerTests {
         // when
         ImportSession importSession = manager.startImportSession();
         transactions.forEach(transaction -> manager.tryToAddTransaction(importSession, transaction));
-        TreeSet<BankTransaction> addedTransactions = manager.getTransactions();
+        Set<BankTransaction> addedTransactions = manager.getTransactions();
 
         // then
         assertEquals(3, addedTransactions.size());
@@ -142,7 +144,7 @@ public class TransactionManagerTests {
         // when
         manager.reverseImport(importSession);
 
-        TreeSet<BankTransaction> addedTransactions = manager.getTransactions();
+        Set<BankTransaction> addedTransactions = manager.getTransactions();
         List<BankTransaction> addedTransactionsView = manager.getTransactionObservableList();
         BigDecimal balance = manager.balanceProperty().getValue();
 
@@ -167,13 +169,13 @@ public class TransactionManagerTests {
         // when
         manager.updateTransaction(transaction, editedTransaction);
         List<BankTransaction> transactionsInView = manager.getTransactionObservableList();
-        TreeSet<BankTransaction> transactions = manager.getTransactions();
+        Set<BankTransaction> transactions = manager.getTransactions();
 
         // then
         assertEquals(1, transactionsInView.size());
         assertEquals(editedTransaction, transactionsInView.get(0));
         assertEquals(1, transactions.size());
-        assertEquals(editedTransaction, transactions.first());
+        assertEquals(editedTransaction, transactions.iterator().next());
     }
 
     @Test

@@ -1,20 +1,20 @@
 package model;
 
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.util.ImportSession;
-import model.util.ModelUtil;
-import model.util.TransactionCategory;
+import org.apache.commons.lang3.tuple.Pair;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import io.reactivex.rxjava3.core.Observable;
 
 @Singleton
 public class TransactionsManager {
@@ -22,10 +22,13 @@ public class TransactionsManager {
     private final ObservableList<BankTransaction> transactionObservableList;
     private final ObjectProperty<BigDecimal> balance;
 
+    // emits <transaction before edit, transaction after edit>
+    private final PublishSubject<Pair<BankTransaction, BankTransaction>> transactionUpdatedSubject;
+
     private final BankStatementsRepository bankStatementsRepository;
 
-    // contains every transaction sorted by date, used to ensure uniqueness
-    private final TreeSet<BankTransaction> transactions;
+    // contains every transaction, used to ensure uniqueness
+    private final HashSet<BankTransaction> transactions;
 
     // used to prevent updating transaction in repository
     // before statement had been fully imported (statement is persisted after import completes)
@@ -35,11 +38,13 @@ public class TransactionsManager {
     public TransactionsManager(BankStatementsRepository repository) {
         bankStatementsRepository = repository;
         transactionObservableList = FXCollections.observableArrayList();
-        transactions = new TreeSet<>(ModelUtil.getDateComparator());
+
+        transactions = new HashSet<>();
         balance = new SimpleObjectProperty<>();
         balance.set(BigDecimal.ZERO);
 
         importInProgressStatements = new HashSet<>();
+        transactionUpdatedSubject = PublishSubject.create();
     }
 
 
@@ -140,11 +145,14 @@ public class TransactionsManager {
         if (!isValid(edited))
            return false;
 
-        // has to be removed to keep TreeSet structure valid
+
+        // has to be removed to keep HashSet structure valid
         transactions.remove(old);
 
         // edit params of old transaction to keep references in other objects valid
+        BankTransaction original = old.shallowCopy();
         old.copyEditableFieldsFrom(edited);
+
         transactions.add(old);
 
         boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old) ||
@@ -153,6 +161,7 @@ public class TransactionsManager {
         // can't update transaction in repo if statement is still being imported
         if (!importInProgressStatements.contains(old.getBankStatement())) {
             bankStatementsRepository.updateTransaction(old);
+            transactionUpdatedSubject.onNext(Pair.of(original, old));
 
             if (statementUpdateNeeded) {
                 bankStatementsRepository.updateStatement(old.getBankStatement());
@@ -162,12 +171,16 @@ public class TransactionsManager {
         return true;
     }
 
+    public Observable<Pair<BankTransaction, BankTransaction>> getTransactionUpdatedObservable() {
+        return Observable.wrap(transactionUpdatedSubject);
+    }
+
     public ObjectProperty<BigDecimal> balanceProperty() {
         return balance;
     }
 
     // for tests only
-    public TreeSet<BankTransaction> getTransactions() {
+    public HashSet<BankTransaction> getTransactions() {
         return transactions;
     }
 
@@ -177,57 +190,6 @@ public class TransactionsManager {
 
     public void addToBalance(BigDecimal amount) {
         balance.set(balance.getValue().add(amount));
-    }
-
-
-    private BigDecimal getTotalBalance(List<BankTransaction> transactions) {
-        return transactions.stream()
-                .map(BankTransaction::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal getTotalIncome() {
-        return transactions.stream()
-                .map(BankTransaction::getAmount)
-                .filter(x -> x.compareTo(BigDecimal.ZERO) > 0)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal getTotalOutcome() {
-        return BigDecimal.ZERO.subtract(transactions.stream()
-                                        .map(BankTransaction::getAmount)
-                                        .filter(x -> x.compareTo(BigDecimal.ZERO) < 0)
-                                        .reduce(BigDecimal.ZERO, BigDecimal::add));
-    }
-
-    public LocalDate getCurrentStartDate() {
-        return transactions.stream()
-                .map(BankTransaction::getDate)
-                .min(LocalDate::compareTo)
-                .orElse(LocalDate.of(2000,1,1));
-    }
-
-    public LocalDate getCurrentEndDate() {
-        return transactions.stream()
-                .map(BankTransaction::getDate)
-                .max(LocalDate::compareTo)
-                .orElse(LocalDate.of(2000,1,1));
-    }
-
-    public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories() {
-        HashMap<TransactionCategory, BigDecimal> map = new HashMap<>();
-
-        for(TransactionCategory category: TransactionCategory.values()) {
-            map.put(category, BigDecimal.ZERO);
-        }
-
-        for(BankTransaction transaction: transactions) {
-            if(transaction.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-                map.put(transaction.getCategory(), map.get(transaction.getCategory()).subtract(transaction.getAmount()));
-            }
-        }
-
-        return map;
     }
 
     private boolean isUnique(BankTransaction transaction) {
@@ -279,5 +241,11 @@ public class TransactionsManager {
         }
 
         return true;
+    }
+
+    private BigDecimal getTotalBalance(List<BankTransaction> transactions) {
+        return transactions.stream()
+                .map(BankTransaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
