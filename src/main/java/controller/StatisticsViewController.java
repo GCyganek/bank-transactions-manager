@@ -2,8 +2,10 @@ package controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
@@ -42,13 +44,16 @@ public class StatisticsViewController {
     @FXML
     public TextField toDateTextField;
 
+    @FXML
+    public Button applyButton;
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
     public void showData() {
-        incomeOutcomeChart();
         updateTextFields();
+        incomeOutcomeChart();
         categoryOutcomeChart();
     }
 
@@ -57,12 +62,19 @@ public class StatisticsViewController {
         toDateTextField.setText(dateToString(statsManager.getCurrentEndDate()));
     }
 
+    public void handleApplyButton(ActionEvent actionEvent) {
+        incomeOutcomeChart();
+    }
+
     public void incomeOutcomeChart() {
+        LocalDate fromDate = dateFromString(fromDateTextField.getText()).minusDays(1);
+        LocalDate toDate = dateFromString(toDateTextField.getText()).plusDays(1);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Income", statsManager.getTotalIncome()));
-        series.getData().add(new XYChart.Data<>("Outcome", statsManager.getTotalOutcome()));
+        series.getData().add(new XYChart.Data<>("Income", statsManager.getIncome(fromDate, toDate)));
+        series.getData().add(new XYChart.Data<>("Outcome", statsManager.getOutcome(fromDate, toDate)));
 
+        barChart.getData().clear();
         barChart.getData().addAll(series);
     }
 
@@ -89,5 +101,11 @@ public class StatisticsViewController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
         return converter.toString(date);
+    }
+
+    private LocalDate dateFromString(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
+        return converter.fromString(date);
     }
 }

@@ -60,12 +60,20 @@ public class TransactionStatsManager {
         // todo if needed update aggregated params here
     }
 
-
-    public BigDecimal getTotalIncome() {
+    public BigDecimal getIncome(LocalDate fromDate, LocalDate toDate) {
         return transactions.stream()
+                .filter(x -> x.getDate().isAfter(fromDate) && x.getDate().isBefore(toDate))
                 .map(BankTransaction::getAmount)
                 .filter(x -> x.compareTo(BigDecimal.ZERO) > 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getOutcome(LocalDate fromDate, LocalDate toDate) {
+        return BigDecimal.ZERO.subtract(transactions.stream()
+                .filter(x -> x.getDate().isAfter(fromDate) && x.getDate().isBefore(toDate))
+                .map(BankTransaction::getAmount)
+                .filter(x -> x.compareTo(BigDecimal.ZERO) < 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     public BigDecimal getTotalOutcome() {
