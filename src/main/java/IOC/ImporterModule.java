@@ -55,10 +55,4 @@ public class ImporterModule extends AbstractModule {
         return this.primaryStage;
     }
 
-    @Provides
-    @Named("transactionComparator")
-    Comparator<BankTransaction> provideTransactionComparator() {
-        return ModelUtil.getDateComparator();
-    }
-
 }

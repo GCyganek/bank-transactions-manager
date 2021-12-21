@@ -32,10 +32,4 @@ public class TestingModule extends AbstractModule {
 
     @Provides
     Loader provideLoader() { return new LocalFSLoader();}
-
-    @Provides
-    @Named("transactionComparator")
-    Comparator<BankTransaction> provideTransactionComparator() {
-        return ModelUtil.getDateComparator();
-    }
 }

@@ -51,52 +51,36 @@ public class TransactionsManagerAppController {
     }
 
     public AddStatementViewController showAddStatementView() throws IOException {
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/AddStatementView.fxml"));
-            BorderPane page = fxmlLoader.load();
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Stage stage = buildStage(fxmlLoader, "New transaction", "AddStatementView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
-            Stage stage = buildStage("New transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
+        AddStatementViewController addStatementViewController = fxmlLoader.getController();
+        addStatementViewController.setStage(stage);
 
-            AddStatementViewController addStatementViewController = fxmlLoader.getController();
-            addStatementViewController.setStage(stage);
+        stage.showAndWait();
 
-            stage.showAndWait();
-
-            return addStatementViewController;
-
+        return addStatementViewController;
     }
 
     public void showStatisticsView() {
-
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/StatisticsView.fxml"));
-
-            fxmlLoader.setControllerFactory(injector::getInstance);
-
-            AnchorPane page = fxmlLoader.load();
-
-            Stage stage = buildStage("Statistics", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
+            Stage stage = buildStage(fxmlLoader, "Statistics", "StatisticsView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
             StatisticsViewController statisticsViewController = fxmlLoader.getController();
             statisticsViewController.setStage(stage);
             statisticsViewController.showData();
 
             stage.showAndWait();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void showErrorWindow(String errorMsg, String reason) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(TransactionsManagerViewController.class.getResource("../view/ImportErrorView.fxml"));
-            BorderPane page = fxmlLoader.load();
-
-            Stage stage = buildStage("Error", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
+            Stage stage = buildStage(fxmlLoader, "Error", "ImportErrorView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
             ErrorViewController errorViewController = fxmlLoader.getController();
             errorViewController.setStage(stage);
@@ -112,13 +96,8 @@ public class TransactionsManagerAppController {
     public Optional<BigDecimal> showEditTransactionWindow(BankTransaction bankTransaction) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(TransactionsManagerAppController.class.getResource("../view/EditTransactionView.fxml"));
-
-            fxmlLoader.setControllerFactory(injector::getInstance);
-
-            AnchorPane page = fxmlLoader.load();
-
-            Stage stage = buildStage("Edit transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
+            Stage stage = buildStage(fxmlLoader,"Edit transaction", "EditTransactionView.fxml",
+                    primaryStage, Modality.WINDOW_MODAL);
 
             EditTransactionViewPresenter editTransactionViewPresenter = fxmlLoader.getController();
             editTransactionViewPresenter.setStage(stage);
@@ -138,10 +117,17 @@ public class TransactionsManagerAppController {
         return Optional.empty();
     }
 
-    private Stage buildStage(String title, Scene scene, Stage initOwner, Modality initModality) {
+
+    private Stage buildStage(FXMLLoader fxmlLoader, String title, String viewPath,
+                             Stage initOwner, Modality initModality) throws IOException
+    {
+        fxmlLoader.setLocation(TransactionsManagerAppController.class.getResource("../view/" + viewPath));
+        fxmlLoader.setControllerFactory(injector::getInstance);
+        Scene stageScene = new Scene(fxmlLoader.load());
+
         Stage stage = new Stage();
         stage.setTitle(title);
-        stage.setScene(scene);
+        stage.setScene(stageScene);
         stage.initOwner(initOwner);
         stage.initModality(initModality);
         return stage;

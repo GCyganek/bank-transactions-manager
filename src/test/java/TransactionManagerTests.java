@@ -1,9 +1,9 @@
 import IOC.TestingModule;
 import com.google.inject.*;
-import com.google.inject.name.Names;
 import model.BankStatement;
 import model.BankTransaction;
 import model.TransactionsManager;
+import model.util.ImportSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
@@ -14,11 +14,8 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
-
-
 
 
 public class TransactionManagerTests {
@@ -28,9 +25,7 @@ public class TransactionManagerTests {
 
     @BeforeEach
     public void initManager() {
-        manager = new TransactionsManager(mock(BankStatementsRepository.class),
-                injector.getInstance(Key.get(new TypeLiteral<Comparator<BankTransaction>>(){},
-                        Names.named("transactionComparator"))));
+        manager = new TransactionsManager(mock(BankStatementsRepository.class));
     }
 
     @Test
@@ -39,8 +34,8 @@ public class TransactionManagerTests {
         BankTransaction bankTransaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        boolean isAdded = manager.tryToAddTransaction(sid, bankTransaction);
+        ImportSession importSession = manager.startImportSession();
+        boolean isAdded = manager.tryToAddTransaction(importSession, bankTransaction);
 
         // then
         assertTrue(isAdded);
@@ -52,9 +47,9 @@ public class TransactionManagerTests {
         BankTransaction bankTransaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, bankTransaction);
-        boolean isAdded = manager.tryToAddTransaction(sid, bankTransaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, bankTransaction);
+        boolean isAdded = manager.tryToAddTransaction(importSession, bankTransaction);
 
         // then
         assertFalse(isAdded);
@@ -66,8 +61,8 @@ public class TransactionManagerTests {
         List<BankTransaction> transactions = getTestTransactions();
 
         // when
-        int sid = manager.startImportSession();
-        transactions.forEach(transaction -> manager.tryToAddTransaction(sid, transaction));
+        ImportSession importSession = manager.startImportSession();
+        transactions.forEach(transaction -> manager.tryToAddTransaction(importSession, transaction));
         TreeSet<BankTransaction> addedTransactions = manager.getTransactions();
 
         // then
@@ -81,8 +76,8 @@ public class TransactionManagerTests {
         BankTransaction transaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
 
         List<BankTransaction> addedTransactions = manager.getTransactionObservableList();
 
@@ -97,8 +92,8 @@ public class TransactionManagerTests {
         BankTransaction transaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
         manager.addToView(transaction);
 
         List<BankTransaction> addedTransactions = manager.getTransactionObservableList();
@@ -113,8 +108,8 @@ public class TransactionManagerTests {
         BankTransaction transaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
         manager.addToView(transaction);
 
         // then
@@ -128,8 +123,8 @@ public class TransactionManagerTests {
         BankTransaction transaction = getTestTransaction();
 
         // when
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
 
         // then
         assertEquals(BigDecimal.ZERO, manager.balanceProperty().getValue());
@@ -140,12 +135,12 @@ public class TransactionManagerTests {
     public void importCanBeReversedBeforeCompletion() {
         // given
         List<BankTransaction> transactions = getTestTransactions();
-        int sid = manager.startImportSession();
-        transactions.forEach(transaction -> manager.tryToAddTransaction(sid, transaction));
+        ImportSession importSession = manager.startImportSession();
+        transactions.forEach(transaction -> manager.tryToAddTransaction(importSession, transaction));
         transactions.forEach(transaction -> manager.addToView(transaction));
 
         // when
-        manager.reverseImport(sid);
+        manager.reverseImport(importSession);
 
         TreeSet<BankTransaction> addedTransactions = manager.getTransactions();
         List<BankTransaction> addedTransactionsView = manager.getTransactionObservableList();
@@ -162,11 +157,11 @@ public class TransactionManagerTests {
     public void transactionCanUpdated() {
         // given
         BankTransaction transaction = getTestTransaction();
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
         manager.addToView(transaction);
 
-        BankTransaction editedTransaction = copyBankTransaction(transaction);
+        BankTransaction editedTransaction = transaction.shallowCopy();
         editedTransaction.setDescription(transaction.getDescription() + "different");
 
         // when
@@ -185,20 +180,20 @@ public class TransactionManagerTests {
     public void sameTransactionCanBeAddedAgainIfOriginalWasUpdated() {
         // given
         BankTransaction transaction = getTestTransaction();
-        int sid = manager.startImportSession();
-        manager.tryToAddTransaction(sid, transaction);
+        ImportSession importSession = manager.startImportSession();
+        manager.tryToAddTransaction(importSession, transaction);
         manager.addToView(transaction);
 
-        BankTransaction copy = copyBankTransaction(transaction);
+        BankTransaction copy = transaction.shallowCopy();
 
-        BankTransaction editedTransaction = copyBankTransaction(transaction);
+        BankTransaction editedTransaction = transaction.shallowCopy();
         editedTransaction.setDescription(editedTransaction.getDescription() + "different");
-        manager.completeImport(sid);
+        manager.completeImport(importSession);
 
         // when
         manager.updateTransaction(transaction, editedTransaction);
-        int nextSid = manager.startImportSession();
-        boolean isAdded = manager.tryToAddTransaction(nextSid, copy);
+        ImportSession nextImportSession = manager.startImportSession();
+        boolean isAdded = manager.tryToAddTransaction(nextImportSession, copy);
 
         // then
         assertTrue(isAdded);
@@ -217,13 +212,6 @@ public class TransactionManagerTests {
         return statement;
     }
 
-    private BankTransaction copyBankTransaction(BankTransaction transaction) {
-        BankTransaction copy = new BankTransaction(transaction.getDescription(),
-                transaction.getAmount(), transaction.getDate());
-        copy.setBankStatement(transaction.getBankStatement());
-
-        return copy;
-    }
 
     private List<BankTransaction> getTestTransactions() {
         BankTransaction bankTransaction1 = getTestTransaction();

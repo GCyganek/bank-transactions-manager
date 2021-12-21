@@ -1,6 +1,5 @@
 package controller;
 
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -8,12 +7,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
-import jdk.jfr.Category;
-import model.BankStatement;
 import model.BankTransaction;
 import model.TransactionsManager;
 import model.util.TransactionCategory;
-import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
@@ -105,27 +101,30 @@ public class EditTransactionViewPresenter {
     }
 
     private void updateBankTransaction() throws ParseException {
-            LocalDate editedDate = stringToDate();
-            String editedDescription = descriptionTextField.getText();
-            BigDecimal editedAmount = stringToBigDecimal();
-            TransactionCategory editedCategory = categoryComboBox.getValue();
+        BankTransaction editedTransaction = getEditedTransaction();
 
-            BankTransaction editedTransaction = new BankTransaction(editedDescription, editedAmount, editedDate);
-            editedTransaction.setCategory(editedCategory);
-            editedTransaction.setBankStatement(bankTransaction.getBankStatement());
+        if (editedTransaction.equals(bankTransaction))
+            return;
 
-            if (editedTransaction.equals(bankTransaction))
-                return;
-
-            if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
-                appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
-            }
+        if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
+            appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
+        }
     }
 
     public void setAppController(TransactionsManagerAppController appController) {
         this.appController = appController;
     }
 
+    private BankTransaction getEditedTransaction() throws ParseException {
+        BankTransaction editedTransaction = bankTransaction.shallowCopy();
+
+        editedTransaction.setDescription(descriptionTextField.getText());
+        editedTransaction.setAmount(getEditedAmount());
+        editedTransaction.setDate(getEditedDate());
+        editedTransaction.setCategory(categoryComboBox.getValue());
+
+        return editedTransaction;
+    }
 
     private String dateToString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
@@ -133,18 +132,16 @@ public class EditTransactionViewPresenter {
         return converter.toString(bankTransaction.getDate());
     }
 
-    private LocalDate stringToDate() {
+    private LocalDate getEditedDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateStringConverter converter = new LocalDateStringConverter(formatter, formatter);
         return converter.fromString(dateTextField.getText());
     }
 
-    private BigDecimal stringToBigDecimal() throws ParseException {
+    private BigDecimal getEditedAmount() throws ParseException {
         DecimalFormat decimalFormatter = new DecimalFormat();
         decimalFormatter.setParseBigDecimal(true);
         return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
     }
-
-
 
 }

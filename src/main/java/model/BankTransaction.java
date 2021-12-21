@@ -115,6 +115,21 @@ public class BankTransaction {
         this.bankStatement = bankStatement;
     }
 
+    public BankTransaction shallowCopy() {
+        BankTransaction copy = new BankTransaction(getDescription(), getAmount(), getDate());
+        copy.setBankStatement(getBankStatement());
+        copy.setCategory(getCategory());
+        copy.setId(getId());
+        return copy;
+    }
+
+    public void copyEditableFieldsFrom(BankTransaction transaction) {
+        setCategory(transaction.getCategory());
+        setDescription(transaction.getDescription());
+        setDate(transaction.getDate());
+        setAmount(transaction.getAmount());
+    }
+
     public static class Columns {
 
         public static final String ID = "id";

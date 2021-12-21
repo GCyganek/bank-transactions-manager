@@ -4,6 +4,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.util.ImportSession;
+import model.util.ModelUtil;
 import model.util.TransactionCategory;
 import repository.BankStatementsRepository;
 
@@ -22,48 +24,22 @@ public class TransactionsManager {
 
     private final BankStatementsRepository bankStatementsRepository;
 
-    // contains every transaction, used to ensure uniqueness
+    // contains every transaction sorted by date, used to ensure uniqueness
     private final TreeSet<BankTransaction> transactions;
 
-    // sessionID -> list of transaction imported in that session,
-    // used to remove partially imported statement if error occurs
-    private final HashMap<Integer, List<BankTransaction>> importSessions;
-
-    // sessionID -> count of filtered transactions
-    private final HashMap<Integer, Integer> filteredTransactionsCounts;
-
-    // bankStatement -> sessionID, used to prevent updating transaction in repository
+    // used to prevent updating transaction in repository
     // before statement had been fully imported (statement is persisted after import completes)
-    private final HashMap<BankStatement, Integer> statementToSession;
-
-    private int sessionCounter;
+    private final HashSet<BankStatement> importInProgressStatements;
 
     @Inject
-    public TransactionsManager(BankStatementsRepository repository,
-                              @Named("transactionComparator") Comparator<BankTransaction> transactionComparator) {
+    public TransactionsManager(BankStatementsRepository repository) {
         bankStatementsRepository = repository;
         transactionObservableList = FXCollections.observableArrayList();
-        transactions = new TreeSet<>(transactionComparator);
+        transactions = new TreeSet<>(ModelUtil.getDateComparator());
         balance = new SimpleObjectProperty<>();
         balance.set(BigDecimal.ZERO);
 
-        importSessions = new HashMap<>();
-        filteredTransactionsCounts = new HashMap<>();
-        statementToSession = new HashMap<>();
-
-        sessionCounter = 0;
-    }
-
-
-    /**
-     * Each import has its unique session identifier, every succeeding call to manager from scope
-     * of that import has to use sessionId returned from this function.
-     */
-    public int startImportSession() {
-        int sid = sessionCounter++;
-        importSessions.put(sid, new LinkedList<>());
-        filteredTransactionsCounts.put(sid, 0);
-        return sid;
+        importInProgressStatements = new HashSet<>();
     }
 
 
@@ -80,28 +56,36 @@ public class TransactionsManager {
         return transactionObservableList;
     }
 
-    public boolean isValid(BankTransaction bankTransaction) {
+    /**
+     * Each import has its unique session, every succeeding call to manager from scope
+     * of that import has to use ImportSession returned from this function.
+     */
+    public ImportSession startImportSession() {
+        return new ImportSession();
+    }
+
+
+    private boolean isValid(BankTransaction bankTransaction) {
        return isUnique(bankTransaction);
     }
 
     /**
-     * Adds transaction to model only if it is valid, these 2 actions have to be done in one call to prevent race condition.
+     * Adds transaction to model only if it is valid.
      * @return true if transaction was added to model and thus can be added to view
      */
-    public synchronized boolean tryToAddTransaction(int sessionId, BankTransaction transaction) {
+    public synchronized boolean tryToAddTransaction(ImportSession importSession, BankTransaction transaction) {
+        // adding and checking have to be done in one call to prevent race condition
         if (!isValid(transaction)) {
-            filteredTransactionsCounts.merge(sessionId, 1, Integer::sum);
+            importSession.addFilteredTransaction(transaction);
             return false;
         }
 
-        List<BankTransaction> session = importSessions.get(sessionId);
-        session.add(transaction);
+        importSession.addTransaction(transaction);
+        transactions.add(transaction);
 
         BankStatement statement = transaction.getBankStatement();
         statement.addBankTransaction(transaction);
-
-        statementToSession.put(statement, sessionId);
-        transactions.add(transaction);
+        importInProgressStatements.add(statement);
 
         return true;
     }
@@ -117,29 +101,27 @@ public class TransactionsManager {
      * Persists all transactions and statement imported in that session, has to be used at most once.
      * @return number of filtered transactions
      */
-    public synchronized int completeImport(int sessionId) {
-        List<BankTransaction> importedTransactions = importSessions.remove(sessionId);
-        int filteredCount = filteredTransactionsCounts.remove(sessionId);
+    public synchronized int completeImport(ImportSession importSession) {
+        List<BankTransaction> importedTransactions = importSession.getImportedTransactions();
 
         // persist statement iff it contains >= 1 transactions
         if (!importedTransactions.isEmpty()) {
             BankStatement bankStatement = importedTransactions.get(0).getBankStatement();
             bankStatementsRepository.addBankStatement(bankStatement);
-            statementToSession.remove(bankStatement);
+            importInProgressStatements.remove(bankStatement);
         }
 
-        return filteredCount;
+        return importSession.getFilteredTransactionsCount();
     }
 
     /**
-     * Removes every transaction from both view and model already added in this import session, has to be used at most once.
+     * Removes every transaction already added in this import session from both view and model, has to be used at most once.
      */
-    public synchronized void reverseImport(int sessionId) {
-        List<BankTransaction> addedTransactions = importSessions.remove(sessionId);
-        filteredTransactionsCounts.remove(sessionId);
+    public synchronized void reverseImport(ImportSession importSession) {
+        List<BankTransaction> addedTransactions = importSession.getImportedTransactions();
 
         if (!addedTransactions.isEmpty()) {
-            statementToSession.remove(addedTransactions.get(0).getBankStatement());
+            importInProgressStatements.remove(addedTransactions.get(0).getBankStatement());
 
             // removing from this list shouldn't be that common, so performance shouldn't be degraded
             addedTransactions.forEach(transactions::remove);
@@ -151,7 +133,7 @@ public class TransactionsManager {
 
     /**
      * @param old    - transaction before any params have been edited
-     * @param edited - same transaction with edited params
+     * @param edited - same (i.e. copied) transaction with edited params
      * @return true iff edited transaction was updated
      */
     public synchronized boolean updateTransaction(BankTransaction old, BankTransaction edited) {
@@ -162,18 +144,14 @@ public class TransactionsManager {
         transactions.remove(old);
 
         // edit params of old transaction to keep references in other objects valid
-        old.setDate(edited.getDate());
-        old.setDescription(edited.getDescription());
-        old.setAmount(edited.getAmount());
-        old.setCategory(edited.getCategory());
-
+        old.copyEditableFieldsFrom(edited);
         transactions.add(old);
 
         boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old) ||
                                         fixStatementDate(old);
 
         // can't update transaction in repo if statement is still being imported
-        if (!statementToSession.containsKey(old.getBankStatement())) {
+        if (!importInProgressStatements.contains(old.getBankStatement())) {
             bankStatementsRepository.updateTransaction(old);
 
             if (statementUpdateNeeded) {
@@ -182,14 +160,6 @@ public class TransactionsManager {
         }
 
         return true;
-    }
-
-    /**
-     * Should be used if session was requested but import didn't begin.
-     */
-    public void clearSession(int sessionId) {
-        importSessions.remove(sessionId);
-        filteredTransactionsCounts.remove(sessionId);
     }
 
     public ObjectProperty<BigDecimal> balanceProperty() {

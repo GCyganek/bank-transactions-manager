@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.TransactionsManager;
 import model.util.BankType;
 import model.util.DocumentType;
+import model.util.ImportSession;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
@@ -122,35 +123,34 @@ public class TransactionsManagerViewController {
     }
 
     private void handleImport(BankType selectedBank, DocumentType selectedDocType, String uri) {
-        int sessionId = transactionsManager.startImportSession();
+        ImportSession importSession = transactionsManager.startImportSession();
 
         try {
             importer.importBankStatement(selectedBank, selectedDocType, uri)
                     .subscribeOn(Schedulers.io())
-                    .filter(transaction -> transactionsManager.tryToAddTransaction(sessionId, transaction))
+                    .filter(transaction -> transactionsManager.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())
                     .subscribe(transactionsManager::addToView,
-                          err -> handleImportError(err, sessionId),
-                          () -> handleImportComplete(sessionId, uri));
+                          err -> handleImportError(importSession, err),
+                          () -> handleImportComplete(importSession, uri));
 
         } catch (IOException e) {
             this.appController.showErrorWindow("Failed to read statement from " + uri, e.getMessage());
             e.printStackTrace();
-            transactionsManager.clearSession(sessionId);
         }
     }
 
-    private void handleImportError(Throwable err, int sessionId) {
+    private void handleImportError(ImportSession importSession, Throwable err) {
         String reason = "";
         if (err instanceof ParserException e) {
             reason = e.getReason();
         }
         this.appController.showErrorWindow(err.getMessage(), reason);
-        this.transactionsManager.reverseImport(sessionId);
+        this.transactionsManager.reverseImport(importSession);
     }
 
-    private void handleImportComplete(int sessionId, String uri) {
-        int filteredCount = transactionsManager.completeImport(sessionId);
+    private void handleImportComplete(ImportSession importSession, String uri) {
+        int filteredCount = transactionsManager.completeImport(importSession);
         if (filteredCount > 0) {
             this.appController
                     .showErrorWindow("Failed to import some transactions from: " + uri,
