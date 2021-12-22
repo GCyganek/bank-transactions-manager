@@ -2,12 +2,10 @@ package controller.util;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 
-import java.util.List;
 
 public class ContextMenuRowFactory<T> implements Callback<TableView<T>, TableRow<T>> {
 
@@ -15,14 +13,6 @@ public class ContextMenuRowFactory<T> implements Callback<TableView<T>, TableRow
 
     public ContextMenuRowFactory(ContextMenu menu) {
         this.menu = menu;
-    }
-
-    public List<MenuItem> getMenuItems() {
-        return menu.getItems();
-    }
-
-    public void setMenuItems(List<MenuItem> menuItems) {
-        menu.getItems().setAll(menuItems);
     }
 
     @Override

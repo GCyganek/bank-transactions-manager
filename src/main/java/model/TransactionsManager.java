@@ -1,12 +1,10 @@
 package model;
 
-import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.util.ImportSession;
-import org.apache.commons.lang3.tuple.Pair;
 import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
@@ -14,16 +12,12 @@ import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
-import io.reactivex.rxjava3.core.Observable;
 
 @Singleton
 public class TransactionsManager {
 
     private final ObservableList<BankTransaction> transactionObservableList;
     private final ObjectProperty<BigDecimal> balance;
-
-    // emits <transaction before edit, transaction after edit>
-    private final PublishSubject<Pair<BankTransaction, BankTransaction>> transactionUpdatedSubject;
 
     private final BankStatementsRepository bankStatementsRepository;
 
@@ -44,7 +38,6 @@ public class TransactionsManager {
         balance.set(BigDecimal.ZERO);
 
         importInProgressStatements = new HashSet<>();
-        transactionUpdatedSubject = PublishSubject.create();
     }
 
 
@@ -145,12 +138,10 @@ public class TransactionsManager {
         if (!isValid(edited))
            return false;
 
-
         // has to be removed to keep HashSet structure valid
         transactions.remove(old);
 
         // edit params of old transaction to keep references in other objects valid
-        BankTransaction original = old.shallowCopy();
         old.copyEditableFieldsFrom(edited);
 
         transactions.add(old);
@@ -161,7 +152,6 @@ public class TransactionsManager {
         // can't update transaction in repo if statement is still being imported
         if (!importInProgressStatements.contains(old.getBankStatement())) {
             bankStatementsRepository.updateTransaction(old);
-            transactionUpdatedSubject.onNext(Pair.of(original, old));
 
             if (statementUpdateNeeded) {
                 bankStatementsRepository.updateStatement(old.getBankStatement());
@@ -169,10 +159,6 @@ public class TransactionsManager {
         }
 
         return true;
-    }
-
-    public Observable<Pair<BankTransaction, BankTransaction>> getTransactionUpdatedObservable() {
-        return Observable.wrap(transactionUpdatedSubject);
     }
 
     public ObjectProperty<BigDecimal> balanceProperty() {

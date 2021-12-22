@@ -22,6 +22,8 @@ import java.util.HashMap;
 public class StatisticsViewController {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd";
+    private static final LocalDate DEFAULT_START_DATE = LocalDate.of(2000,1,1);
+    private static final LocalDate DEFAULT_END_DATE = LocalDate.of(2000,1,1);
 
     private final TransactionStatsManager statsManager;
 
@@ -58,8 +60,8 @@ public class StatisticsViewController {
     }
 
     private void updateTextFields() {
-        fromDateTextField.setText(dateToString(statsManager.getCurrentStartDate()));
-        toDateTextField.setText(dateToString(statsManager.getCurrentEndDate()));
+        fromDateTextField.setText(dateToString(statsManager.getCurrentStartDate().orElse(DEFAULT_START_DATE)));
+        toDateTextField.setText(dateToString(statsManager.getCurrentEndDate().orElse(DEFAULT_END_DATE)));
     }
 
     public void handleApplyButton(ActionEvent actionEvent) {
@@ -79,7 +81,7 @@ public class StatisticsViewController {
     }
 
     public void categoryOutcomeChart() {
-
+        System.out.println(statsManager.getTotalOutcome().doubleValue());
         HashMap<TransactionCategory, BigDecimal> map = statsManager.getOutcomesInCategories();
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
@@ -90,8 +92,9 @@ public class StatisticsViewController {
 
         pieChart.setData(pieChartData);
 
+        double totalOutcome =  statsManager.getTotalOutcome().doubleValue();
         pieChart.getData().forEach(data -> {
-            String percentage = String.format("%.2f%%", (data.getPieValue() / statsManager.getTotalOutcome().doubleValue()));
+            String percentage = String.format("%.2f%%", (data.getPieValue() / totalOutcome));
             Tooltip toolTip = new Tooltip(percentage);
             Tooltip.install(data.getNode(), toolTip);
         });

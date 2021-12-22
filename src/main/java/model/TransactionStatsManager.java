@@ -1,32 +1,34 @@
 package model;
 
-import io.reactivex.rxjava3.core.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.util.ModelUtil;
 import model.util.TransactionCategory;
-import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.Opt;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.TreeSet;
 
 public class TransactionStatsManager {
     private final TreeSet<BankTransaction> transactions;
+    private BigDecimal totalIncome, totalOutcome;
 
     @Inject
     public TransactionStatsManager(TransactionsManager transactionsManager){
         transactions = new TreeSet<>(ModelUtil.getDateComparator());
+        totalIncome = BigDecimal.ZERO;
+        totalOutcome = BigDecimal.ZERO;
         ObservableList<BankTransaction> transactionObservableList = transactionsManager.getTransactionObservableList();
 
-        setupTransactionListeners(transactionObservableList, transactionsManager.getTransactionUpdatedObservable());
+        setupTransactionListeners(transactionObservableList);
     }
 
 
-    private void setupTransactionListeners(ObservableList<BankTransaction> transactionObservableList,
-                                           Observable<Pair<BankTransaction, BankTransaction>> transactionUpdatedObs)
+    private void setupTransactionListeners(ObservableList<BankTransaction> transactionObservableList)
     {
         transactionObservableList.addListener((ListChangeListener<BankTransaction>) c -> {
             while (c.next()) {
@@ -38,26 +40,49 @@ public class TransactionStatsManager {
                 }
             }
         });
-
-        transactionUpdatedObs
-                .subscribe(update -> {
-                    BankTransaction old = update.getLeft();
-                    BankTransaction updated = update.getRight();
-
-                    removeTransaction(old);
-                    addTransaction(updated);
-                });
     }
 
 
     private void addTransaction(BankTransaction transaction) {
         transactions.add(transaction);
-        // todo if needed update aggregated params here
+        setupTransactionPropertyBindings(transaction);
+
+        // if needed update aggregated params here
+        updateTotalIncomeOutcome(transaction.getAmount());
     }
 
     private void removeTransaction(BankTransaction transaction) {
         transactions.remove(transaction);
-        // todo if needed update aggregated params here
+
+        // if needed update aggregated params here
+        updateTotalIncomeOutcome(transaction.getAmount(), BigDecimal.ZERO);
+    }
+
+    private void setupTransactionPropertyBindings(BankTransaction transaction) {
+        transaction.amountProperty().addListener((observable, oldValue, newValue) -> {
+            updateTotalIncomeOutcome(oldValue, newValue);
+        });
+    }
+
+
+    private void updateTotalIncomeOutcome(BigDecimal oldValue, BigDecimal newValue) {
+        if (oldValue.compareTo(BigDecimal.ZERO) < 0) {
+            totalOutcome = totalOutcome.add(oldValue);
+        }
+        else {
+            totalIncome = totalIncome.subtract(oldValue);
+        }
+
+        updateTotalIncomeOutcome(newValue);
+    }
+
+    private void updateTotalIncomeOutcome(BigDecimal newValue) {
+        if (newValue.compareTo(BigDecimal.ZERO) < 0) {
+            totalOutcome = totalOutcome.subtract(newValue);
+        }
+        else {
+            totalIncome = totalIncome.add(newValue);
+        }
     }
 
     public BigDecimal getIncome(LocalDate fromDate, LocalDate toDate) {
@@ -77,18 +102,19 @@ public class TransactionStatsManager {
     }
 
     public BigDecimal getTotalOutcome() {
-        return BigDecimal.ZERO.subtract(transactions.stream()
-                .map(BankTransaction::getAmount)
-                .filter(x -> x.compareTo(BigDecimal.ZERO) < 0)
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
+        return totalOutcome;
     }
 
-    public LocalDate getCurrentStartDate() {
-        return transactions.isEmpty() ? LocalDate.of(2000,1,1) : transactions.first().getDate();
+    public BigDecimal getTotalIncome() {
+        return totalIncome;
     }
 
-    public LocalDate getCurrentEndDate() {
-        return transactions.isEmpty() ? LocalDate.of(2000,1,1) : transactions.last().getDate();
+    public Optional<LocalDate> getCurrentStartDate() {
+        return transactions.isEmpty() ? Optional.empty() : Optional.of(transactions.first().getDate());
+    }
+
+    public Optional<LocalDate> getCurrentEndDate() {
+        return transactions.isEmpty() ? Optional.empty() : Optional.of(transactions.last().getDate());
     }
 
     public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories() {
