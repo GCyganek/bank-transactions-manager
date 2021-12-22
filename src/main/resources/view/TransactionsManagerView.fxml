@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="400.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TransactionsManagerViewController">
+<BorderPane prefHeight="400.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TransactionsManagerViewController">
     <right>
         <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <opaqueInsets>
@@ -29,6 +29,23 @@
                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </VBox.margin>
             </Button>
+         <VBox alignment="CENTER" style="-fx-background-color: #cfc4ea;">
+            <VBox.margin>
+               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </VBox.margin>
+            <children>
+               <ComboBox fx:id="categoryComboBox" prefWidth="150.0">
+                  <VBox.margin>
+                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  </VBox.margin>
+               </ComboBox>
+               <Button fx:id="categoryChangeButton" mnemonicParsing="false" prefWidth="150.0" onAction="#handleCategoryChangeButton" text="Change category">
+                  <VBox.margin>
+                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  </VBox.margin>
+               </Button>
+            </children>
+         </VBox>
          <cursor>
             <Cursor fx:constant="DEFAULT" />
          </cursor>
@@ -55,7 +72,7 @@
        <fx:define>
            <ContextMenu fx:id="contextMenu">
                <items>
-                   <MenuItem text="Edit Transaction" onAction="#handleEditBankTransaction"/>
+                   <MenuItem onAction="#handleEditBankTransaction" text="Edit Transaction" />
                </items>
            </ContextMenu>
        </fx:define>

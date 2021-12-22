@@ -20,7 +20,9 @@ import model.util.TransactionCategory;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
+import java.util.List;
 
 public class TransactionsManagerViewController {
 
@@ -29,8 +31,6 @@ public class TransactionsManagerViewController {
     private final Importer importer;
 
     private TransactionsManagerAppController appController;
-
-
     @Inject
     public TransactionsManagerViewController(TransactionsManager transactionsManager, Importer importer) {
         this.transactionsManager = transactionsManager;
@@ -39,6 +39,8 @@ public class TransactionsManagerViewController {
         this.bankTransactions = this.transactionsManager.fetchDataFromDatabase();
 
     }
+
+
 
     @FXML
     public TableView<BankTransaction> transactionsTable;
@@ -68,11 +70,18 @@ public class TransactionsManagerViewController {
     public TextField balanceTextField;
 
     @FXML
+    public Button categoryChangeButton;
+
+    @FXML
+    public ComboBox<TransactionCategory> categoryComboBox;
+
+    @FXML
     public ContextMenu contextMenu;
 
     @FXML
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
+        updateCategoryComboBox();
 
         transactionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -85,10 +94,16 @@ public class TransactionsManagerViewController {
         categoryColumn.setCellValueFactory(dataValue -> dataValue.getValue().categoryProperty());
 
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        categoryChangeButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
+
         contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
         transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
     }
 
+    private void updateCategoryComboBox() {
+        categoryComboBox.getItems().addAll(TransactionCategory.values());
+        categoryComboBox.getSelectionModel().select(TransactionCategory.UNCATEGORIZED);
+    }
 
     public void setAppController(TransactionsManagerAppController appController) {
         this.appController = appController;
@@ -164,4 +179,32 @@ public class TransactionsManagerViewController {
         }
     }
 
+    public void handleCategoryChangeButton(ActionEvent actionEvent) {
+        TransactionCategory selectedTransactionCategory = categoryComboBox.getValue();
+        List<BankTransaction> selectedBankTransactions = transactionsTable.getSelectionModel().getSelectedItems();
+        updateSelectedBankTransactionsCategory(selectedBankTransactions, selectedTransactionCategory);
+    }
+
+    private void updateSelectedBankTransactionsCategory(List<BankTransaction> bankTransactions,
+                                                        TransactionCategory transactionCategory)
+    {
+        bankTransactions.forEach(bankTransaction -> {
+            if (transactionCategory.equals(bankTransaction.getCategory())) return;
+            BankTransaction editedTransaction = getEditedTransaction(bankTransaction, transactionCategory);
+
+            if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
+                appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
+            }
+        });
+    }
+
+    private BankTransaction getEditedTransaction(BankTransaction bankTransaction,
+                                                 TransactionCategory transactionCategory)
+    {
+        BankTransaction editedTransaction = bankTransaction.shallowCopy();
+
+        editedTransaction.setCategory(transactionCategory);
+
+        return editedTransaction;
+    }
 }
