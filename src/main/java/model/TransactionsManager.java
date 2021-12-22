@@ -146,8 +146,8 @@ public class TransactionsManager {
 
         transactions.add(old);
 
-        boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old) ||
-                                        fixStatementDate(old);
+        boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old);
+        statementUpdateNeeded |= fixStatementDate(old);
 
         // can't update transaction in repo if statement is still being imported
         if (!importInProgressStatements.contains(old.getBankStatement())) {
