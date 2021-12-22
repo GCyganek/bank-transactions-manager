@@ -74,8 +74,10 @@ public class TransactionsManagerViewController {
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
 
+        transactionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         balanceTextField.textProperty().bind(transactionsManager
-                .balanceProperty().asString("Transactions Balance: %.00f"));
+                .balanceProperty().asString("Transactions Balance: %.2f"));
 
         dateColumn.setCellValueFactory(dataValue -> dataValue.getValue().dateProperty());
         descriptionColumn.setCellValueFactory(dataValue -> dataValue.getValue().descriptionProperty());

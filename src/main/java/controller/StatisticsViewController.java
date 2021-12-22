@@ -75,7 +75,7 @@ public class StatisticsViewController {
         series.getData().add(new XYChart.Data<>("Outcome", statsManager.getOutcome(fromDate, toDate)));
 
         barChart.getData().clear();
-        barChart.getData().addAll(series);
+        barChart.getData().add(series);
     }
 
     public void categoryOutcomeChart() {
