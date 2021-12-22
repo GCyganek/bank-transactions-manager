@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.converter.LocalDateStringConverter;
 import model.TransactionStatsManager;
 import model.util.TransactionCategory;
@@ -96,6 +97,7 @@ public class StatisticsViewController {
         pieChart.getData().forEach(data -> {
             String percentage = String.format("%.2f%%", (data.getPieValue() / totalOutcome) * 100);
             Tooltip toolTip = new Tooltip(percentage);
+            toolTip.setShowDelay(Duration.millis(150));
             Tooltip.install(data.getNode(), toolTip);
         });
     }
