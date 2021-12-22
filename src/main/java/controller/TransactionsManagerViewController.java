@@ -95,6 +95,7 @@ public class TransactionsManagerViewController {
 
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         categoryChangeButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
+        categoryComboBox.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
 
         contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
         transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
