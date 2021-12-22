@@ -94,7 +94,7 @@ public class StatisticsViewController {
 
         double totalOutcome =  statsManager.getTotalOutcome().doubleValue();
         pieChart.getData().forEach(data -> {
-            String percentage = String.format("%.2f%%", (data.getPieValue() / totalOutcome));
+            String percentage = String.format("%.2f%%", (data.getPieValue() / totalOutcome) * 100);
             Tooltip toolTip = new Tooltip(percentage);
             Tooltip.install(data.getNode(), toolTip);
         });

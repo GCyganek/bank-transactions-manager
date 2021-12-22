@@ -4,7 +4,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.util.ModelUtil;
 import model.util.TransactionCategory;
-import org.checkerframework.checker.nullness.Opt;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
