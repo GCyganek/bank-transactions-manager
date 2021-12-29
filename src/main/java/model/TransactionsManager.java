@@ -140,11 +140,13 @@ public class TransactionsManager {
 
         // has to be removed to keep HashSet structure valid
         transactions.remove(old);
+        transactionObservableList.remove(old);
 
         // edit params of old transaction to keep references in other objects valid
         old.copyEditableFieldsFrom(edited);
 
         transactions.add(old);
+        transactionObservableList.add(old);
 
         boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old);
         statementUpdateNeeded |= fixStatementDate(old);

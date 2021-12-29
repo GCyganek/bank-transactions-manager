@@ -131,7 +131,9 @@ public class BankTransaction {
     }
 
     public boolean isBetweenDates(LocalDate fromDate, LocalDate toDate) {
-        return getDate().isAfter(fromDate) && getDate().isBefore(toDate);
+        return getDate().isEqual(fromDate)
+                || getDate().isEqual(toDate)
+                || (getDate().isAfter(fromDate) && getDate().isBefore(toDate));
     }
 
     public static class Columns {

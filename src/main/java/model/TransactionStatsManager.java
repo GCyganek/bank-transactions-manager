@@ -45,43 +45,34 @@ public class TransactionStatsManager {
 
     private void addTransaction(BankTransaction transaction) {
         transactions.add(transaction);
-        setupTransactionPropertyBindings(transaction);
 
         // if needed update aggregated params here
-        updateTotalIncomeOutcome(transaction.getAmount());
+        updateTotalIncomeOutcomeOnAdd(transaction.getAmount());
     }
 
     private void removeTransaction(BankTransaction transaction) {
         transactions.remove(transaction);
 
         // if needed update aggregated params here
-        updateTotalIncomeOutcome(transaction.getAmount(), BigDecimal.ZERO);
+        updateTotalIncomeOutcomeOnRemove(transaction.getAmount());
     }
 
-    private void setupTransactionPropertyBindings(BankTransaction transaction) {
-        transaction.amountProperty().addListener((observable, oldValue, newValue) -> {
-            updateTotalIncomeOutcome(oldValue, newValue);
-        });
-    }
-
-
-    private void updateTotalIncomeOutcome(BigDecimal oldValue, BigDecimal newValue) {
-        if (oldValue.compareTo(BigDecimal.ZERO) < 0) {
-            totalOutcome = totalOutcome.add(oldValue);
+    private void updateTotalIncomeOutcomeOnRemove(BigDecimal value) {
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            totalOutcome = totalOutcome.add(value);
         }
         else {
-            totalIncome = totalIncome.subtract(oldValue);
+            totalIncome = totalIncome.subtract(value);
         }
 
-        updateTotalIncomeOutcome(newValue);
     }
 
-    private void updateTotalIncomeOutcome(BigDecimal newValue) {
-        if (newValue.compareTo(BigDecimal.ZERO) < 0) {
-            totalOutcome = totalOutcome.subtract(newValue);
+    private void updateTotalIncomeOutcomeOnAdd(BigDecimal value) {
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            totalOutcome = totalOutcome.subtract(value);
         }
         else {
-            totalIncome = totalIncome.add(newValue);
+            totalIncome = totalIncome.add(value);
         }
     }
 
@@ -118,21 +109,25 @@ public class TransactionStatsManager {
     }
 
     public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories(LocalDate fromDate, LocalDate toDate) {
-        HashMap<TransactionCategory, BigDecimal> map = new HashMap<>();
+        HashMap<TransactionCategory, BigDecimal> outcomesInCategories = new HashMap<>();
 
         for(TransactionCategory category: TransactionCategory.values()) {
-            map.put(category, BigDecimal.ZERO);
+            outcomesInCategories.put(category, BigDecimal.ZERO);
         }
 
         for(BankTransaction transaction: transactions) {
             if(transaction.isBetweenDates(fromDate, toDate)
                     && transaction.getAmount().compareTo(BigDecimal.ZERO) < 0)
             {
-                map.put(transaction.getCategory(), map.get(transaction.getCategory()).subtract(transaction.getAmount()));
+                outcomesInCategories.put(transaction.getCategory(),
+                        outcomesInCategories.get(transaction.getCategory()).subtract(transaction.getAmount()));
             }
         }
 
-        return map;
+        return outcomesInCategories;
     }
 
+    public TreeSet<BankTransaction> getTransactions() {
+        return transactions;
+    }
 }
