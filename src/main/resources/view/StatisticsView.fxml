@@ -7,13 +7,13 @@
 
 <AnchorPane prefHeight="350.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.StatisticsViewController">
    <children>
-      <TabPane prefHeight="350.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane prefHeight="350.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="Incomes/Outcomes">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="600.0">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="320.0" prefWidth="800.0">
                      <children>
-                        <BarChart fx:id="barChart" animated="false" layoutX="30.0" layoutY="10.0" legendVisible="false" prefHeight="300.0" prefWidth="300.0">
+                        <BarChart fx:id="barChart" animated="false" layoutX="137.0" layoutY="10.0" legendVisible="false" prefHeight="300.0" prefWidth="300.0">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
                           </xAxis>
@@ -21,21 +21,21 @@
                             <NumberAxis side="LEFT" />
                           </yAxis>
                         </BarChart>
-                        <VBox layoutX="362.0" layoutY="33.0" prefHeight="253.0" prefWidth="193.0">
+                        <VBox layoutX="469.0" layoutY="33.0" prefHeight="253.0" prefWidth="193.0">
                            <children>
                               <Label text="From">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextField fx:id="fromDateTextField" />
+                              <TextField fx:id="barChartFromDateTextField" />
                               <Label text="To">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextField fx:id="toDateTextField" />
-                              <Button fx:id="applyButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handleApplyButton" text="Apply">
+                              <TextField fx:id="barChartToDateTextField" />
+                              <Button fx:id="barChartApplyButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handleBarChartApplyButton" text="Apply">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -48,7 +48,27 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="350.0" prefWidth="600.0">
                      <children>
-                        <PieChart fx:id="pieChart" labelsVisible="false" layoutX="50.0" layoutY="10.0" legendSide="RIGHT" prefHeight="300.0" prefWidth="500.0" />
+                        <PieChart fx:id="pieChart" labelsVisible="false" layoutX="30.0" layoutY="10.0" legendSide="RIGHT" prefHeight="300.0" prefWidth="500.0" titleSide="RIGHT" />
+                         <VBox layoutX="568.0" layoutY="33.0" prefHeight="138.0" prefWidth="194.0">
+                             <children>
+                                 <Label text="From">
+                                     <VBox.margin>
+                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                     </VBox.margin>
+                                 </Label>
+                                 <TextField fx:id="pieChartFromDateTextField" />
+                                 <Label text="To">
+                                     <VBox.margin>
+                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                     </VBox.margin>
+                                 </Label>
+                                 <TextField fx:id="pieChartToDateTextField" />
+                                 <Button fx:id="pieChartApplyButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handlePieChartApplyButton" text="Apply">
+                                     <VBox.margin>
+                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                     </VBox.margin>
+                                 </Button>
+                             </children></VBox>
                      </children></AnchorPane>
             </content>
           </Tab>

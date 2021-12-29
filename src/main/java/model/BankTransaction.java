@@ -130,6 +130,10 @@ public class BankTransaction {
         setAmount(transaction.getAmount());
     }
 
+    public boolean isBetweenDates(LocalDate fromDate, LocalDate toDate) {
+        return getDate().isAfter(fromDate) && getDate().isBefore(toDate);
+    }
+
     public static class Columns {
 
         public static final String ID = "id";

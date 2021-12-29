@@ -8,6 +8,7 @@ import model.util.TransactionCategory;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -86,7 +87,7 @@ public class TransactionStatsManager {
 
     public BigDecimal getIncome(LocalDate fromDate, LocalDate toDate) {
         return transactions.stream()
-                .filter(x -> x.getDate().isAfter(fromDate) && x.getDate().isBefore(toDate))
+                .filter(x -> x.isBetweenDates(fromDate, toDate))
                 .map(BankTransaction::getAmount)
                 .filter(x -> x.compareTo(BigDecimal.ZERO) > 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -94,7 +95,7 @@ public class TransactionStatsManager {
 
     public BigDecimal getOutcome(LocalDate fromDate, LocalDate toDate) {
         return BigDecimal.ZERO.subtract(transactions.stream()
-                .filter(x -> x.getDate().isAfter(fromDate) && x.getDate().isBefore(toDate))
+                .filter(x -> x.isBetweenDates(fromDate, toDate))
                 .map(BankTransaction::getAmount)
                 .filter(x -> x.compareTo(BigDecimal.ZERO) < 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
@@ -116,7 +117,7 @@ public class TransactionStatsManager {
         return transactions.isEmpty() ? Optional.empty() : Optional.of(transactions.last().getDate());
     }
 
-    public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories() {
+    public HashMap<TransactionCategory, BigDecimal> getOutcomesInCategories(LocalDate fromDate, LocalDate toDate) {
         HashMap<TransactionCategory, BigDecimal> map = new HashMap<>();
 
         for(TransactionCategory category: TransactionCategory.values()) {
@@ -124,7 +125,9 @@ public class TransactionStatsManager {
         }
 
         for(BankTransaction transaction: transactions) {
-            if(transaction.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            if(transaction.isBetweenDates(fromDate, toDate)
+                    && transaction.getAmount().compareTo(BigDecimal.ZERO) < 0)
+            {
                 map.put(transaction.getCategory(), map.get(transaction.getCategory()).subtract(transaction.getAmount()));
             }
         }

@@ -44,13 +44,22 @@ public class StatisticsViewController {
     public PieChart pieChart;
 
     @FXML
-    public TextField fromDateTextField;
+    public TextField barChartFromDateTextField;
 
     @FXML
-    public TextField toDateTextField;
+    public TextField barChartToDateTextField;
 
     @FXML
-    public Button applyButton;
+    public Button barChartApplyButton;
+
+    @FXML
+    public TextField pieChartFromDateTextField;
+
+    @FXML
+    public TextField pieChartToDateTextField;
+
+    @FXML
+    public Button pieChartApplyButton;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -63,17 +72,21 @@ public class StatisticsViewController {
     }
 
     private void updateTextFields() {
-        fromDateTextField.setText(dateToString(statsManager.getCurrentStartDate().orElse(DEFAULT_START_DATE)));
-        toDateTextField.setText(dateToString(statsManager.getCurrentEndDate().orElse(DEFAULT_END_DATE)));
+        barChartFromDateTextField.setText(dateToString(statsManager.getCurrentStartDate().orElse(DEFAULT_START_DATE)));
+        pieChartFromDateTextField.setText(dateToString(statsManager.getCurrentStartDate().orElse(DEFAULT_START_DATE)));
+        barChartToDateTextField.setText(dateToString(statsManager.getCurrentEndDate().orElse(DEFAULT_END_DATE)));
+        pieChartToDateTextField.setText(dateToString(statsManager.getCurrentEndDate().orElse(DEFAULT_END_DATE)));
     }
 
-    public void handleApplyButton(ActionEvent actionEvent) {
+    public void handleBarChartApplyButton(ActionEvent actionEvent) {
         incomeOutcomeChart();
     }
 
+    public void handlePieChartApplyButton(ActionEvent actionEvent) { categoryOutcomeChart(); }
+
     public void incomeOutcomeChart() {
-        LocalDate fromDate = dateFromString(fromDateTextField.getText()).minusDays(1);
-        LocalDate toDate = dateFromString(toDateTextField.getText()).plusDays(1);
+        LocalDate fromDate = dateFromString(barChartFromDateTextField.getText()).minusDays(1);
+        LocalDate toDate = dateFromString(barChartToDateTextField.getText()).plusDays(1);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.getData().add(new XYChart.Data<>(INCOME, statsManager.getIncome(fromDate, toDate)));
@@ -84,8 +97,11 @@ public class StatisticsViewController {
     }
 
     public void categoryOutcomeChart() {
-        System.out.println(statsManager.getTotalOutcome().doubleValue());
-        HashMap<TransactionCategory, BigDecimal> outcomesInCategories = statsManager.getOutcomesInCategories();
+        LocalDate fromDate = dateFromString(pieChartFromDateTextField.getText()).minusDays(1);
+        LocalDate toDate = dateFromString(pieChartToDateTextField.getText()).plusDays(1);
+
+        HashMap<TransactionCategory, BigDecimal> outcomesInCategories =
+                statsManager.getOutcomesInCategories(fromDate, toDate);
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
@@ -95,7 +111,7 @@ public class StatisticsViewController {
 
         pieChart.setData(pieChartData);
 
-        double totalOutcome =  statsManager.getTotalOutcome().doubleValue();
+        double totalOutcome =  statsManager.getOutcome(fromDate, toDate).doubleValue();
         pieChart.getData().forEach(data -> installToolTip(data, totalOutcome));
     }
 
