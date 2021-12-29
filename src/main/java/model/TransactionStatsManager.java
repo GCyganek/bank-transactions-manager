@@ -18,7 +18,7 @@ public class TransactionStatsManager {
 
     @Inject
     public TransactionStatsManager(TransactionsManager transactionsManager){
-        transactions = new TreeSet<>(ModelUtil.getDateComparator());
+        transactions = new TreeSet<>(ModelUtil.getDateThenAmountThenDescriptionComparator());
         totalIncome = BigDecimal.ZERO;
         totalOutcome = BigDecimal.ZERO;
         ObservableList<BankTransaction> transactionObservableList = transactionsManager.getTransactionObservableList();

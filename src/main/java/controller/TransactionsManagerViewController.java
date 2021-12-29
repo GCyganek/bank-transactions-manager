@@ -20,7 +20,6 @@ import model.util.TransactionCategory;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,6 +30,7 @@ public class TransactionsManagerViewController {
     private final Importer importer;
 
     private TransactionsManagerAppController appController;
+
     @Inject
     public TransactionsManagerViewController(TransactionsManager transactionsManager, Importer importer) {
         this.transactionsManager = transactionsManager;
@@ -39,8 +39,6 @@ public class TransactionsManagerViewController {
         this.bankTransactions = this.transactionsManager.fetchDataFromDatabase();
 
     }
-
-
 
     @FXML
     public TableView<BankTransaction> transactionsTable;

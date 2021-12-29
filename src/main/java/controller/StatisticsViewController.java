@@ -25,6 +25,8 @@ public class StatisticsViewController {
     private static final String DATE_PATTERN = "yyyy-MM-dd";
     private static final LocalDate DEFAULT_START_DATE = LocalDate.of(2000,1,1);
     private static final LocalDate DEFAULT_END_DATE = LocalDate.of(2000,1,1);
+    private static final String INCOME = "Income";
+    private static final String OUTCOME = "Outcome";
 
     private final TransactionStatsManager statsManager;
 
@@ -74,8 +76,8 @@ public class StatisticsViewController {
         LocalDate toDate = dateFromString(toDateTextField.getText()).plusDays(1);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Income", statsManager.getIncome(fromDate, toDate)));
-        series.getData().add(new XYChart.Data<>("Outcome", statsManager.getOutcome(fromDate, toDate)));
+        series.getData().add(new XYChart.Data<>(INCOME, statsManager.getIncome(fromDate, toDate)));
+        series.getData().add(new XYChart.Data<>(OUTCOME, statsManager.getOutcome(fromDate, toDate)));
 
         barChart.getData().clear();
         barChart.getData().add(series);
@@ -83,23 +85,26 @@ public class StatisticsViewController {
 
     public void categoryOutcomeChart() {
         System.out.println(statsManager.getTotalOutcome().doubleValue());
-        HashMap<TransactionCategory, BigDecimal> map = statsManager.getOutcomesInCategories();
+        HashMap<TransactionCategory, BigDecimal> outcomesInCategories = statsManager.getOutcomesInCategories();
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
-        for(TransactionCategory category: map.keySet()) {
-            pieChartData.add(new PieChart.Data(category.toString(), map.get(category).doubleValue()));
+        for(TransactionCategory category: outcomesInCategories.keySet()) {
+            pieChartData.add(new PieChart.Data(category.toString(), outcomesInCategories.get(category).doubleValue()));
         }
 
         pieChart.setData(pieChartData);
 
         double totalOutcome =  statsManager.getTotalOutcome().doubleValue();
-        pieChart.getData().forEach(data -> {
-            String percentage = String.format("%.2f%%", (data.getPieValue() / totalOutcome) * 100);
-            Tooltip toolTip = new Tooltip(percentage);
-            toolTip.setShowDelay(Duration.millis(150));
-            Tooltip.install(data.getNode(), toolTip);
-        });
+        pieChart.getData().forEach(data -> installToolTip(data, totalOutcome));
+    }
+
+    private void installToolTip(PieChart.Data data, double totalOutcome) {
+        String percentage = String.format("Percentage of the total: %.2f%%", (data.getPieValue() / totalOutcome) * 100);
+        String amount = String.format("Amount: %.2f", data.getPieValue());
+        Tooltip toolTip = new Tooltip(amount + "\n" + percentage);
+        toolTip.setShowDelay(Duration.millis(150));
+        Tooltip.install(data.getNode(), toolTip);
     }
 
     private String dateToString(LocalDate date) {

@@ -86,9 +86,13 @@ public class EditTransactionViewPresenter {
 
     public void handleOkAction(ActionEvent actionEvent) {
         try {
-            updateBankTransaction();
+            if (!updateBankTransaction()) return;
         } catch (ParseException e) {
-            System.out.println("Error while parsing string to BigDecimal: " + e.getMessage());
+            appController.showErrorWindow(
+                    "Failed to update transaction. Make sure that the new transaction amount is a valid number",
+                            e.getMessage()
+            );
+            return;
         }
 
         finalAmount = bankTransaction.getAmount();
@@ -100,15 +104,23 @@ public class EditTransactionViewPresenter {
         stage.close();
     }
 
-    private void updateBankTransaction() throws ParseException {
+    /**
+     * @return false if update did not succeed and <code>EditTransactionView</code> should remain open for further
+     * transaction's edit
+     * @throws ParseException if parsing <code>amountTextField</code> string value to <code>BigDecimal</code> failed in
+     * <code>getEditedAmount()</code> method
+     */
+    private boolean updateBankTransaction() throws ParseException {
         BankTransaction editedTransaction = getEditedTransaction();
 
         if (editedTransaction.equals(bankTransaction))
-            return;
+            return true;
 
         if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
             appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
+            return false;
         }
+        return true;
     }
 
     public void setAppController(TransactionsManagerAppController appController) {

@@ -18,18 +18,9 @@ public final class ModelUtil {
         return property1.get().equals(property2.get());
     }
 
-    public static Comparator<BankTransaction> getDateComparator() {
-        // TODO refactor if possible
-        return (o1, o2) -> {
-            if (o1.getDate().equals(o2.getDate())) {
-                if (o1.getAmount().equals(o2.getAmount())) {
-                    if (o1.getDescription().equals(o2.getDescription()))
-                        return o1.getCategory().compareTo(o2.getCategory());
-                    return o1.getDescription().compareTo(o2.getDescription()) ;
-                }
-                return o1.getAmount().compareTo(o2.getAmount());
-            }
-            return  o1.getDate().compareTo(o2.getDate());
-        };
+    public static Comparator<BankTransaction> getDateThenAmountThenDescriptionComparator() {
+        return Comparator.comparing(BankTransaction::getDate)
+                .thenComparing(BankTransaction::getAmount)
+                .thenComparing(BankTransaction::getDescription);
     }
 }
