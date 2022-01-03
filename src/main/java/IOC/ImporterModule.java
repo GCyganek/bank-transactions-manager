@@ -6,8 +6,8 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
+import model.Account;
 import model.TransactionStatsManager;
-import model.TransactionsManager;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
@@ -26,7 +26,7 @@ public class ImporterModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(TransactionsManager.class).asEagerSingleton();
+        bind(Account.class).asEagerSingleton();
         bind(TransactionStatsManager.class).asEagerSingleton();
     }
 

@@ -1,7 +1,4 @@
-import model.BankStatement;
-import model.BankTransaction;
-import model.TransactionStatsManager;
-import model.TransactionsManager;
+import model.*;
 import model.util.ImportSession;
 import model.util.TransactionCategory;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +18,15 @@ import static org.mockito.Mockito.when;
 public class TransactionStatsManagerTests {
 
     private TransactionStatsManager transactionStatsManager;
-    private TransactionsManager transactionsManager;
+    private TransactionsSupervisor transactionsSupervisor;
+    private Account account;
 
     @BeforeEach
     public void initManagers() {
-        transactionsManager = new TransactionsManager(mock(BankStatementsRepository.class));
-        transactionStatsManager = new TransactionStatsManager(transactionsManager);
+        BankStatementsRepository repository = mock(BankStatementsRepository.class);
+        account = new Account(repository);
+        transactionsSupervisor = new TransactionsSupervisor(repository, account);
+        transactionStatsManager = new TransactionStatsManager(account);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class TransactionStatsManagerTests {
         BankTransaction testTransaction = getTestTransaction();
 
         // when
-        transactionsManager.addToView(testTransaction);
+        account.addTransaction(testTransaction);
         TreeSet<BankTransaction> transactions = transactionStatsManager.getTransactions();
 
         // then
@@ -48,15 +48,15 @@ public class TransactionStatsManagerTests {
     public void incomeOutcomeUpdatesOnTransactionEdit() {
         // given
         BankTransaction transaction = getTestTransaction();
-        ImportSession importSession = transactionsManager.startImportSession();
-        transactionsManager.tryToAddTransaction(importSession, transaction);
-        transactionsManager.addToView(transaction);
+        ImportSession importSession = transactionsSupervisor.startImportSession();
+        transactionsSupervisor.tryToAddTransaction(importSession, transaction);
+        account.addTransaction(transaction);
 
         BankTransaction editedTransaction = transaction.shallowCopy();
         editedTransaction.setAmount(BigDecimal.valueOf(-123));
 
         // when
-        transactionsManager.updateTransaction(transaction, editedTransaction);
+        transactionsSupervisor.updateTransaction(transaction, editedTransaction);
         TreeSet<BankTransaction> transactions = transactionStatsManager.getTransactions();
 
         // then
@@ -69,9 +69,9 @@ public class TransactionStatsManagerTests {
     public void transactionStatsManagerUpdatesOnReverseImportInTransactionManager() {
         // given
         List<BankTransaction> transactions = getTestTransactions();
-        ImportSession importSession = transactionsManager.startImportSession();
-        transactions.forEach(transaction -> transactionsManager.tryToAddTransaction(importSession, transaction));
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        ImportSession importSession = transactionsSupervisor.startImportSession();
+        transactions.forEach(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
 
         TreeSet<BankTransaction> transactionsFromStatsManager = transactionStatsManager.getTransactions();
 
@@ -80,7 +80,7 @@ public class TransactionStatsManagerTests {
         assertEquals(BigDecimal.valueOf(810), transactionStatsManager.getTotalOutcome());
 
         // when
-        transactionsManager.reverseImport(importSession);
+        transactionsSupervisor.reverseImport(importSession);
         transactionsFromStatsManager = transactionStatsManager.getTransactions();
 
         // then
@@ -95,7 +95,7 @@ public class TransactionStatsManagerTests {
         List<BankTransaction> transactions = getTestTransactions();
 
         // when
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
 
         // then
         assertEquals(LocalDate.of(2021, 12, 18), transactionStatsManager.getCurrentStartDate().get());
@@ -106,16 +106,16 @@ public class TransactionStatsManagerTests {
     public void startAndEndDateTestAfterUpdate() {
         // given
         List<BankTransaction> transactions = getTestTransactions();
-        ImportSession importSession = transactionsManager.startImportSession();
-        transactions.forEach(transaction -> transactionsManager.tryToAddTransaction(importSession, transaction));
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        ImportSession importSession = transactionsSupervisor.startImportSession();
+        transactions.forEach(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
 
         BankTransaction transactionToEdit = transactions.get(1);
         BankTransaction editedTransaction = transactionToEdit.shallowCopy();
         editedTransaction.setDate(LocalDate.of(2021, 12, 25));
 
         // when
-        transactionsManager.updateTransaction(transactionToEdit, editedTransaction);
+        transactionsSupervisor.updateTransaction(transactionToEdit, editedTransaction);
 
         // then
         assertEquals(LocalDate.of(2021, 12, 20), transactionStatsManager.getCurrentStartDate().get());
@@ -128,7 +128,7 @@ public class TransactionStatsManagerTests {
         List<BankTransaction> transactions = getTestTransactions();
 
         // when
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
         HashMap<TransactionCategory, BigDecimal> outcomesInCategories = transactionStatsManager
                 .getOutcomesInCategories(LocalDate.of(2021, 12, 1),
                                          LocalDate.of(2021, 12, 31));
@@ -146,7 +146,7 @@ public class TransactionStatsManagerTests {
         List<BankTransaction> transactions = getTestTransactions();
 
         // when
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
 
         // then
         assertEquals(BigDecimal.valueOf(810), transactionStatsManager.getOutcome(LocalDate.of(2021, 12, 1),
@@ -167,7 +167,7 @@ public class TransactionStatsManagerTests {
         List<BankTransaction> transactions = getTestTransactions();
 
         // when
-        transactions.forEach(transaction -> transactionsManager.addToView(transaction));
+        transactions.forEach(transaction -> account.addTransaction(transaction));
 
         // then
         assertEquals(BigDecimal.valueOf(178), transactionStatsManager.getIncome(LocalDate.of(2021, 12, 1),

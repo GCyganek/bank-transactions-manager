@@ -8,7 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.converter.LocalDateStringConverter;
 import model.BankTransaction;
-import model.TransactionsManager;
+import model.TransactionsSupervisor;
 import model.util.TransactionCategory;
 
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ public class EditTransactionViewPresenter {
 
     private BankTransaction bankTransaction;
 
-    private final TransactionsManager transactionsManager;
+    private final TransactionsSupervisor transactionsSupervisor;
 
     private BigDecimal finalAmount;
 
@@ -35,8 +35,8 @@ public class EditTransactionViewPresenter {
     private TransactionsManagerAppController appController;
 
     @Inject
-    public EditTransactionViewPresenter(TransactionsManager transactionsManager) {
-        this.transactionsManager = transactionsManager;
+    public EditTransactionViewPresenter(TransactionsSupervisor transactionsSupervisor) {
+        this.transactionsSupervisor = transactionsSupervisor;
     }
 
     @FXML
@@ -116,7 +116,7 @@ public class EditTransactionViewPresenter {
         if (editedTransaction.equals(bankTransaction))
             return true;
 
-        if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
+        if (!transactionsSupervisor.updateTransaction(bankTransaction, editedTransaction)) {
             appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
             return false;
         }

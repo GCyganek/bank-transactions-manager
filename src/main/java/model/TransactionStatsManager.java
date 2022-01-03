@@ -10,7 +10,6 @@ import model.util.TransactionCategory;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -20,14 +19,16 @@ public class TransactionStatsManager {
     private BigDecimal totalIncome, totalOutcome;
 
     @Inject
-    public TransactionStatsManager(TransactionsManager transactionsManager){
+    public TransactionStatsManager(Account account){
         transactions = new TreeSet<>(ModelUtil.getDateThenAmountThenDescriptionComparator());
         totalIncome = BigDecimal.ZERO;
         totalOutcome = BigDecimal.ZERO;
 
-        ObservableList<BankTransaction> transactionObservableList = transactionsManager.getTransactionObservableList();
+        ObservableList<BankTransaction> transactionObservableList = account.getTransactionObservableList();
+        transactions.addAll(transactionObservableList);
+        
         Observable<Pair<BankTransaction, BankTransaction>> transactionUpdatedObservable
-                = transactionsManager.getTransactionUpdatedObservable();
+                = account.getTransactionUpdatedObservable();
 
         setupTransactionListeners(transactionObservableList, transactionUpdatedObservable);
     }

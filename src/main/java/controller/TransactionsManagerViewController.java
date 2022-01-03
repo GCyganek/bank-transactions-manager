@@ -5,7 +5,8 @@ import importer.Importer;
 import importer.exceptions.ParserException;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.scene.control.*;
-import model.TransactionsManager;
+import model.Account;
+import model.TransactionsSupervisor;
 import model.util.BankType;
 import model.util.DocumentType;
 import model.util.ImportSession;
@@ -26,18 +27,21 @@ import java.util.List;
 public class TransactionsManagerViewController {
 
     private final ObservableList<BankTransaction> bankTransactions;
-    private final TransactionsManager transactionsManager;
+    private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
+    private final Account account;
 
     private TransactionsManagerAppController appController;
 
+
     @Inject
-    public TransactionsManagerViewController(TransactionsManager transactionsManager, Importer importer) {
-        this.transactionsManager = transactionsManager;
+    public TransactionsManagerViewController(TransactionsSupervisor transactionsSupervisor,
+                                             Importer importer, Account account) {
+        this.transactionsSupervisor = transactionsSupervisor;
         this.importer = importer;
+        this.account = account;
 
-        this.bankTransactions = this.transactionsManager.fetchDataFromDatabase();
-
+        this.bankTransactions = account.getTransactionObservableList();
     }
 
     @FXML
@@ -83,7 +87,7 @@ public class TransactionsManagerViewController {
 
         transactionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        balanceTextField.textProperty().bind(transactionsManager
+        balanceTextField.textProperty().bind(account
                 .balanceProperty().asString("Transactions Balance: %.2f"));
 
         dateColumn.setCellValueFactory(dataValue -> dataValue.getValue().dateProperty());
@@ -115,7 +119,7 @@ public class TransactionsManagerViewController {
         if (bankTransaction != null) {
             appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
                 if (amountAfterEdit.compareTo(amountBeforeEdit) != 0) {
-                    transactionsManager.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
+                    account.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
                 }
             });
         }
@@ -143,14 +147,14 @@ public class TransactionsManagerViewController {
     }
 
     private void handleImport(BankType selectedBank, DocumentType selectedDocType, String uri) {
-        ImportSession importSession = transactionsManager.startImportSession();
+        ImportSession importSession = transactionsSupervisor.startImportSession();
 
         try {
             importer.importBankStatement(selectedBank, selectedDocType, uri)
                     .subscribeOn(Schedulers.io())
-                    .filter(transaction -> transactionsManager.tryToAddTransaction(importSession, transaction))
+                    .filter(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())
-                    .subscribe(transactionsManager::addToView,
+                    .subscribe(account::addTransaction,
                           err -> handleImportError(importSession, err),
                           () -> handleImportComplete(importSession, uri));
 
@@ -166,11 +170,11 @@ public class TransactionsManagerViewController {
             reason = e.getReason();
         }
         this.appController.showErrorWindow(err.getMessage(), reason);
-        this.transactionsManager.reverseImport(importSession);
+        this.transactionsSupervisor.reverseImport(importSession);
     }
 
     private void handleImportComplete(ImportSession importSession, String uri) {
-        int filteredCount = transactionsManager.completeImport(importSession);
+        int filteredCount = transactionsSupervisor.completeImport(importSession);
         if (filteredCount > 0) {
             this.appController
                     .showErrorWindow("Failed to import some transactions from: " + uri,
@@ -191,7 +195,7 @@ public class TransactionsManagerViewController {
             if (transactionCategory.equals(bankTransaction.getCategory())) return;
             BankTransaction editedTransaction = getEditedTransaction(bankTransaction, transactionCategory);
 
-            if (!transactionsManager.updateTransaction(bankTransaction, editedTransaction)) {
+            if (!transactionsSupervisor.updateTransaction(bankTransaction, editedTransaction)) {
                 appController.showErrorWindow("Failed to update transaction.", "Transaction with these fields already exits");
             }
         });

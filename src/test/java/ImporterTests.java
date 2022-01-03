@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import model.BankStatement;
 import model.BankTransaction;
-import model.TransactionsManager;
+import model.TransactionsSupervisor;
 import model.util.BankType;
 import model.util.DocumentType;
 import org.junit.jupiter.api.AfterEach;
@@ -33,7 +33,7 @@ public class ImporterTests {
 
     private final BankConfiguratorFactory configuratorFactory = injector.getInstance(BankConfiguratorFactory.class);
 
-    private final TransactionsManager transactionsManager = injector.getInstance(TransactionsManager.class);
+    private final TransactionsSupervisor transactionsSupervisor = injector.getInstance(TransactionsSupervisor.class);
 
     @AfterEach
     public void afterEach() {
