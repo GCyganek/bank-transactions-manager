@@ -1,7 +1,9 @@
 package model;
 
+import io.reactivex.rxjava3.core.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.util.Pair;
 import model.util.ModelUtil;
 import model.util.TransactionCategory;
 
@@ -22,13 +24,17 @@ public class TransactionStatsManager {
         transactions = new TreeSet<>(ModelUtil.getDateThenAmountThenDescriptionComparator());
         totalIncome = BigDecimal.ZERO;
         totalOutcome = BigDecimal.ZERO;
-        ObservableList<BankTransaction> transactionObservableList = transactionsManager.getTransactionObservableList();
 
-        setupTransactionListeners(transactionObservableList);
+        ObservableList<BankTransaction> transactionObservableList = transactionsManager.getTransactionObservableList();
+        Observable<Pair<BankTransaction, BankTransaction>> transactionUpdatedObservable
+                = transactionsManager.getTransactionUpdatedObservable();
+
+        setupTransactionListeners(transactionObservableList, transactionUpdatedObservable);
     }
 
 
-    private void setupTransactionListeners(ObservableList<BankTransaction> transactionObservableList)
+    private void setupTransactionListeners(ObservableList<BankTransaction> transactionObservableList,
+                                           Observable<Pair<BankTransaction, BankTransaction>> transactionUpdatedObservable)
     {
         transactionObservableList.addListener((ListChangeListener<BankTransaction>) c -> {
             while (c.next()) {
@@ -39,6 +45,13 @@ public class TransactionStatsManager {
                     c.getRemoved().forEach(this::removeTransaction);
                 }
             }
+        });
+
+        transactionUpdatedObservable.subscribe(update -> {
+            BankTransaction old = update.getKey();
+            BankTransaction edited = update.getValue();
+            removeTransaction(old);
+            addTransaction(edited);
         });
     }
 

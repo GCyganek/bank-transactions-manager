@@ -4,8 +4,11 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.util.Pair;
 import model.util.ImportSession;
 import repository.BankStatementsRepository;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.core.Observable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,6 +31,8 @@ public class TransactionsManager {
     // before statement had been fully imported (statement is persisted after import completes)
     private final HashSet<BankStatement> importInProgressStatements;
 
+    private final PublishSubject<Pair<BankTransaction, BankTransaction>> transactionUpdatedSubject;
+
     @Inject
     public TransactionsManager(BankStatementsRepository repository) {
         bankStatementsRepository = repository;
@@ -38,6 +43,8 @@ public class TransactionsManager {
         balance.set(BigDecimal.ZERO);
 
         importInProgressStatements = new HashSet<>();
+
+        transactionUpdatedSubject = PublishSubject.create();
     }
 
 
@@ -140,13 +147,12 @@ public class TransactionsManager {
 
         // has to be removed to keep HashSet structure valid
         transactions.remove(old);
-        transactionObservableList.remove(old);
+        transactionUpdatedSubject.onNext(new Pair<>(old, edited));
 
         // edit params of old transaction to keep references in other objects valid
         old.copyEditableFieldsFrom(edited);
 
         transactions.add(old);
-        transactionObservableList.add(old);
 
         boolean statementUpdateNeeded = fixStatementPaidInOut(edited.getAmount(), old);
         statementUpdateNeeded |= fixStatementDate(old);
@@ -235,5 +241,9 @@ public class TransactionsManager {
         return transactions.stream()
                 .map(BankTransaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public Observable<Pair<BankTransaction, BankTransaction>> getTransactionUpdatedObservable() {
+        return Observable.wrap(transactionUpdatedSubject);
     }
 }
