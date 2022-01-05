@@ -51,13 +51,13 @@ public class Account {
     /**
      * @return true iff statement was edited
      */
-    public boolean onTransactionEdited(BankTransaction old, BankTransaction edited) {
+    public void onTransactionEdited(BankTransaction old, BankTransaction edited, boolean isStatementUpdateNeeded) {
         transactionUpdatedSubject.onNext(new Pair<>(old, edited));
 
-        boolean changed = fixStatementDate(edited);
-        changed |= fixStatementPaidInOut(old.getAmount(), edited);
-
-        return changed;
+        if (isStatementUpdateNeeded) {
+            fixStatementDate(edited);
+            fixStatementPaidInOut(old.getAmount(), edited);
+        }
     }
 
     public void removeTransaction(BankTransaction transaction) {
@@ -84,8 +84,6 @@ public class Account {
         return transactionObservableList.stream().toList();
     }
 
-
-
     public ObservableList<BankTransaction> getTransactionObservableList() {
         return transactionObservableList;
     }
@@ -98,8 +96,15 @@ public class Account {
         return Observable.wrap(transactionUpdatedSubject);
     }
 
+    public boolean isBankStatementUpdateNeeded(BankTransaction old, BankTransaction edited) {
+        BankStatement statement = old.getBankStatement();
 
-    private boolean fixStatementDate(BankTransaction bankTransaction) {
+        return !old.getAmount().equals(edited.getAmount()) ||
+                edited.getDate().isAfter(statement.getPeriodEndDate()) ||
+                edited.getDate().isBefore(statement.getPeriodStartDate());
+    }
+
+    private void fixStatementDate(BankTransaction bankTransaction) {
         BankStatement bankStatement = bankTransaction.getBankStatement();
         LocalDate statementPeriodEndDate = bankStatement.getPeriodEndDate();
         LocalDate statementPeriodStartDate = bankStatement.getPeriodStartDate();
@@ -107,21 +112,17 @@ public class Account {
 
         if (transactionDate.isAfter(statementPeriodEndDate)) {
             bankStatement.setPeriodEndDate(transactionDate);
-            return true;
         }
 
         if (transactionDate.isBefore(statementPeriodStartDate)) {
             bankStatement.setPeriodStartDate(transactionDate);
-            return true;
         }
-
-        return false;
     }
 
-    private boolean fixStatementPaidInOut(BigDecimal amountBeforeEdit, BankTransaction bankTransaction) {
+    private void fixStatementPaidInOut(BigDecimal amountBeforeEdit, BankTransaction bankTransaction) {
         BigDecimal amountAfterEdit = bankTransaction.getAmount();
 
-        if (amountAfterEdit.compareTo(amountBeforeEdit) == 0) return false;
+        if (amountAfterEdit.compareTo(amountBeforeEdit) == 0) return;
 
         BankStatement bankStatement = bankTransaction.getBankStatement();
 
@@ -142,7 +143,5 @@ public class Account {
                 bankStatement.addToPaidOut(amountAfterEdit.subtract(amountBeforeEdit));
             }
         }
-
-        return true;
     }
 }

@@ -107,25 +107,58 @@ public class TransactionsSupervisor {
         if (!isValid(edited))
            return false;
 
-        // has to be removed to keep HashSet structure valid
-        transactions.remove(old);
-        boolean statementUpdateNeeded = account.onTransactionEdited(old, edited);
+        BankStatement statement = old.getBankStatement();
+        boolean isImportInProgress = importInProgressStatements.contains(statement);
+        boolean isStatementUpdateNeeded = account.isBankStatementUpdateNeeded(old, edited);
+
+        removeUneditedReferences(old, statement, isStatementUpdateNeeded, isImportInProgress);
+
+        // we need access to old fields so this should be called before actual edit
+        account.onTransactionEdited(old, edited, isStatementUpdateNeeded);
 
         // edit params of old transaction to keep references in other objects valid
         old.copyEditableFieldsFrom(edited);
 
-        transactions.add(old);
+        addEditedReferences(old, statement, isStatementUpdateNeeded, isImportInProgress);
 
-        // can't update transaction in repo if statement is still being imported
-        if (!importInProgressStatements.contains(old.getBankStatement())) {
-            bankStatementsRepository.updateTransaction(old);
-
-            if (statementUpdateNeeded) {
-                bankStatementsRepository.updateStatement(old.getBankStatement());
-            }
-        }
+        updateRepositoryAfterEdit(old, statement, isStatementUpdateNeeded, isImportInProgress);
 
         return true;
+    }
+
+    private void removeUneditedReferences(BankTransaction old, BankStatement statement,
+                                          boolean isStatementUpdateNeeded, boolean isImportInProgress)
+    {
+        // has to be removed to keep HashSet structure valid
+        transactions.remove(old);
+
+        if (isImportInProgress && isStatementUpdateNeeded) {
+            importInProgressStatements.remove(statement);
+        }
+    }
+
+    private void addEditedReferences(BankTransaction edited, BankStatement statement,
+                              boolean isStatementUpdateNeeded, boolean isImportInProgress)
+    {
+        transactions.add(edited);
+
+        if (isImportInProgress && isStatementUpdateNeeded) {
+            // it was edited by Account class, and removed from this structure
+            importInProgressStatements.add(statement);
+        }
+    }
+
+    private void updateRepositoryAfterEdit(BankTransaction edited, BankStatement statement,
+                                           boolean isStatementUpdateNeeded, boolean isImportInProgress)
+    {
+        // can't update transaction in repo if statement is still being imported
+        if (!isImportInProgress) {
+            bankStatementsRepository.updateTransaction(edited);
+
+            if (isStatementUpdateNeeded) {
+                bankStatementsRepository.updateStatement(statement);
+            }
+        }
     }
 
     // for tests only
