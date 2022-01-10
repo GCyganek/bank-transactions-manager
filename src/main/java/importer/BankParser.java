@@ -5,13 +5,12 @@ import importer.raw.RawDataParser;
 import importer.utils.ParserField;
 import io.reactivex.rxjava3.core.Observable;
 import model.BankStatement;
-import model.BankStatementBuilder;
+import model.builder.BankStatementBuilder;
 import model.BankTransaction;
-import model.BankTransactionBuilder;
+import model.builder.BankTransactionBuilder;
 
 import java.io.Reader;
 import java.util.List;
-import java.util.Optional;
 
 public class BankParser<K, U> {
     private final RawDataParser<K, U> rawDataParser;
@@ -53,5 +52,9 @@ public class BankParser<K, U> {
         }
 
         return builtStatement;
+    }
+
+    public boolean isStatementParsed() {
+        return this.builtStatement != null;
     }
 }

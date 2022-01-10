@@ -6,6 +6,8 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
+import model.Account;
+import model.TransactionStatsManager;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
@@ -20,6 +22,12 @@ public class ImporterModule extends AbstractModule {
 
     public ImporterModule(Stage primaryStage) {
         this.primaryStage = primaryStage;
+    }
+
+    @Override
+    protected void configure() {
+        bind(Account.class).asEagerSingleton();
+        bind(TransactionStatsManager.class).asEagerSingleton();
     }
 
     @Provides
@@ -50,4 +58,5 @@ public class ImporterModule extends AbstractModule {
     Stage providePrimaryStage() {
         return this.primaryStage;
     }
+
 }

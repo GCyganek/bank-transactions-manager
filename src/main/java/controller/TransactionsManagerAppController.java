@@ -1,49 +1,45 @@
 package controller;
 
 import com.google.inject.Injector;
-import importer.Importer;
-import io.reactivex.rxjava3.core.Observable;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
-import model.DocumentType;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
-    private final Importer importer;
-
+    private Injector injector;
 
     @Inject
-    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage, Importer importer) {
+    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.importer = importer;
     }
 
     public void initRootLayout(Injector injector) {
         try {
+            this.injector = injector;
+
             this.primaryStage.setTitle("Bank Transactions Manager");
 
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(TransactionsManagerAppController.class.getResource("../view/TransactionsManagerView.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(TransactionsManagerAppController.class.getResource("../view/TransactionsManagerView.fxml"));
 
-            loader.setControllerFactory(injector::getInstance);
+            fxmlLoader.setControllerFactory(injector::getInstance);
 
-            BorderPane rootLayout = loader.load();
+            BorderPane rootLayout = fxmlLoader.load();
 
-            TransactionsManagerViewController controller = loader.getController();
+            TransactionsManagerViewController controller = fxmlLoader.getController();
             controller.setAppController(this);
-            controller.fetchDataFromDatabase();
 
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
@@ -54,42 +50,39 @@ public class TransactionsManagerAppController {
         }
     }
 
-    public Observable<BankTransaction> showAddStatementView() {
+    public AddStatementViewController showAddStatementView() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Stage stage = buildStage(fxmlLoader, "New transaction", "AddStatementView.fxml", primaryStage, Modality.WINDOW_MODAL);
+
+        AddStatementViewController addStatementViewController = fxmlLoader.getController();
+        addStatementViewController.setStage(stage);
+
+        stage.showAndWait();
+
+        return addStatementViewController;
+    }
+
+    public void showStatisticsView() {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(TransactionsManagerViewController.class.getResource("../view/AddStatementView.fxml"));
-            BorderPane page = loader.load();
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(fxmlLoader, "Statistics", "StatisticsView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
-            Stage stage = buildStage("New transaction", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
-
-            AddStatementViewController addStatementViewController = loader.getController();
-            addStatementViewController.setStage(stage);
+            StatisticsViewController statisticsViewController = fxmlLoader.getController();
+            statisticsViewController.setStage(stage);
+            statisticsViewController.showData();
 
             stage.showAndWait();
-
-            if (addStatementViewController.checkIfFileAvailable()) {
-                return importer.importBankStatement(addStatementViewController.getBankType(), DocumentType.CSV,
-                        addStatementViewController.getFile().getAbsolutePath());
-            }
-
-            return Observable.empty();
-
         } catch (IOException e) {
-            System.out.println("Can't load new window");
             e.printStackTrace();
         }
-        return Observable.empty();
     }
 
     public void showErrorWindow(String errorMsg, String reason) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(TransactionsManagerViewController.class.getResource("../view/ImportErrorView.fxml"));
-            BorderPane page = loader.load();
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(fxmlLoader, "Error", "ImportErrorView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
-            Stage stage = buildStage("Error", new Scene(page), primaryStage, Modality.WINDOW_MODAL);
-
-            ErrorViewController errorViewController = loader.getController();
+            ErrorViewController errorViewController = fxmlLoader.getController();
             errorViewController.setStage(stage);
             errorViewController.setErrorMessage(errorMsg, reason);
 
@@ -100,10 +93,41 @@ public class TransactionsManagerAppController {
         }
     }
 
-    private Stage buildStage(String title, Scene scene, Stage initOwner, Modality initModality) {
+    public Optional<BigDecimal> showEditTransactionWindow(BankTransaction bankTransaction) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(fxmlLoader,"Edit transaction", "EditTransactionView.fxml",
+                    primaryStage, Modality.WINDOW_MODAL);
+
+            EditTransactionViewPresenter editTransactionViewPresenter = fxmlLoader.getController();
+            editTransactionViewPresenter.setStage(stage);
+            editTransactionViewPresenter.setData(bankTransaction);
+            editTransactionViewPresenter.setAppController(this);
+
+            stage.showAndWait();
+
+            if (editTransactionViewPresenter.isEditApproved()) {
+                return Optional.of(editTransactionViewPresenter.getFinalAmount());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
+    }
+
+
+    private Stage buildStage(FXMLLoader fxmlLoader, String title, String viewPath,
+                             Stage initOwner, Modality initModality) throws IOException
+    {
+        fxmlLoader.setLocation(TransactionsManagerAppController.class.getResource("../view/" + viewPath));
+        fxmlLoader.setControllerFactory(injector::getInstance);
+        Scene stageScene = new Scene(fxmlLoader.load());
+
         Stage stage = new Stage();
         stage.setTitle(title);
-        stage.setScene(scene);
+        stage.setScene(stageScene);
         stage.initOwner(initOwner);
         stage.initModality(initModality);
         return stage;

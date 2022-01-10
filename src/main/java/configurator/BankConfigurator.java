@@ -1,7 +1,7 @@
 package configurator;
 
 import importer.BankParser;
-import model.DocumentType;
+import model.util.DocumentType;
 
 public interface BankConfigurator {
     /**

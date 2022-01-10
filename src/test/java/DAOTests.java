@@ -30,11 +30,11 @@ public class DAOTests {
 
     private final BankTransaction bankTransactionExample1 =
             new BankTransaction("Przelew 1", new BigDecimal("2512.23"),
-                    LocalDate.of(2021, 11, 22), new BigDecimal("2990.00"));
+                    LocalDate.of(2021, 11, 22));
 
     private final BankTransaction bankTransactionExample2 =
             new BankTransaction("Przelew 2", new BigDecimal("23.23"),
-                    LocalDate.of(2021, 11, 23), new BigDecimal("2332.00"));
+                    LocalDate.of(2021, 11, 23));
 
     private final BankStatement bankStatementExample1 =
             new BankStatement("1234 1234 1234 1234", LocalDate.of(2021, 11, 21),
@@ -158,7 +158,6 @@ public class DAOTests {
         bankTransaction.ifPresent(bt -> {
             assertTrue(bt.getId() > 0);
             assertNotNull(bt.getAmount());
-            assertNotNull(bt.getBalance());
             assertNotNull(bt.getDate());
             assertNotNull(bt.getDescription());
         });

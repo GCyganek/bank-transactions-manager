@@ -2,6 +2,9 @@ package model.util;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
+import model.BankTransaction;
+
+import java.util.Comparator;
 
 public final class ModelUtil {
 
@@ -15,4 +18,9 @@ public final class ModelUtil {
         return property1.get().equals(property2.get());
     }
 
+    public static Comparator<BankTransaction> getDateThenAmountThenDescriptionComparator() {
+        return Comparator.comparing(BankTransaction::getDate)
+                .thenComparing(BankTransaction::getAmount)
+                .thenComparing(BankTransaction::getDescription);
+    }
 }

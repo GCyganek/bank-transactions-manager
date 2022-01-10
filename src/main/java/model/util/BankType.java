@@ -1,4 +1,4 @@
-package model;
+package model.util;
 
 public enum BankType {
     SANTANDER,

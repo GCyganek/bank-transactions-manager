@@ -5,24 +5,22 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
 import model.BankTransaction;
-import model.BankType;
-import model.DocumentType;
-import repository.BankStatementsRepository;
+import model.util.BankType;
+import model.util.DocumentType;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Reader;
 
+
 public class Importer {
     private final BankConfiguratorFactory configFactory;
-    private final BankStatementsRepository repository;
     private Loader loader;
 
     @Inject
-    public Importer(BankConfiguratorFactory configFactory, BankStatementsRepository repository, Loader loader) {
+    public Importer(BankConfiguratorFactory configFactory, Loader loader) {
         this.configFactory = configFactory;
         this.loader = loader;
-        this.repository = repository;
     }
 
     /**
@@ -30,7 +28,6 @@ public class Importer {
      * @param documentType - file extension
      * @param URI - uri from where loader should load data
      * @return Observable that emits Bank Transactions, which have reference to imported BankStatement.
-     *         Data is persisted once observable completes. Data in not persisted if any error occurs. //todo
      */
     public Observable<BankTransaction> importBankStatement(BankType bankType,
                                        DocumentType documentType, String URI) throws IOException
@@ -40,9 +37,8 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
 
         return parser.parse(dataReader)
-                .doOnComplete(() -> repository.addBankStatement(parser.getBuiltStatement()))
+//                .doOnNext(x -> Thread.sleep(2500)) // emulate heavy computation
                 .doFinally(dataReader::close);
-
     }
 
     public void setLoader(Loader loader) {

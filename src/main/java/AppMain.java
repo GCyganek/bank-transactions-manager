@@ -2,7 +2,6 @@ import IOC.ImporterModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import controller.TransactionsManagerAppController;
-import importer.Importer;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

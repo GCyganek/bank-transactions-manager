@@ -9,8 +9,9 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import model.BankStatement;
 import model.BankTransaction;
-import model.BankType;
-import model.DocumentType;
+import model.TransactionsSupervisor;
+import model.util.BankType;
+import model.util.DocumentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,9 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import repository.BankStatementsRepository;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-
-import org.mockito.Mock;
 
 
 import java.io.IOException;
@@ -34,6 +32,8 @@ public class ImporterTests {
     private static final String testDirectory = "src/test/resources/";
 
     private final BankConfiguratorFactory configuratorFactory = injector.getInstance(BankConfiguratorFactory.class);
+
+    private final TransactionsSupervisor transactionsSupervisor = injector.getInstance(TransactionsSupervisor.class);
 
     @AfterEach
     public void afterEach() {
@@ -114,15 +114,15 @@ public class ImporterTests {
 
     private static Stream<Arguments> correctStatementTransactionsDataSource() {
         String[] santanderCSVExpectedValues = {
-                "Transaction: [(DOP. VISA 326551******6835 PŁATNOŚĆ KARTĄ 39.41 PLN JMP S.A. SKLEP 3647 WARSZAWA), (-39.41), (2021-11-24), (958.53)]",
-                "Transaction: [(przelew zalegly), (-5.00), (2021-11-22), (1252.94)]",
-                "Transaction: [(Przelew środków), (824.00), (2021-11-03), (126.15)]"
+                "Transaction: [(DOP. VISA 326551******6835 PŁATNOŚĆ KARTĄ 39.41 PLN JMP S.A. SKLEP 3647 WARSZAWA), (-39.41), (2021-11-24), (Uncategorized)]",
+                "Transaction: [(przelew zalegly), (-5.00), (2021-11-22), (Uncategorized)]",
+                "Transaction: [(Przelew środków), (824.00), (2021-11-03), (Uncategorized)]"
         };
 
         String[] mbankCSVExpectedValues = {
-                "Transaction: [(ZAKUPY1), (-3.20), (2021-11-26), (3288.91)]",
-                "Transaction: [(ZAKUPY2), (-9.99), (2021-11-25), (3292.11)]",
-                "Transaction: [(ZAKUPY3), (-250.00), (2021-11-23), (3302.10)]"
+                "Transaction: [(ZAKUPY1), (-3.20), (2021-11-26), (Uncategorized)]",
+                "Transaction: [(ZAKUPY2), (-9.99), (2021-11-25), (Uncategorized)]",
+                "Transaction: [(ZAKUPY3), (-250.00), (2021-11-23), (Uncategorized)]"
         };
 
         return Stream.of(
@@ -133,7 +133,7 @@ public class ImporterTests {
 
     // ugh
     private static Stream<Arguments> correctStatementStatementDataSource() {
-        String santanderCSVExpectedValue = "Bank Statement: [(55 1245 1234 0001 0100 1244 6341), (2021-11-03), (2021-11-25), (1237.15), (948.53), (JAKUB NOWAK UL. CIEMNA 2/38 12-500 ZALNO), (PLN)]";
+        String santanderCSVExpectedValue = "Bank Statement: [(55 1245 1234 0001 0100 1244 6341), (2021-11-03), (2021-11-25), (824.00), (-44.41), (JAKUB NOWAK UL. CIEMNA 2/38 12-500 ZALNO), (PLN)]";
 
         String mbankCSVExpectedValue = "Bank Statement: [(eKonto - 52114020040000300276421234), (2021-11-19), (2021-11-30), (0), (-263.19), (JAN KOWALSKI), (PLN)]";
 
@@ -156,10 +156,10 @@ public class ImporterTests {
         return injector.getInstance(Importer.class);
     }
 
-    private static Flowable<BankTransaction> importAsFlowable(BankType bankType,
+    private Flowable<BankTransaction> importAsFlowable(BankType bankType,
                                           DocumentType documentType, String uri) throws IOException
     {
-            return getImporter().importBankStatement(bankType, documentType, uri)
-                .toFlowable(BackpressureStrategy.BUFFER);
+        return getImporter().importBankStatement(bankType, documentType, uri)
+            .toFlowable(BackpressureStrategy.BUFFER);
     }
 }

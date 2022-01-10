@@ -40,4 +40,23 @@ public class PgBankTransactionDao extends AbstractDao<BankTransaction> implement
         return HibernateSessionService.getSession()
                 .createQuery("SELECT bt FROM BankTransaction bt", BankTransaction.class).getResultList();
     }
+
+    @Override
+    public void remove(BankTransaction bankTransaction) {
+        try {
+            delete(bankTransaction);
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void updateTransaction(BankTransaction bankTransaction) {
+        try {
+            update(bankTransaction);
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

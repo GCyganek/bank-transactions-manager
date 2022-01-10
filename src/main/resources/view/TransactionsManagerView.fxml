@@ -1,38 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane prefHeight="400.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.1"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TransactionsManagerViewController">
-    <center>
-        <TableView fx:id="transactionsTable" prefHeight="200.0" prefWidth="900.0" BorderPane.alignment="CENTER">
-            <columns>
-                <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date"/>
-                <TableColumn fx:id="descriptionColumn" prefWidth="300.0" text="Description"/>
-                <TableColumn fx:id="amountColumn" prefWidth="150.0" text="Amount"/>
-                <TableColumn fx:id="balanceColumn" prefWidth="150.0" text="Balance"/>
-            </columns>
-            <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-            </columnResizePolicy>
-        </TableView>
-    </center>
+
+<BorderPane prefHeight="400.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TransactionsManagerViewController">
     <right>
         <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <opaqueInsets>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </opaqueInsets>
             <BorderPane.margin>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </BorderPane.margin>
-            <Button fx:id="addButton" alignment="TOP_CENTER" mnemonicParsing="false"
-                    onAction="#handleAddNewBankStatement"
-                    text="Add new bank statement">
+            <Button fx:id="addButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleAddNewBankStatement" prefWidth="150.0" text="Add new bank statement">
                 <VBox.margin>
-                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </VBox.margin>
             </Button>
+            <Button fx:id="editButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleEditBankTransaction" prefWidth="150.0" text="Edit bank transaction">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </VBox.margin>
+            </Button>
+            <Button fx:id="statsButton" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#handleShowStatistics" prefWidth="150.0" text="Show statistics">
+                <VBox.margin>
+                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </VBox.margin>
+            </Button>
+         <VBox alignment="CENTER" style="-fx-background-color: #cfc4ea;">
+            <VBox.margin>
+               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </VBox.margin>
+            <children>
+               <ComboBox fx:id="categoryComboBox" prefWidth="150.0">
+                  <VBox.margin>
+                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  </VBox.margin>
+               </ComboBox>
+               <Button fx:id="categoryChangeButton" mnemonicParsing="false" prefWidth="150.0" onAction="#handleCategoryChangeButton" text="Change category">
+                  <VBox.margin>
+                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  </VBox.margin>
+               </Button>
+            </children>
+         </VBox>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
         </VBox>
     </right>
+   <center>
+      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+              <TableView fx:id="transactionsTable" prefHeight="374.0" prefWidth="890.0">
+                  <columns>
+                      <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date" />
+                      <TableColumn fx:id="descriptionColumn" prefWidth="300.0" text="Description" />
+                      <TableColumn fx:id="amountColumn" prefWidth="150.0" text="Amount" />
+                      <TableColumn fx:id="categoryColumn" prefWidth="150.0" text="Category" />
+                  </columns>
+                  <columnResizePolicy>
+                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
+              </TableView>
+            <TextField fx:id="balanceTextField" alignment="CENTER" text="Transactions Balance:" />
+         </children>
+      </VBox>
+
+       <fx:define>
+           <ContextMenu fx:id="contextMenu">
+               <items>
+                   <MenuItem onAction="#handleEditBankTransaction" text="Edit Transaction" />
+               </items>
+           </ContextMenu>
+       </fx:define>
+   </center>
+
 </BorderPane>
