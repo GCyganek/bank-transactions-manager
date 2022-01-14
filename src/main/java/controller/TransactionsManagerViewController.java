@@ -31,9 +31,8 @@ public class TransactionsManagerViewController {
     private final Importer importer;
     private final Account account;
 
+
     private TransactionsManagerAppController appController;
-
-
     @Inject
     public TransactionsManagerViewController(TransactionsSupervisor transactionsSupervisor,
                                              Importer importer, Account account) {
@@ -43,6 +42,8 @@ public class TransactionsManagerViewController {
 
         this.bankTransactions = account.getTransactionObservableList();
     }
+
+
 
     @FXML
     public TableView<BankTransaction> transactionsTable;
@@ -67,6 +68,12 @@ public class TransactionsManagerViewController {
 
     @FXML
     public Button statsButton;
+
+    @FXML
+    public Button importFromSourcesButton;
+
+    @FXML
+    public Button manageSourcesButton;
 
     @FXML
     public TextField balanceTextField;
@@ -209,5 +216,16 @@ public class TransactionsManagerViewController {
         editedTransaction.setCategory(transactionCategory);
 
         return editedTransaction;
+    }
+
+    public void handleImportFromSourcesButton(ActionEvent actionEvent) {
+    }
+
+    public void handleManageSourcesButton(ActionEvent actionEvent) {
+        try {
+            this.appController.showTransactionSourcesWindow();
+        } catch (IOException e) {
+            e.printStackTrace(); //TODO error handling
+        }
     }
 }

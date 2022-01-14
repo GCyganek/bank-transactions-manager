@@ -1,9 +1,12 @@
 package controller;
 
 import com.google.inject.Injector;
+import controller.sources.AddDirectorySourceWindowController;
+import controller.sources.AddRemoteSourceWindowController;
+import controller.sources.TransactionSourcesViewController;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -50,6 +53,38 @@ public class TransactionsManagerAppController {
         }
     }
 
+    public void showAddRemoteSourceWindow() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Stage stage = buildStage(fxmlLoader, "Add remote source", "AddRemoteSourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+
+        AddRemoteSourceWindowController addRemoteSourceWindowController = fxmlLoader.getController();
+        addRemoteSourceWindowController.setStage(stage);
+        addRemoteSourceWindowController.setAppController(this);
+
+        stage.showAndWait();
+    }
+
+    public void showAddDirectorySourceWindow() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Stage stage = buildStage(fxmlLoader, "Add directory source", "AddDirectorySourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+
+        AddDirectorySourceWindowController addDirectorySourceWindowController = fxmlLoader.getController();
+        addDirectorySourceWindowController.setStage(stage);
+
+        stage.showAndWait();
+    }
+
+    public void showTransactionSourcesWindow() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Stage stage = buildStage(fxmlLoader, "Transaction sources manager", "TransactionSourcesWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+
+        TransactionSourcesViewController transactionSourcesViewController = fxmlLoader.getController();
+        transactionSourcesViewController.setStage(stage);
+        transactionSourcesViewController.setAppController(this);
+
+        stage.showAndWait();
+    }
+
     public AddStatementViewController showAddStatementView() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader();
         Stage stage = buildStage(fxmlLoader, "New transaction", "AddStatementView.fxml", primaryStage, Modality.WINDOW_MODAL);
@@ -80,7 +115,7 @@ public class TransactionsManagerAppController {
     public void showErrorWindow(String errorMsg, String reason) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            Stage stage = buildStage(fxmlLoader, "Error", "ImportErrorView.fxml", primaryStage, Modality.WINDOW_MODAL);
+            Stage stage = buildStage(fxmlLoader, "Error", "ErrorView.fxml", primaryStage, Modality.WINDOW_MODAL);
 
             ErrorViewController errorViewController = fxmlLoader.getController();
             errorViewController.setStage(stage);
