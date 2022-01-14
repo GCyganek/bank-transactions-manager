@@ -5,3 +5,7 @@ gradle
 bin
 gradlew
 gradlew.bat
+uploads
+__pycache__
+env
+instance
