@@ -1,17 +1,17 @@
 FROM python:3.8-alpine
 
-EXPOSE 5000/tcp
+RUN pip install flask
 
-COPY ./app /home/app
+EXPOSE 5000/tcp
 
 ENV FLASK_APP=server
 ENV DOCKER=1
 
+COPY ./app /home/app
+
 WORKDIR /home/app
 
 RUN rm -rf env
-
-RUN pip install flask
 
 RUN flask init-db
 

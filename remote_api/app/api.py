@@ -9,7 +9,7 @@ def get_statement_with_id(statement_id):
     file = UploadedFile.find_file_by_id(statement_id)
 
     if file is None:
-        return f'Failed to find statement with id: {statement_id}'
+        return f'Failed to find statement with id: {statement_id}', 404
 
     return send_file(file.get_path())
 

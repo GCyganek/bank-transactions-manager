@@ -50,6 +50,9 @@ def upload_file():
         if file_form_key not in request.files:
             return f"expected {file_form_key}", 404
 
-        UploadedFile.persist_file(request.files[file_form_key])
+        try:
+            UploadedFile.persist_file(request.files[file_form_key])
+        except FileExistsError:
+            return f'file {request.files[file_form_key].filename} already exists', 400
 
         return f'file {request.files[file_form_key].filename} saved successfully'

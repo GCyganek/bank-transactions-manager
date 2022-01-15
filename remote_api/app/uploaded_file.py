@@ -20,7 +20,7 @@ class UploadedFile:
     DB_PATH_COLUMN_NAME = 'local_path'
     DB_ID_COLUMN_NAME = 'id'
     DB_UPLOAD_TIME_COLUMN_NAME = 'upload_time'
-    DATE_FORMAT = '%Y-%m-%d %H-%M-%S'
+    DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self, path: Path, id: int, upload_time: datetime = None) -> None:
         self.path = path
@@ -96,7 +96,7 @@ class UploadedFile:
 
 
 def convert_querystr_time_to_local(timestamp: str) -> str:
-    """YYYYMMDDHHMMSS -> YYYY-MM-DD HH-MM-SS"""
+    """YYYYMMDDHHMMSS -> YYYY-MM-DD HH:MM:SS"""
     IN_FORMAT = "%Y%m%d%H%M%S"
     OUT_FORMAT = UploadedFile.DATE_FORMAT
 
