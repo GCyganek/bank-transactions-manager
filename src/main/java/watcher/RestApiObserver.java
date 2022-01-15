@@ -1,33 +1,48 @@
 package watcher;
 
 import io.reactivex.rxjava3.core.Observable;
+import model.util.BankType;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.net.URL;
-import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class RestApiObserver implements SourceObserver {
     private final URL remoteUrl;
     private final RestApiClient client;
+    private final BankType bankType;
 
-    public RestApiObserver(URL remoteUrl, SourceType type) {
+    static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+    public RestApiObserver(URL remoteUrl, BankType bankType) {
+        this.bankType = bankType;
         this.remoteUrl = remoteUrl;
-        initialize();
-        data_poczatku = now or 2020
+        this.client = initialize();
     }
 
-    public SourceType getType()
+    private RestApiClient initialize() {
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+                .build();
 
-    private void initialize() {
-        // podpięcie do REST API remoteUrlem
-        client = hwdp;
+        return retrofit.create(RestApiClient.class);
     }
 
     @Override
     public Observable<SourceUpdate> getChanges() {
-        // przy uzyciu RestApiClient pobieramy sprawdzamy czy jest cos nowego, jesli jest to pobieramy pliki
-        // i zapisujemy je w jakims folderze i zwracamy jego Path na doOnNext() w tworzonym Observable<Path>
-        aktualizacje = client.getUpdates(remoteUrl, data_poczatu);
-        return new RESTSourceUpdate(remoteUrl, aktualizcja.statement_id);
+        return client.listUpdates(
+                        LocalDateTime.now().minusHours(5).format(dateTimeFormatter),
+                        LocalDateTime.now().format(dateTimeFormatter)
+                ).flatMap(x -> Observable.fromIterable(x.getRestUpdatesResponseList())).map(RestUpdatesResponse::getStatementId)
+                .map(x -> new RestApiSourceUpdate(bankType, x, client, remoteUrl));
     }
 
+    @Override
+    public SourceType getSourceType() {
+        return SourceType.REST_API;
+    }
 }

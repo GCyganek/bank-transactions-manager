@@ -19,6 +19,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import model.BankTransaction;
 import model.util.TransactionCategory;
+import watcher.SourcesSupervisor;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,20 +33,20 @@ public class TransactionsManagerViewController {
     private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
     private final Account account;
-
+    private final SourcesSupervisor sourcesSupervisor;
 
     private TransactionsManagerAppController appController;
+
     @Inject
     public TransactionsManagerViewController(TransactionsSupervisor transactionsSupervisor,
-                                             Importer importer, Account account) {
+                                             Importer importer, Account account, SourcesSupervisor sourcesSupervisor) {
         this.transactionsSupervisor = transactionsSupervisor;
         this.importer = importer;
         this.account = account;
+        this.sourcesSupervisor = sourcesSupervisor;
 
         this.bankTransactions = account.getTransactionObservableList();
     }
-
-
 
     @FXML
     public TableView<BankTransaction> transactionsTable;
@@ -147,7 +148,7 @@ public class TransactionsManagerViewController {
                 DocumentType selectedDocType = DocumentType.CSV;
                 String filePath = addStatementViewController.getFile().getAbsolutePath();
 
-                handleImport(selectedBank, selectedDocType, filePath);
+                handleImport(selectedBank, selectedDocType, new LocalFSLoader(filePath));
             }
         } catch (IOException e) {
             System.out.println("Failed to load window");
@@ -155,21 +156,21 @@ public class TransactionsManagerViewController {
         }
     }
 
-    private void handleImport(BankType selectedBank, DocumentType selectedDocType, String uri) {
+    private void handleImport(BankType selectedBank, DocumentType selectedDocType, Loader loader) {
         ImportSession importSession = transactionsSupervisor.startImportSession();
+        String loaderDescritpion = loader.getDescription();
 
         try {
-            Loader loader = new LocalFSLoader(uri);
             importer.importBankStatement(selectedBank, selectedDocType, loader)
                     .subscribeOn(Schedulers.io())
                     .filter(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())
                     .subscribe(account::addTransaction,
                           err -> handleImportError(importSession, err),
-                          () -> handleImportComplete(importSession, uri));
+                          () -> handleImportComplete(importSession, loaderDescritpion));
 
         } catch (IOException e) {
-            this.appController.showErrorWindow("Failed to read statement from " + uri, e.getMessage());
+            this.appController.showErrorWindow("Failed to read statement from " + loaderDescritpion, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -222,6 +223,7 @@ public class TransactionsManagerViewController {
     }
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
+        sourcesSupervisor.checkForUpdates().subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.executeUpdate().blockingGet()));
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {

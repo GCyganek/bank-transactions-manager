@@ -10,7 +10,13 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.util.BankType;
+import watcher.InvalidSourceConfigException;
+import watcher.SourceObserverFactory;
+import watcher.SourceType;
+import watcher.SourcesSupervisor;
 
+import javax.inject.Inject;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -22,7 +28,14 @@ public class AddRemoteSourceWindowController {
 
     private TransactionsManagerAppController appController;
 
+    private final SourcesSupervisor sourcesSupervisor;
+
     private final SimpleStringProperty remoteUrl = new SimpleStringProperty();
+
+    @Inject
+    public AddRemoteSourceWindowController(SourcesSupervisor sourcesSupervisor) {
+        this.sourcesSupervisor = sourcesSupervisor;
+    }
 
     @FXML
     public ChoiceBox<BankType> remoteBankChoiceBox;
@@ -46,6 +59,14 @@ public class AddRemoteSourceWindowController {
         if (!validateUrl(remoteSourceTextField.getText())) return;
         remoteUrl.setValue(remoteSourceTextField.getText());
         bankType = remoteBankChoiceBox.getValue();
+        try {
+            sourcesSupervisor.addSourceObserver(
+                    SourceObserverFactory.initializeSourceObserver(
+                            bankType, remoteUrl.getValue(), SourceType.REST_API)
+            );
+        } catch (InvalidSourceConfigException | IOException e) {
+            e.printStackTrace(); //TODO
+        }
         stage.close();
     }
 

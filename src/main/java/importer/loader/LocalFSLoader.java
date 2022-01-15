@@ -8,6 +8,11 @@ import java.io.Reader;
 public class LocalFSLoader implements Loader {
     private final String uri;
 
+    @Override
+    public String getDescription() {
+        return uri;
+    }
+
     public LocalFSLoader(String uri) {
         this.uri = uri;
     }

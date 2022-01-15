@@ -2,7 +2,12 @@ package watcher;
 
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import model.util.BankType;
+import model.util.DocumentType;
 
 public interface SourceUpdate {
-    Observable<Loader> executeUpdate();
+    Single<Loader> executeUpdate();
+    BankType getBankType();
+    DocumentType getDocumentType();
 }

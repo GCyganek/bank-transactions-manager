@@ -6,6 +6,5 @@ import java.nio.file.Path;
 
 public interface SourceObserver {
     Observable<SourceUpdate> getChanges();
-    SourceType getType();
-
+    SourceType getSourceType();
 }

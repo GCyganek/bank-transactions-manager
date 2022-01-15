@@ -1,21 +1,19 @@
 package watcher;
 
 import io.reactivex.rxjava3.core.Observable;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
-// tu będzie obsluga polaczenia z serwerem, czyli pobieranie pliku/sparwdzenie, czy jest cos nowego
-public class RestApiClient {
-    public Observable<RestUpdatesResponse> getUpdates(remoteUrl, data_poczatu) {
-        //  /api/statements/updates?start-time=20220114235600&end-time=20220115014600
-        return Observable.create() {
-            // get json
-            // convert json
-            // emit RestUpdatesResponse
-        }
-    }
+public interface RestApiClient {
 
-    public Observable<Loader> getStatement(statementId) {
+    @GET("api/statements/updates")
+    Observable<RestUpdatesResponseList> listUpdates(@Query("start-time") String startTime, @Query("end-time") String endTime);
 
-    }
+    @GET("api/statements/{statement-id}")
+    Call<ResponseBody> statementById(@Path("statement-id") int statementId);
 }
 
 /*

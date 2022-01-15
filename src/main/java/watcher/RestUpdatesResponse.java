@@ -1,6 +1,16 @@
 package watcher;
 
+import com.google.gson.annotations.SerializedName;
+
 public class RestUpdatesResponse {
-    int stamentId;
-    String filename;
+    @SerializedName("statement_id")
+    private int statementId;
+
+    public int getStatementId() {
+        return statementId;
+    }
+
+    public void setStatementId(int statementId) {
+        this.statementId = statementId;
+    }
 }

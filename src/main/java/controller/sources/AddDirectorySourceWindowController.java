@@ -1,5 +1,6 @@
 package controller.sources;
 
+import com.google.inject.Inject;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -11,8 +12,13 @@ import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
+import watcher.InvalidSourceConfigException;
+import watcher.SourceObserverFactory;
+import watcher.SourceType;
+import watcher.SourcesSupervisor;
 
 import java.io.File;
+import java.io.IOException;
 
 public class AddDirectorySourceWindowController {
 
@@ -36,6 +42,13 @@ public class AddDirectorySourceWindowController {
     @FXML
     public Button addDirectoryButton;
 
+    private final SourcesSupervisor sourcesSupervisor;
+
+    @Inject
+    public AddDirectorySourceWindowController(SourcesSupervisor sourcesSupervisor) {
+        this.sourcesSupervisor = sourcesSupervisor;
+    }
+
     @FXML
     private void initialize() {
         directoryBankChoiceBox.getItems().addAll(BankType.values());
@@ -47,6 +60,14 @@ public class AddDirectorySourceWindowController {
 
     public void handleAddDirectoryButton(ActionEvent actionEvent) {
         bankType = directoryBankChoiceBox.getValue();
+        try {
+            sourcesSupervisor.addSourceObserver(
+                    SourceObserverFactory.initializeSourceObserver(
+                            bankType, selectedDirectory.getValue().getAbsolutePath(), SourceType.DIRECTORY)
+            );
+        } catch (InvalidSourceConfigException | IOException e) {
+            e.printStackTrace(); //TODO
+        }
         stage.close();
     }
 
