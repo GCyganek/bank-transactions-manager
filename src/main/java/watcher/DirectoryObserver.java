@@ -5,19 +5,21 @@ import io.reactivex.rxjava3.core.Observable;
 import java.io.IOException;
 import java.nio.file.*;
 
-public class DirectoryObserver {
+public class DirectoryObserver implements SourceObserver {
     private final Path path;
     private final WatchService watchService;
 
     public DirectoryObserver(Path path) throws IOException {
         this.path = path;
         this.watchService = FileSystems.getDefault().newWatchService();
+        initialize();
     }
 
-    public void initialize() throws IOException {
+    private void initialize() throws IOException {
         path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
     }
 
+    @Override
     public Observable<Path> getChanges() {
         return Observable.create(emitter -> {
             WatchKey key;
@@ -37,7 +39,6 @@ public class DirectoryObserver {
         System.out.println(currentWorkingDir);
         try {
             DirectoryObserver directoryObserver = new DirectoryObserver(Paths.get(currentWorkingDir));
-            directoryObserver.initialize();
             Thread.sleep(10000);
             System.out.println("waking up...");
             directoryObserver.getChanges().doOnNext(System.out::println).subscribe();
