@@ -4,6 +4,8 @@ import com.google.inject.Injector;
 import configurator.BankConfiguratorFactory;
 import importer.Importer;
 import importer.exceptions.ParserException;
+import importer.loader.Loader;
+import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
@@ -104,10 +106,11 @@ public class ImporterTests {
         BankType bankType = BankType.MBANK;
         DocumentType documentType = DocumentType.CSV;
         String path = "invalid_path.txt";
+        Loader loader = new LocalFSLoader(path);
 
         // then
         assertThrows(IOException.class, () -> getImporter()
-                .importBankStatement(bankType, documentType, path)
+                .importBankStatement(bankType, documentType, loader)
                 .subscribe());
     }
 
@@ -159,7 +162,8 @@ public class ImporterTests {
     private Flowable<BankTransaction> importAsFlowable(BankType bankType,
                                           DocumentType documentType, String uri) throws IOException
     {
-        return getImporter().importBankStatement(bankType, documentType, uri)
+        Loader loader = new LocalFSLoader(uri);
+        return getImporter().importBankStatement(bankType, documentType, loader)
             .toFlowable(BackpressureStrategy.BUFFER);
     }
 }

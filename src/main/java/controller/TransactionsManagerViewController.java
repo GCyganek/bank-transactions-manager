@@ -3,6 +3,8 @@ package controller;
 import controller.util.ContextMenuRowFactory;
 import importer.Importer;
 import importer.exceptions.ParserException;
+import importer.loader.Loader;
+import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.scene.control.*;
 import model.Account;
@@ -157,7 +159,8 @@ public class TransactionsManagerViewController {
         ImportSession importSession = transactionsSupervisor.startImportSession();
 
         try {
-            importer.importBankStatement(selectedBank, selectedDocType, uri)
+            Loader loader = new LocalFSLoader(uri);
+            importer.importBankStatement(selectedBank, selectedDocType, loader)
                     .subscribeOn(Schedulers.io())
                     .filter(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())

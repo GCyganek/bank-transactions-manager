@@ -25,6 +25,4 @@ public class TestingModule extends AbstractModule {
         return new PgBankTransactionDao();
     }
 
-    @Provides
-    Loader provideLoader() { return new LocalFSLoader();}
 }

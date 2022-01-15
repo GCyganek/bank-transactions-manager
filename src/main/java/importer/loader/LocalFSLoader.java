@@ -6,8 +6,14 @@ import java.io.IOException;
 import java.io.Reader;
 
 public class LocalFSLoader implements Loader {
+    private final String uri;
+
+    public LocalFSLoader(String uri) {
+        this.uri = uri;
+    }
+
     @Override
-    public Reader load(String uri) throws IOException {
+    public Reader load() throws IOException {
         return new BufferedReader(new FileReader(uri));
     }
 }

@@ -15,34 +15,27 @@ import java.io.Reader;
 
 public class Importer {
     private final BankConfiguratorFactory configFactory;
-    private Loader loader;
 
     @Inject
-    public Importer(BankConfiguratorFactory configFactory, Loader loader) {
+    public Importer(BankConfiguratorFactory configFactory) {
         this.configFactory = configFactory;
-        this.loader = loader;
     }
 
     /**
      * @param bankType     - one of supported banks
      * @param documentType - file extension
-     * @param URI - uri from where loader should load data
+     * @param loader - loader configured to load required resource
      * @return Observable that emits Bank Transactions, which have reference to imported BankStatement.
      */
     public Observable<BankTransaction> importBankStatement(BankType bankType,
-                                       DocumentType documentType, String URI) throws IOException
+                                       DocumentType documentType, Loader loader) throws IOException
     {
         BankConfigurator configurator = configFactory.createBankConfigurator(bankType);
-        Reader dataReader = loader.load(URI);
+        Reader dataReader = loader.load();
         BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
 
         return parser.parse(dataReader)
 //                .doOnNext(x -> Thread.sleep(2500)) // emulate heavy computation
                 .doFinally(dataReader::close);
     }
-
-    public void setLoader(Loader loader) {
-        this.loader = loader;
-    }
-
 }

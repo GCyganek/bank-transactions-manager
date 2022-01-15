@@ -36,10 +36,6 @@ public class ImporterModule extends AbstractModule {
         return new BankConfiguratorFactory();
     }
 
-    @Provides
-    Loader provideDefaultLoader() {
-        return new LocalFSLoader();
-    }
 
     @Provides
     @Singleton
