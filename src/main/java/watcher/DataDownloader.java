@@ -21,7 +21,7 @@ public class SourceObserverFactory {
         switch (sourceType) {
             case REST_API -> {
                 try {
-                    return new RestApiObserver(new URL(sourceUri));
+                    return new RestApiObserver(new URL(sourceUri), sourceType);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }

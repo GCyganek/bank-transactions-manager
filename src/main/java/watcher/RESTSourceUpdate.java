@@ -1,6 +1,7 @@
 package watcher;
 
 import importer.loader.Loader;
+import io.reactivex.rxjava3.core.Observable;
 
 public class RESTSourceUpdate implements SourceUpdate{
     private final String uri;
@@ -13,8 +14,7 @@ public class RESTSourceUpdate implements SourceUpdate{
     }
 
     @Override
-    public Loader executeUpdate() {
-        jakies_dane = client.getStatement(statementId);
-        return stworz_loadera_z_danych(jakies_dane);
+    public Observable<Loader> executeUpdate() {
+        return client.getStatement(statementId);
     }
 }
