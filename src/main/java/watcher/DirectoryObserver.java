@@ -20,13 +20,13 @@ public class DirectoryObserver implements SourceObserver {
     }
 
     @Override
-    public Observable<Path> getChanges() {
+    public Observable<SourceUpdate> getChanges() {
         return Observable.create(emitter -> {
             WatchKey key;
             while ((key = watchService.poll()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     Path string = (Path) event.context();
-                    emitter.onNext(string);
+                    emitter.onNext(new DirectorySourceUpdate(string));
                 }
                 key.reset();
             }

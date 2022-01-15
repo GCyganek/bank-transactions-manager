@@ -5,14 +5,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 
-public class DataDownloader {
+public class SourceObserverFactory {
     /*
     Ma swojego Observera (DirectoryObserver lub RestApiObserver), ktory zwraca mu nowe pliki przy imporcie cyklicznym/
     na żądanie. Ma wszystkie dane potrzebne do tego, żeby dla każdego pliku otrzymywanego (BankType, jaki rodzaj źródła, path/url, itp)
      z Observera wywołać na nim import
      */
 
-    private final SourceObserver sourceObserver;
 
     public DataDownloader(String sourceUri, SourceType sourceType) {
         this.sourceObserver = initializeSourceObserver(sourceUri, sourceType);
@@ -38,7 +37,4 @@ public class DataDownloader {
         }
     }
 
-    public void importNewStatementsFromSource() {
-        sourceObserver.getChanges().subscribe(); //TODO
-    }
 }
