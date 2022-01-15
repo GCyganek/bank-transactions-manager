@@ -1,4 +1,4 @@
-package watcher;
+package watcher.restapi.response;
 
 import com.google.gson.annotations.SerializedName;
 

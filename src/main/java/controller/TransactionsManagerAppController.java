@@ -53,7 +53,7 @@ public class TransactionsManagerAppController {
         }
     }
 
-    public void showAddRemoteSourceWindow() throws IOException {
+    public AddRemoteSourceWindowController showAddRemoteSourceWindow() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader();
         Stage stage = buildStage(fxmlLoader, "Add remote source", "AddRemoteSourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
 
@@ -62,9 +62,11 @@ public class TransactionsManagerAppController {
         addRemoteSourceWindowController.setAppController(this);
 
         stage.showAndWait();
+
+        return addRemoteSourceWindowController;
     }
 
-    public void showAddDirectorySourceWindow() throws IOException {
+    public AddDirectorySourceWindowController showAddDirectorySourceWindow() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader();
         Stage stage = buildStage(fxmlLoader, "Add directory source", "AddDirectorySourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
 
@@ -72,6 +74,8 @@ public class TransactionsManagerAppController {
         addDirectorySourceWindowController.setStage(stage);
 
         stage.showAndWait();
+
+        return addDirectorySourceWindowController;
     }
 
     public void showTransactionSourcesWindow() throws IOException {

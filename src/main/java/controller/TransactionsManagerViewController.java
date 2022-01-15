@@ -101,9 +101,9 @@ public class TransactionsManagerViewController {
                 .balanceProperty().asString("Transactions Balance: %.2f"));
 
         dateColumn.setCellValueFactory(dataValue -> dataValue.getValue().dateProperty());
-        descriptionColumn.setCellValueFactory(dataValue -> dataValue.getValue().descriptionProperty());
-        amountColumn.setCellValueFactory(dataValue -> dataValue.getValue().amountProperty());
-        categoryColumn.setCellValueFactory(dataValue -> dataValue.getValue().categoryProperty());
+        descriptionColumn.setCellValueFactory(descriptionValue -> descriptionValue.getValue().descriptionProperty());
+        amountColumn.setCellValueFactory(amountValue -> amountValue.getValue().amountProperty());
+        categoryColumn.setCellValueFactory(categoryValue -> categoryValue.getValue().categoryProperty());
 
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         categoryChangeButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isEqualTo(0));

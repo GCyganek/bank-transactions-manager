@@ -3,16 +3,16 @@ package watcher;
 import com.google.inject.Singleton;
 import io.reactivex.rxjava3.core.Observable;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Singleton
 public class SourcesSupervisor {
 
-    private final List<SourceObserver> sourceObservers;
+    private final Set<SourceObserver> sourceObservers;
 
     public SourcesSupervisor() {
-        sourceObservers = new LinkedList<>();
+        sourceObservers = new HashSet<>();
     }
 
     public Observable<SourceUpdate> checkForUpdates() {

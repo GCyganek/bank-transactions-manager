@@ -1,4 +1,4 @@
-package watcher;
+package watcher.restapi;
 
 import importer.loader.ByteLoader;
 import importer.loader.Loader;
@@ -9,6 +9,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import watcher.AbstractSourceUpdate;
 
 import java.io.IOException;
 import java.net.URL;

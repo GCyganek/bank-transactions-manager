@@ -1,10 +1,12 @@
 package watcher;
 
 import io.reactivex.rxjava3.core.Observable;
-
-import java.nio.file.Path;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
+import model.util.BankType;
 
 public interface SourceObserver {
     Observable<SourceUpdate> getChanges();
-    SourceType getSourceType();
+    StringProperty descriptionProperty();
+    ObjectProperty<BankType> bankTypeProperty();
 }
