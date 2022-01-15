@@ -10,13 +10,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.util.BankType;
-import watcher.exceptions.InvalidSourceConfigException;
-import watcher.SourceObserverFactory;
-import watcher.SourceType;
-import watcher.SourcesSupervisor;
 
-import javax.inject.Inject;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -68,6 +62,10 @@ public class AddRemoteSourceWindowController {
             this.appController.showErrorWindow("Invalid remote source URL", e.getMessage());
             return false;
         }
+    }
+
+    public boolean checkIfNewSourceWasAdded() {
+        return remoteUrl.get() != null && bankType != null;
     }
 
     public void setAppController(TransactionsManagerAppController appController) {

@@ -6,24 +6,25 @@ import importer.exceptions.ParserException;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import javafx.scene.control.*;
-import model.Account;
-import model.TransactionsSupervisor;
-import model.util.BankType;
-import model.util.DocumentType;
-import model.util.ImportSession;
-import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import model.Account;
 import model.BankTransaction;
+import model.TransactionsSupervisor;
+import model.util.BankType;
+import model.util.DocumentType;
+import model.util.ImportSession;
 import model.util.TransactionCategory;
+import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import watcher.SourcesSupervisor;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.ConnectException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -223,14 +224,11 @@ public class TransactionsManagerViewController {
     }
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
-        sourcesSupervisor.checkForUpdates().subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.executeUpdate().blockingGet()));
+        sourcesSupervisor.checkForUpdates()
+                .subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.executeUpdate().blockingGet()));
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {
-        try {
-            this.appController.showTransactionSourcesWindow();
-        } catch (IOException e) {
-            e.printStackTrace(); //TODO error handling
-        }
+        this.appController.showTransactionSourcesWindow();
     }
 }

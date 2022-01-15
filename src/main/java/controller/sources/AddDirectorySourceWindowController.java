@@ -1,6 +1,5 @@
 package controller.sources;
 
-import com.google.inject.Inject;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -12,13 +11,8 @@ import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
-import watcher.exceptions.InvalidSourceConfigException;
-import watcher.SourceObserverFactory;
-import watcher.SourceType;
-import watcher.SourcesSupervisor;
 
 import java.io.File;
-import java.io.IOException;
 
 public class AddDirectorySourceWindowController {
 
@@ -71,6 +65,10 @@ public class AddDirectorySourceWindowController {
 
     public void handleChooseDirectoryButton(ActionEvent actionEvent) {
         getDirectoryFromDirectoryChooser();
+    }
+
+    public boolean checkIfNewSourceWasAdded() {
+        return selectedDirectory.get() != null && bankType != null;
     }
 
     public File getSelectedDirectory() { return this.selectedDirectory.get(); }

@@ -16,11 +16,12 @@ import watcher.SourceObserver;
 import watcher.SourceObserverFactory;
 import watcher.SourceType;
 import watcher.SourcesSupervisor;
-import watcher.exceptions.InvalidSourceConfigException;
+import watcher.exceptions.DuplicateSourceException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.List;
 
 @Singleton
 public class TransactionSourcesViewController {
@@ -92,59 +93,67 @@ public class TransactionSourcesViewController {
     }
 
     public void handleAddDirectoryButton(ActionEvent actionEvent) {
-        try {
-            AddDirectorySourceWindowController addDirectoryController
-                    = this.appController.showAddDirectorySourceWindow();
+        this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
+            try {
+                if (!addDirectoryController.checkIfNewSourceWasAdded()) return;
 
-            String directoryPath = addDirectoryController.getSelectedDirectory().getAbsolutePath();
-            BankType directoryBankType = addDirectoryController.getBankType();
+                String directoryPath = addDirectoryController.getSelectedDirectory().getAbsolutePath();
 
-            SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
-                    directoryBankType, directoryPath, SourceType.DIRECTORY
-            );
+                if (checkDuplicate(directoryPath, directorySourceObservers)) throw new DuplicateSourceException(directoryPath);
 
-            sourcesSupervisor.addSourceObserver(addedSourceObserver);
-            directorySourceObservers.add(addedSourceObserver);
+                BankType directoryBankType = addDirectoryController.getBankType();
 
-        } catch (InvalidSourceConfigException | IOException e) {
-            e.printStackTrace(); //TODO error handling
-        }
+                SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
+                        directoryBankType, directoryPath, SourceType.DIRECTORY
+                );
+
+                sourcesSupervisor.addSourceObserver(addedSourceObserver);
+                directorySourceObservers.add(addedSourceObserver);
+
+            } catch (IOException | DuplicateSourceException e) {
+                this.appController.showErrorWindow("Failed to add directory source", e.getMessage());
+            }
+        });
     }
 
     public void handleAddRemoteButton(ActionEvent actionEvent) {
-        try {
-            AddRemoteSourceWindowController addRemoteController
-                    = this.appController.showAddRemoteSourceWindow();
+        this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
+            try {
+                if (!addRemoteController.checkIfNewSourceWasAdded()) return;
 
-            String remoteUrl = addRemoteController.getRemoteUrl();
-            BankType remoteBankType = addRemoteController.getBankType();
+                String remoteUrl = addRemoteController.getRemoteUrl();
 
-            SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
-                    remoteBankType, remoteUrl, SourceType.REST_API
-            );
+                if (checkDuplicate(remoteUrl, remoteSourceObservers)) throw new DuplicateSourceException(remoteUrl);
 
-            sourcesSupervisor.addSourceObserver(addedSourceObserver);
-            remoteSourceObservers.add(addedSourceObserver);
+                BankType remoteBankType = addRemoteController.getBankType();
 
-        } catch (InvalidSourceConfigException | IOException e) {
-            e.printStackTrace(); //TODO error handling
-        }
+                SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
+                        remoteBankType, remoteUrl, SourceType.REST_API
+                );
+
+                sourcesSupervisor.addSourceObserver(addedSourceObserver);
+                remoteSourceObservers.add(addedSourceObserver);
+
+            } catch (IOException | DuplicateSourceException e) {
+                this.appController.showErrorWindow("Failed to add remote source", e.getMessage());
+            }
+        });
     }
 
     public void handleDeleteDirectoryButton(ActionEvent actionEvent) {
-        directoriesTable.getSelectionModel().getSelectedItems()
-                .forEach(selectedDirectory -> {
-                    sourcesSupervisor.removeSourceObserver(selectedDirectory);
-                    directorySourceObservers.remove(selectedDirectory);
-                });
+        List<SourceObserver> selectedItems = directoriesTable.getSelectionModel().getSelectedItems();
+        selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
+        directorySourceObservers.removeAll(selectedItems);
     }
 
     public void handleDeleteRemoteButton(ActionEvent actionEvent) {
-        remotesTable.getSelectionModel().getSelectedItems()
-                .forEach(selectedDirectory -> {
-                    sourcesSupervisor.removeSourceObserver(selectedDirectory);
-                    remoteSourceObservers.remove(selectedDirectory);
-                });
+        List<SourceObserver> selectedItems = remotesTable.getSelectionModel().getSelectedItems();
+        selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
+        remoteSourceObservers.removeAll(selectedItems);
+    }
+
+    private boolean checkDuplicate(String source, List<SourceObserver> sourceObservers) {
+        return sourceObservers.stream().anyMatch(sourceObserver -> sourceObserver.descriptionProperty().get().equals(source));
     }
 
     public void setStage(Stage stage) {

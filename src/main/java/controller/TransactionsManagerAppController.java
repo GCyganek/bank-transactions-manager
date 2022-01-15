@@ -49,44 +49,65 @@ public class TransactionsManagerAppController {
             primaryStage.show();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            showErrorWindow("Can't load new window", e.getMessage());
         }
     }
 
-    public AddRemoteSourceWindowController showAddRemoteSourceWindow() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        Stage stage = buildStage(fxmlLoader, "Add remote source", "AddRemoteSourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+    public Optional<AddRemoteSourceWindowController> showAddRemoteSourceWindow() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(
+                    fxmlLoader, "Add remote source", "AddRemoteSourceWindow.fxml",
+                    primaryStage, Modality.APPLICATION_MODAL
+            );
+            AddRemoteSourceWindowController addRemoteSourceWindowController = fxmlLoader.getController();
+            addRemoteSourceWindowController.setStage(stage);
+            addRemoteSourceWindowController.setAppController(this);
 
-        AddRemoteSourceWindowController addRemoteSourceWindowController = fxmlLoader.getController();
-        addRemoteSourceWindowController.setStage(stage);
-        addRemoteSourceWindowController.setAppController(this);
+            stage.showAndWait();
 
-        stage.showAndWait();
-
-        return addRemoteSourceWindowController;
+            return Optional.of(addRemoteSourceWindowController);
+        } catch (IOException e) {
+            showErrorWindow("Can't load new window", e.getMessage());
+        }
+        return Optional.empty();
     }
 
-    public AddDirectorySourceWindowController showAddDirectorySourceWindow() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        Stage stage = buildStage(fxmlLoader, "Add directory source", "AddDirectorySourceWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+    public Optional<AddDirectorySourceWindowController> showAddDirectorySourceWindow() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(
+                    fxmlLoader, "Add directory source", "AddDirectorySourceWindow.fxml",
+                    primaryStage, Modality.APPLICATION_MODAL
+            );
 
-        AddDirectorySourceWindowController addDirectorySourceWindowController = fxmlLoader.getController();
-        addDirectorySourceWindowController.setStage(stage);
+            AddDirectorySourceWindowController addDirectorySourceWindowController = fxmlLoader.getController();
+            addDirectorySourceWindowController.setStage(stage);
 
-        stage.showAndWait();
+            stage.showAndWait();
 
-        return addDirectorySourceWindowController;
+            return Optional.of(addDirectorySourceWindowController);
+        } catch (IOException e) {
+            showErrorWindow("Can't load new window", e.getMessage());
+        }
+        return Optional.empty();
     }
 
-    public void showTransactionSourcesWindow() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        Stage stage = buildStage(fxmlLoader, "Transaction sources manager", "TransactionSourcesWindow.fxml", primaryStage, Modality.WINDOW_MODAL);
+    public void showTransactionSourcesWindow() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Stage stage = buildStage(
+                    fxmlLoader, "Transaction sources manager", "TransactionSourcesWindow.fxml",
+                    primaryStage, Modality.WINDOW_MODAL
+            );
+            TransactionSourcesViewController transactionSourcesViewController = fxmlLoader.getController();
+            transactionSourcesViewController.setStage(stage);
+            transactionSourcesViewController.setAppController(this);
 
-        TransactionSourcesViewController transactionSourcesViewController = fxmlLoader.getController();
-        transactionSourcesViewController.setStage(stage);
-        transactionSourcesViewController.setAppController(this);
-
-        stage.showAndWait();
+            stage.showAndWait();
+        } catch (IOException e) {
+            showErrorWindow("Can't load new window", e.getMessage());
+        }
     }
 
     public AddStatementViewController showAddStatementView() throws IOException {
@@ -112,14 +133,14 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
         } catch (IOException e) {
-            e.printStackTrace();
+            showErrorWindow("Can't load new window", e.getMessage());
         }
     }
 
     public void showErrorWindow(String errorMsg, String reason) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
-            Stage stage = buildStage(fxmlLoader, "Error", "ErrorView.fxml", primaryStage, Modality.WINDOW_MODAL);
+            Stage stage = buildStage(fxmlLoader, "Error", "ErrorView.fxml", primaryStage, Modality.APPLICATION_MODAL);
 
             ErrorViewController errorViewController = fxmlLoader.getController();
             errorViewController.setStage(stage);
@@ -127,7 +148,6 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
         } catch (IOException e) {
-            System.out.println("Can't load new window");
             e.printStackTrace();
         }
     }
@@ -150,7 +170,7 @@ public class TransactionsManagerAppController {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            showErrorWindow("Can't load new window", e.getMessage());
         }
 
         return Optional.empty();

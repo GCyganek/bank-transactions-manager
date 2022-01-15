@@ -8,6 +8,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import watcher.restapi.response.RestUpdatesResponseList;
 
+import java.net.ConnectException;
+
 public interface RestApiClient {
 
     @GET("api/statements/updates")
@@ -16,15 +18,3 @@ public interface RestApiClient {
     @GET("api/statements/{statement-id}")
     Call<ResponseBody> statementById(@Path("statement-id") int statementId);
 }
-
-/*
-TODO:
-    - zamiana DataDownloadera na factory co tworzy SourceObservery
-
-
-    - posprzatac supervisora
-    - source update dla directory i dla resta dokonczyc
-    - podlaczyc SourceObservery do widoku
-    - podpiecie do controllera SourceUpdateow jakos
-    - implementacja rest api na retro
- */

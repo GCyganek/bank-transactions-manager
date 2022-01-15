@@ -13,6 +13,7 @@ import watcher.SourceObserver;
 import watcher.SourceUpdate;
 import watcher.restapi.response.RestUpdatesResponse;
 
+import java.net.ConnectException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,9 +46,9 @@ public class RestApiObserver implements SourceObserver {
     @Override
     public Observable<SourceUpdate> getChanges() {
         return client.listUpdates(
-                        LocalDateTime.now().minusHours(5).format(dateTimeFormatter), //TODO stop using end-date parameter
+                        LocalDateTime.now().minusHours(5).format(dateTimeFormatter), //TODO stop using end-date parameter and ConnectException errro handling
                         LocalDateTime.now().format(dateTimeFormatter)
-                ).flatMap(x -> Observable.fromIterable(x.getRestUpdatesResponseList())).map(RestUpdatesResponse::getStatementId)
+                ).onErrorResumeWith(Observable.empty()).flatMap(x -> Observable.fromIterable(x.getRestUpdatesResponseList())).map(RestUpdatesResponse::getStatementId)
                 .map(x -> new RestApiSourceUpdate(bankType.get(), x, client, remoteUrl));
     }
 

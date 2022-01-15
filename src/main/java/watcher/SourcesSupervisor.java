@@ -3,6 +3,7 @@ package watcher;
 import com.google.inject.Singleton;
 import io.reactivex.rxjava3.core.Observable;
 
+import java.net.ConnectException;
 import java.util.HashSet;
 import java.util.Set;
 

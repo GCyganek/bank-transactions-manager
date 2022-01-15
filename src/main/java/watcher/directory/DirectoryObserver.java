@@ -33,7 +33,6 @@ public class DirectoryObserver implements SourceObserver {
 
     @Override
     public Observable<SourceUpdate> getChanges() {
-        System.out.println(path);
         return Observable.create(emitter -> {
             WatchKey key;
             while ((key = watchService.poll()) != null) {
