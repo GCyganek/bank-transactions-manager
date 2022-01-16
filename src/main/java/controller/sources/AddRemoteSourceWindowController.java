@@ -10,12 +10,17 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.util.BankType;
+import watcher.SourceObserver;
+import watcher.SourceObserverFactory;
+import watcher.SourceType;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 
-public class AddRemoteSourceWindowController {
+public class AddRemoteSourceWindowController implements SourceAdditionWindowController {
     private Stage stage;
 
     private BankType bankType;
@@ -49,10 +54,6 @@ public class AddRemoteSourceWindowController {
         stage.close();
     }
 
-    public BankType getBankType() { return this.bankType; }
-
-    public String getRemoteUrl() { return this.remoteUrl.get(); }
-
     private boolean validateUrl(String urlToValidate) {
         try {
             URL url = new URL(urlToValidate);
@@ -64,7 +65,7 @@ public class AddRemoteSourceWindowController {
         }
     }
 
-    public boolean checkIfNewSourceWasAdded() {
+    private boolean checkIfNewSourceWasAdded() {
         return remoteUrl.get() != null && bankType != null;
     }
 
@@ -74,5 +75,16 @@ public class AddRemoteSourceWindowController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    @Override
+    public Optional<SourceObserver> getAddedSourceObserver() throws IOException {
+        if (checkIfNewSourceWasAdded()) {
+            SourceObserver sourceObserver =
+                    SourceObserverFactory.initializeSourceObserver(bankType, remoteUrl.get(), SourceType.REST_API);
+            return Optional.of(sourceObserver);
+        }
+
+        return Optional.empty();
     }
 }

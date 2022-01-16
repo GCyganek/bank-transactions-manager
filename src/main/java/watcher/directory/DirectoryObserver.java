@@ -1,34 +1,32 @@
 package watcher.directory;
 
 import io.reactivex.rxjava3.core.Observable;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import model.util.BankType;
-import watcher.SourceObserver;
+import model.util.DocumentType;
+import watcher.AbstractSourceObserver;
 import watcher.SourceType;
 import watcher.SourceUpdate;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Optional;
 
-public class DirectoryObserver implements SourceObserver {
+public class DirectoryObserver extends AbstractSourceObserver {
     private final Path path;
-    private final StringProperty pathStringProperty = new SimpleStringProperty();
-    private final ObjectProperty<BankType> bankType = new SimpleObjectProperty<>();
     private final WatchService watchService;
 
     public DirectoryObserver(Path path, BankType bankType) throws IOException {
+        super(path.toString(), bankType, SourceType.DIRECTORY);
         this.path = path;
-        this.pathStringProperty.set(path.toString());
-        this.bankType.set(bankType);
-        this.watchService = FileSystems.getDefault().newWatchService();
-        initialize();
+
+        this.watchService = initializeWatchService();
     }
 
-    private void initialize() throws IOException {
+    private WatchService initializeWatchService() throws IOException {
+        WatchService watchService = FileSystems.getDefault().newWatchService();
         path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+
+        return watchService;
     }
 
     @Override
@@ -39,7 +37,10 @@ public class DirectoryObserver implements SourceObserver {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     Path relativeFilePath = (Path) event.context();
                     String absoluteFilePathString = path + "/" + relativeFilePath.toString();
-                    emitter.onNext(new DirectorySourceUpdate(bankType.get(), absoluteFilePathString));
+                    getDocumentType(absoluteFilePathString)
+                        .ifPresent(documentType -> emitter
+                            .onNext(new DirectorySourceUpdate(bankType.get(), documentType, absoluteFilePathString)));
+
                 }
                 key.reset();
             }
@@ -47,10 +48,10 @@ public class DirectoryObserver implements SourceObserver {
         });
     }
 
-    @Override
-    public StringProperty descriptionProperty() { return pathStringProperty; }
-
-    @Override
-    public ObjectProperty<BankType> bankTypeProperty() { return bankType; }
-
+    private Optional<DocumentType> getDocumentType(String path) {
+        return Optional.ofNullable(path)
+                .filter(f -> f.contains("."))
+                .map(f -> f.substring(path.lastIndexOf(".") + 1))
+                .flatMap(DocumentType::fromString);
+    }
 }

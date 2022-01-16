@@ -32,7 +32,8 @@ def get_updated_statements():
         for file in UploadedFile.get_files_between(start_dt, end_dt):
             updates.append({
                 'statement_id': file.get_id(),
-                'upload_time': str(file.get_upload_time())
+                'upload_time': str(file.get_upload_time()),
+                'extension': file.get_extension()
             })
 
         return {

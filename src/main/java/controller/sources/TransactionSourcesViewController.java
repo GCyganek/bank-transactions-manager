@@ -1,6 +1,7 @@
 package controller.sources;
 
 import controller.TransactionsManagerAppController;
+import controller.sources.util.SourceTable;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +14,6 @@ import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import model.util.BankType;
 import watcher.SourceObserver;
-import watcher.SourceObserverFactory;
 import watcher.SourceType;
 import watcher.SourcesSupervisor;
 import watcher.exceptions.DuplicateSourceException;
@@ -21,7 +21,7 @@ import watcher.exceptions.DuplicateSourceException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 @Singleton
 public class TransactionSourcesViewController {
@@ -32,12 +32,12 @@ public class TransactionSourcesViewController {
 
     private final SourcesSupervisor sourcesSupervisor;
 
-    private final ObservableList<SourceObserver> directorySourceObservers = FXCollections.observableArrayList();
-    private final ObservableList<SourceObserver> remoteSourceObservers = FXCollections.observableArrayList();
+    private final ObservableList<SourceObserver> sourceObservers = FXCollections.observableArrayList();
 
     @Inject
     public TransactionSourcesViewController(SourcesSupervisor sourcesSupervisor) {
         this.sourcesSupervisor = sourcesSupervisor;
+        this.sourceTables = new ArrayList<>();
     }
 
     @FXML
@@ -70,46 +70,66 @@ public class TransactionSourcesViewController {
     @FXML
     public TableColumn<SourceObserver, BankType> directoryBankColumn;
 
+    private final ArrayList<SourceTable> sourceTables;
+
     @FXML
     private void initialize() {
-        directoriesTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        remotesTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        Arrays.stream(SourceType.values()).forEach(sourceType -> {
+                SourceTable sourceTable = switch (sourceType) {
+                    case REST_API -> new SourceTable(remotesTable, remoteUrlColumn, remoteBankColumn, deleteRemoteButton);
+                    case DIRECTORY ->new SourceTable(directoriesTable, directoryNameColumn, directoryBankColumn, deleteDirectoryButton);
+                };
+                sourceTables.add(sourceTable);
+                setupSourceTable(sourceTable, sourceType);
+        });
+    }
 
-        directoriesTable.setItems(directorySourceObservers);
-        remotesTable.setItems(remoteSourceObservers);
+    private void setupSourceTable(SourceTable sourceTable, SourceType sourceType) {
+        sourceTable.tableView().getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        sourceTable.tableView()
+                .setItems(sourceObservers.filtered(sourceObserver -> sourceObserver.getSourceType() == sourceType));
 
-        directoryNameColumn.setCellValueFactory(directoryName -> directoryName.getValue().descriptionProperty());
-        directoryBankColumn.setCellValueFactory(bankType -> bankType.getValue().bankTypeProperty());
+        sourceTable.descriptionColumn().setCellValueFactory(description -> description.getValue().descriptionProperty());
+        sourceTable.bankTypeColumn().setCellValueFactory(bankType -> bankType.getValue().bankTypeProperty());
 
-        remoteUrlColumn.setCellValueFactory(remoteUrl -> remoteUrl.getValue().descriptionProperty());
-        remoteBankColumn.setCellValueFactory(bankType -> bankType.getValue().bankTypeProperty());
-
-        deleteDirectoryButton.disableProperty().bind(Bindings.size(directoriesTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
-        deleteRemoteButton.disableProperty().bind(Bindings.size(remotesTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
+        sourceTable.deleteButton().disableProperty()
+                .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
     }
 
     public void setAppController(TransactionsManagerAppController appController) {
         this.appController = appController;
     }
 
+    private void handleAddSourceButton(SourceAdditionWindowController controller) throws IOException, DuplicateSourceException {
+        Optional<SourceObserver> sourceObserverOptional = controller.getAddedSourceObserver();
+        if (sourceObserverOptional.isPresent()) {
+            SourceObserver sourceObserver = sourceObserverOptional.get();
+            String description = sourceObserver.descriptionProperty().get();
+
+            if (checkDuplicate(description, sourceObservers))
+                throw new DuplicateSourceException(description);
+
+            sourcesSupervisor.addSourceObserver(sourceObserver);
+            sourceObservers.add(sourceObserver);
+
+            sourceObserver
+                    .getSourceFailedObservable()
+                    .subscribe(err -> {
+                        System.out.println("source: " + description + "failed, do something with it"); //TODO
+                        System.out.println("error: " + err.getMessage());
+
+//                        sourcesSupervisor.removeSourceObserver(sourceObserver);
+                        // we can either do it silently
+                        // or ask user if he wants to remove it
+                    });
+        }
+
+    }
+
     public void handleAddDirectoryButton(ActionEvent actionEvent) {
         this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
             try {
-                if (!addDirectoryController.checkIfNewSourceWasAdded()) return;
-
-                String directoryPath = addDirectoryController.getSelectedDirectory().getAbsolutePath();
-
-                if (checkDuplicate(directoryPath, directorySourceObservers)) throw new DuplicateSourceException(directoryPath);
-
-                BankType directoryBankType = addDirectoryController.getBankType();
-
-                SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
-                        directoryBankType, directoryPath, SourceType.DIRECTORY
-                );
-
-                sourcesSupervisor.addSourceObserver(addedSourceObserver);
-                directorySourceObservers.add(addedSourceObserver);
-
+                handleAddSourceButton(addDirectoryController);
             } catch (IOException | DuplicateSourceException e) {
                 this.appController.showErrorWindow("Failed to add directory source", e.getMessage());
             }
@@ -119,38 +139,28 @@ public class TransactionSourcesViewController {
     public void handleAddRemoteButton(ActionEvent actionEvent) {
         this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
             try {
-                if (!addRemoteController.checkIfNewSourceWasAdded()) return;
-
-                String remoteUrl = addRemoteController.getRemoteUrl();
-
-                if (checkDuplicate(remoteUrl, remoteSourceObservers)) throw new DuplicateSourceException(remoteUrl);
-
-                BankType remoteBankType = addRemoteController.getBankType();
-
-                SourceObserver addedSourceObserver = SourceObserverFactory.initializeSourceObserver(
-                        remoteBankType, remoteUrl, SourceType.REST_API
-                );
-
-                sourcesSupervisor.addSourceObserver(addedSourceObserver);
-                remoteSourceObservers.add(addedSourceObserver);
-
+                handleAddSourceButton(addRemoteController);
             } catch (IOException | DuplicateSourceException e) {
                 this.appController.showErrorWindow("Failed to add remote source", e.getMessage());
             }
         });
     }
 
-    public void handleDeleteDirectoryButton(ActionEvent actionEvent) {
-        List<SourceObserver> selectedItems = directoriesTable.getSelectionModel().getSelectedItems();
+    private void removeSource(SourceType sourceType) {
+        SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
+        List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
         selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
-        directorySourceObservers.removeAll(selectedItems);
+        sourceObservers.removeAll(selectedItems);
+    }
+
+    public void handleDeleteDirectoryButton(ActionEvent actionEvent) {
+        removeSource(SourceType.DIRECTORY);
     }
 
     public void handleDeleteRemoteButton(ActionEvent actionEvent) {
-        List<SourceObserver> selectedItems = remotesTable.getSelectionModel().getSelectedItems();
-        selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
-        remoteSourceObservers.removeAll(selectedItems);
+        removeSource(SourceType.REST_API);
     }
+
 
     private boolean checkDuplicate(String source, List<SourceObserver> sourceObservers) {
         return sourceObservers.stream().anyMatch(sourceObserver -> sourceObserver.descriptionProperty().get().equals(source));

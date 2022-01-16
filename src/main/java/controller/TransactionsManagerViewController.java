@@ -24,7 +24,6 @@ import watcher.SourcesSupervisor;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -225,7 +224,7 @@ public class TransactionsManagerViewController {
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
         sourcesSupervisor.checkForUpdates()
-                .subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.executeUpdate().blockingGet()));
+                .subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.getUpdateDataLoader().blockingGet()));
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {

@@ -3,8 +3,8 @@ package controller;
 import com.google.inject.Injector;
 import controller.sources.AddDirectorySourceWindowController;
 import controller.sources.AddRemoteSourceWindowController;
+import controller.sources.SourceAdditionWindowController;
 import controller.sources.TransactionSourcesViewController;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -53,7 +53,7 @@ public class TransactionsManagerAppController {
         }
     }
 
-    public Optional<AddRemoteSourceWindowController> showAddRemoteSourceWindow() {
+    public Optional<SourceAdditionWindowController> showAddRemoteSourceWindow() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             Stage stage = buildStage(
@@ -73,7 +73,7 @@ public class TransactionsManagerAppController {
         return Optional.empty();
     }
 
-    public Optional<AddDirectorySourceWindowController> showAddDirectorySourceWindow() {
+    public Optional<SourceAdditionWindowController> showAddDirectorySourceWindow() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             Stage stage = buildStage(

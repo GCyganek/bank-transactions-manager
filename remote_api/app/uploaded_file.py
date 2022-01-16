@@ -36,6 +36,13 @@ class UploadedFile:
     def get_upload_time(self) -> datetime:
         return self.upload_time
 
+    def get_extension(self) -> str:
+        ext = self.path.suffix
+        if len(ext) > 0:
+            ext = ext[1:]
+        return ext
+            
+
     @classmethod
     def persist_file(cls, file: FileStorage) -> 'UploadedFile':
         path = UPLOAD_FOLDER.joinpath(secure_filename(file.filename))

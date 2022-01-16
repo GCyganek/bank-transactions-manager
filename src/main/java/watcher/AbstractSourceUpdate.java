@@ -5,10 +5,11 @@ import model.util.DocumentType;
 
 public abstract class AbstractSourceUpdate implements SourceUpdate{
     private final BankType bankType;
-    protected DocumentType documentType;
+    protected final DocumentType documentType;
 
-    public AbstractSourceUpdate(BankType bankType) {
+    public AbstractSourceUpdate(BankType bankType, DocumentType documentType) {
         this.bankType = bankType;
+        this.documentType = documentType;
     }
 
     @Override

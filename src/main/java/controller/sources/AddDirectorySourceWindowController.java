@@ -11,10 +11,15 @@ import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
+import watcher.SourceObserver;
+import watcher.SourceObserverFactory;
+import watcher.SourceType;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
 
-public class AddDirectorySourceWindowController {
+public class AddDirectorySourceWindowController implements SourceAdditionWindowController {
 
     private Stage stage;
 
@@ -67,15 +72,25 @@ public class AddDirectorySourceWindowController {
         getDirectoryFromDirectoryChooser();
     }
 
-    public boolean checkIfNewSourceWasAdded() {
+    private boolean checkIfNewSourceWasAdded() {
         return selectedDirectory.get() != null && bankType != null;
     }
 
-    public File getSelectedDirectory() { return this.selectedDirectory.get(); }
-
-    public BankType getBankType() { return this.bankType; }
+    private File getSelectedDirectory() { return this.selectedDirectory.get(); }
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    @Override
+    public Optional<SourceObserver> getAddedSourceObserver() throws IOException {
+        if (checkIfNewSourceWasAdded()) {
+            String path = getSelectedDirectory().getAbsolutePath();
+            SourceObserver sourceObserver =
+                    SourceObserverFactory.initializeSourceObserver(bankType, path, SourceType.DIRECTORY);
+            return Optional.of(sourceObserver);
+        }
+
+        return Optional.empty();
     }
 }

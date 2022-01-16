@@ -7,6 +7,11 @@ import model.util.BankType;
 
 public interface SourceObserver {
     Observable<SourceUpdate> getChanges();
+
     StringProperty descriptionProperty();
     ObjectProperty<BankType> bankTypeProperty();
+
+    Observable<Throwable> getSourceFailedObservable();
+
+    SourceType getSourceType();
 }

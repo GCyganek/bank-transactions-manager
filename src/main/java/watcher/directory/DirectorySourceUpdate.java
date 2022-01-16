@@ -11,14 +11,13 @@ import watcher.AbstractSourceUpdate;
 public class DirectorySourceUpdate extends AbstractSourceUpdate {
     private final String path;
 
-    public DirectorySourceUpdate(BankType bankType, String path) {
-        super(bankType);
+    public DirectorySourceUpdate(BankType bankType, DocumentType documentType, String path) {
+        super(bankType, documentType);
         this.path = path;
     }
 
     @Override
-    public Single<Loader> executeUpdate() {
-        this.documentType = DocumentType.CSV; //TODO
+    public Single<Loader> getUpdateDataLoader() {
         return Single.just(new LocalFSLoader(path));
     }
 }
