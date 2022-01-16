@@ -16,16 +16,20 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class TransactionsManagerAppController {
 
     private final Stage primaryStage;
     private Injector injector;
+    private final TransactionSourcesViewController transactionSourcesViewController;
 
     @Inject
-    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage) {
+    public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage,
+                                            TransactionSourcesViewController transactionSourcesViewController) {
         this.primaryStage = primaryStage;
+        this.transactionSourcesViewController = transactionSourcesViewController;
     }
 
     public void initRootLayout(Injector injector) {
@@ -106,7 +110,7 @@ public class TransactionsManagerAppController {
 
             stage.showAndWait();
         } catch (IOException e) {
-            showErrorWindow("Can't load new window", e.getMessage());
+            showErrorWindow("Can't load new window", e.getMessage() + " " + e.getCause());
         }
     }
 

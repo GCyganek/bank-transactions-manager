@@ -1,7 +1,10 @@
 package controller.sources;
 
+import com.google.inject.Singleton;
 import controller.TransactionsManagerAppController;
 import controller.sources.util.SourceTable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,7 +22,6 @@ import watcher.SourcesSupervisor;
 import watcher.exceptions.DuplicateSourceException;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.*;
 
@@ -33,7 +35,6 @@ public class TransactionSourcesViewController {
     private final SourcesSupervisor sourcesSupervisor;
 
     private final ObservableList<SourceObserver> sourceObservers = FXCollections.observableArrayList();
-
     @Inject
     public TransactionSourcesViewController(SourcesSupervisor sourcesSupervisor) {
         this.sourcesSupervisor = sourcesSupervisor;
@@ -53,10 +54,22 @@ public class TransactionSourcesViewController {
     public Button deleteRemoteButton;
 
     @FXML
+    public Button reactivateDirectoryButton;
+
+    @FXML
+    public Button reactivateRemoteButton;
+
+    @FXML
     public TableView<SourceObserver> directoriesTable;
 
     @FXML
     public TableView<SourceObserver> remotesTable;
+
+    @FXML
+    public TableColumn<SourceObserver, Boolean> remoteActiveColumn;
+
+    @FXML
+    public TableColumn<SourceObserver, Boolean> directoryActiveColumn;
 
     @FXML
     public TableColumn<SourceObserver, String> directoryNameColumn;
@@ -75,12 +88,16 @@ public class TransactionSourcesViewController {
     @FXML
     private void initialize() {
         Arrays.stream(SourceType.values()).forEach(sourceType -> {
-                SourceTable sourceTable = switch (sourceType) {
-                    case REST_API -> new SourceTable(remotesTable, remoteUrlColumn, remoteBankColumn, deleteRemoteButton);
-                    case DIRECTORY ->new SourceTable(directoriesTable, directoryNameColumn, directoryBankColumn, deleteDirectoryButton);
-                };
-                sourceTables.add(sourceTable);
-                setupSourceTable(sourceTable, sourceType);
+            SourceTable sourceTable = switch (sourceType) {
+                case REST_API ->
+                        new SourceTable(remotesTable, remoteUrlColumn, remoteBankColumn,
+                                remoteActiveColumn, deleteRemoteButton, reactivateRemoteButton);
+                case DIRECTORY ->
+                        new SourceTable(directoriesTable, directoryNameColumn, directoryBankColumn,
+                                directoryActiveColumn, deleteDirectoryButton, reactivateDirectoryButton);
+            };
+            sourceTables.add(sourceType.ordinal(), sourceTable);
+            setupSourceTable(sourceTables.get(sourceType.ordinal()), sourceType);
         });
     }
 
@@ -91,8 +108,11 @@ public class TransactionSourcesViewController {
 
         sourceTable.descriptionColumn().setCellValueFactory(description -> description.getValue().descriptionProperty());
         sourceTable.bankTypeColumn().setCellValueFactory(bankType -> bankType.getValue().bankTypeProperty());
+        sourceTable.activeColumn().setCellValueFactory(active -> active.getValue().activeProperty());
 
         sourceTable.deleteButton().disableProperty()
+                .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
+        sourceTable.reactivateButton().disableProperty()
                 .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
     }
 
@@ -115,12 +135,16 @@ public class TransactionSourcesViewController {
             sourceObserver
                     .getSourceFailedObservable()
                     .subscribe(err -> {
-                        System.out.println("source: " + description + "failed, do something with it"); //TODO
-                        System.out.println("error: " + err.getMessage());
-
-//                        sourcesSupervisor.removeSourceObserver(sourceObserver);
-                        // we can either do it silently
-                        // or ask user if he wants to remove it
+                        String sourceDescription = sourceObserver.descriptionProperty().get();
+                        Platform.runLater(
+                                () -> {
+                                    this.appController.showErrorWindow(
+                                            "Stopped listening to the source: " + sourceDescription,
+                                            err.getMessage()
+                                    );
+                                }
+                        );
+                        sourceObserver.setActive(false);
                     });
         }
 
@@ -149,8 +173,19 @@ public class TransactionSourcesViewController {
     private void removeSource(SourceType sourceType) {
         SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
         List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
+        selectedItems.forEach(x -> System.out.println(x.descriptionProperty().get()));
         selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
         sourceObservers.removeAll(selectedItems);
+    }
+
+    private void reactivateSources(SourceType sourceType) {
+        SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
+        List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
+        selectedItems.forEach(sourceObserver -> {
+            System.out.println(sourceObserver.descriptionProperty().get() + " " + sourceObserver.activeProperty().get());
+            if (sourceObserver.activeProperty().get()) return;
+            sourceObserver.setActive(true);
+        });
     }
 
     public void handleDeleteDirectoryButton(ActionEvent actionEvent) {
@@ -161,6 +196,13 @@ public class TransactionSourcesViewController {
         removeSource(SourceType.REST_API);
     }
 
+    public void handleReactivateDirectoryButton(ActionEvent actionEvent) {
+        reactivateSources(SourceType.DIRECTORY);
+    }
+
+    public void handleReactivateRemoteButton(ActionEvent actionEvent) {
+        reactivateSources(SourceType.REST_API);
+    }
 
     private boolean checkDuplicate(String source, List<SourceObserver> sourceObservers) {
         return sourceObservers.stream().anyMatch(sourceObserver -> sourceObserver.descriptionProperty().get().equals(source));

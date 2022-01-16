@@ -3,7 +3,6 @@ package watcher;
 import com.google.inject.Singleton;
 import io.reactivex.rxjava3.core.Observable;
 
-import java.net.ConnectException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +19,7 @@ public class SourcesSupervisor {
         System.out.println(sourceObservers.size());
         return Observable
                 .fromIterable(sourceObservers)
+                .filter(sourceObserver -> sourceObserver.activeProperty().getValue())
                 .flatMap(SourceObserver::getChanges);
     }
 

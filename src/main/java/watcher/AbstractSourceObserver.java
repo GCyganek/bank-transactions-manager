@@ -11,12 +11,14 @@ import model.util.BankType;
 public abstract class AbstractSourceObserver implements SourceObserver {
     protected final StringProperty descriptionProperty = new SimpleStringProperty();
     protected final ObjectProperty<BankType> bankType = new SimpleObjectProperty<>();
+    protected final ObjectProperty<Boolean> active = new SimpleObjectProperty<>();
     protected final PublishSubject<Throwable> sourceFailedPublisher;
     protected final SourceType sourceType;
 
     public AbstractSourceObserver(String description, BankType bankType, SourceType sourceType) {
         this.descriptionProperty.setValue(description);
         this.bankType.setValue(bankType);
+        this.active.setValue(true);
         this.sourceFailedPublisher = PublishSubject.create();
         this.sourceType = sourceType;
     }
@@ -33,8 +35,18 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     }
 
     @Override
+    public ObjectProperty<Boolean> activeProperty() {
+        return active;
+    }
+
+    @Override
     public Observable<Throwable> getSourceFailedObservable() {
         return Observable.wrap(sourceFailedPublisher);
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.active.setValue(active);
     }
 
     @Override

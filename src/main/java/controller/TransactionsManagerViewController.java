@@ -224,7 +224,12 @@ public class TransactionsManagerViewController {
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
         sourcesSupervisor.checkForUpdates()
-                .subscribe(x -> handleImport(x.getBankType(), DocumentType.CSV, x.getUpdateDataLoader().blockingGet()));
+                .subscribeOn(Schedulers.io())
+                .subscribe(sourceUpdate ->
+                        sourceUpdate.getUpdateDataLoader().subscribe(loader ->
+                                handleImport(sourceUpdate.getBankType(), sourceUpdate.getDocumentType(), loader)
+                        )
+                );
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {

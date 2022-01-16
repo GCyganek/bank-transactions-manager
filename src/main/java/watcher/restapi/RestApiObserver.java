@@ -9,7 +9,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import watcher.AbstractSourceObserver;
 import watcher.SourceType;
 import watcher.SourceUpdate;
-import watcher.restapi.response.RestUpdatesResponse;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -20,7 +19,7 @@ public class RestApiObserver extends AbstractSourceObserver {
 
     private final URL remoteUrl;
     private final RestApiClient client;
-    //TODO save last update time
+    private LocalDateTime lastUpdate = LocalDateTime.now();
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
@@ -42,9 +41,9 @@ public class RestApiObserver extends AbstractSourceObserver {
 
     @Override
     public Observable<SourceUpdate> getChanges() {
-        return client.listUpdates(
-                        LocalDateTime.now().minusHours(5).format(dateTimeFormatter)
-                )
+        String lastUpdateString = lastUpdate.format(dateTimeFormatter);
+        lastUpdate = LocalDateTime.now();
+        return client.listUpdates(lastUpdateString)
                 .doOnError(sourceFailedPublisher::onNext)
                 .onErrorResumeWith(Observable.empty())
                 .flatMap(updateList -> Observable.fromIterable(updateList.getRestUpdatesResponseList()))
