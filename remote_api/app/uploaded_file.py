@@ -6,6 +6,7 @@ from pathlib import Path
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from datetime import datetime
+from pytz import timezone
 
 UPLOAD_FOLDER = Path(__file__).absolute().parent.joinpath('uploads')
 
@@ -49,7 +50,8 @@ class UploadedFile:
         db = get_db()
 
         try:
-            timestamp = datetime.now()
+            timestamp = datetime.now(timezone('Europe/Warsaw'))
+
             cursor = db.execute(
                 f'INSERT INTO {cls.DB_TABLE_NAME} ({cls.DB_PATH_COLUMN_NAME}, {cls.DB_UPLOAD_TIME_COLUMN_NAME}) VALUES (?, ?)',
                 (str(path), str(timestamp))

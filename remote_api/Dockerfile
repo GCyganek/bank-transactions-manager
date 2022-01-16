@@ -1,6 +1,7 @@
 FROM python:3.8-alpine
 
 RUN pip install flask
+RUN pip install pytz
 
 EXPOSE 5000/tcp
 

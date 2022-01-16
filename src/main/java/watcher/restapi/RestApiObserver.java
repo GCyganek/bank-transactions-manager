@@ -1,6 +1,7 @@
 package watcher.restapi;
 
 import io.reactivex.rxjava3.core.Observable;
+import javafx.beans.property.ObjectProperty;
 import model.util.BankType;
 import model.util.DocumentType;
 import retrofit2.Retrofit;
@@ -9,6 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import watcher.AbstractSourceObserver;
 import watcher.SourceType;
 import watcher.SourceUpdate;
+import watcher.exceptions.InvalidSourceConfigException;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -19,30 +21,35 @@ public class RestApiObserver extends AbstractSourceObserver {
 
     private final URL remoteUrl;
     private final RestApiClient client;
-    private LocalDateTime lastUpdate = LocalDateTime.now();
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
-    public RestApiObserver(URL remoteUrl, BankType bankType) {
-        super(remoteUrl.toString(), bankType, SourceType.REST_API);
+    public RestApiObserver(URL remoteUrl, BankType bankType,
+                           LocalDateTime lastUpdateTime, boolean isActive) throws InvalidSourceConfigException{
+        super(remoteUrl.toString(), bankType, SourceType.REST_API, lastUpdateTime, isActive);
         this.remoteUrl = remoteUrl;
 
         this.client = initializeRestClient();
     }
 
-    private RestApiClient initializeRestClient() {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-                .build();
+    private RestApiClient initializeRestClient() throws InvalidSourceConfigException {
+        try {
+            Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteUrl)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+                    .build();
 
-        return retrofit.create(RestApiClient.class);
+            return retrofit.create(RestApiClient.class);
+        } catch (Exception e) {
+            throw new InvalidSourceConfigException(e.getMessage());
+        }
     }
 
     @Override
     public Observable<SourceUpdate> getChanges() {
-        String lastUpdateString = lastUpdate.format(dateTimeFormatter);
-        lastUpdate = LocalDateTime.now();
+        String lastUpdateString = lastUpdateTimeProperty().getValue().format(dateTimeFormatter);
+        lastUpdateTimeProperty().setValue(LocalDateTime.now());
+
         return client.listUpdates(lastUpdateString)
                 .doOnError(sourceFailedPublisher::onNext)
                 .onErrorResumeWith(Observable.empty())

@@ -3,7 +3,6 @@ package controller.sources;
 import com.google.inject.Singleton;
 import controller.TransactionsManagerAppController;
 import controller.sources.util.SourceTable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -20,9 +19,9 @@ import watcher.SourceObserver;
 import watcher.SourceType;
 import watcher.SourcesSupervisor;
 import watcher.exceptions.DuplicateSourceException;
+import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.*;
 
 @Singleton
@@ -120,8 +119,9 @@ public class TransactionSourcesViewController {
         this.appController = appController;
     }
 
-    private void handleAddSourceButton(SourceAdditionWindowController controller) throws IOException, DuplicateSourceException {
+    private void handleAddSourceButton(SourceAdditionWindowController controller) throws DuplicateSourceException, InvalidSourceConfigException {
         Optional<SourceObserver> sourceObserverOptional = controller.getAddedSourceObserver();
+
         if (sourceObserverOptional.isPresent()) {
             SourceObserver sourceObserver = sourceObserverOptional.get();
             String description = sourceObserver.descriptionProperty().get();
@@ -132,29 +132,33 @@ public class TransactionSourcesViewController {
             sourcesSupervisor.addSourceObserver(sourceObserver);
             sourceObservers.add(sourceObserver);
 
-            sourceObserver
-                    .getSourceFailedObservable()
-                    .subscribe(err -> {
-                        String sourceDescription = sourceObserver.descriptionProperty().get();
-                        Platform.runLater(
-                                () -> {
-                                    this.appController.showErrorWindow(
-                                            "Stopped listening to the source: " + sourceDescription,
-                                            err.getMessage()
-                                    );
-                                }
-                        );
-                        sourceObserver.setActive(false);
-                    });
+            setupSourceFailureObserver(sourceObserver);
         }
 
+    }
+
+    private void setupSourceFailureObserver(SourceObserver sourceObserver) {
+        sourceObserver
+                .getSourceFailedObservable()
+                .subscribe(err -> {
+                    String sourceDescription = sourceObserver.descriptionProperty().get();
+                    Platform.runLater(
+                            () -> {
+                                this.appController.showErrorWindow(
+                                        "Stopped listening to the source: " + sourceDescription,
+                                        err.getMessage()
+                                );
+                            }
+                    );
+                    sourceObserver.setActive(false);
+                });
     }
 
     public void handleAddDirectoryButton(ActionEvent actionEvent) {
         this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
             try {
                 handleAddSourceButton(addDirectoryController);
-            } catch (IOException | DuplicateSourceException e) {
+            } catch (InvalidSourceConfigException | DuplicateSourceException e) {
                 this.appController.showErrorWindow("Failed to add directory source", e.getMessage());
             }
         });
@@ -164,7 +168,7 @@ public class TransactionSourcesViewController {
         this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
             try {
                 handleAddSourceButton(addRemoteController);
-            } catch (IOException | DuplicateSourceException e) {
+            } catch (DuplicateSourceException | InvalidSourceConfigException e) {
                 this.appController.showErrorWindow("Failed to add remote source", e.getMessage());
             }
         });
@@ -210,5 +214,9 @@ public class TransactionSourcesViewController {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public ObservableList<SourceObserver> getSourceObservers() {
+        return sourceObservers;
     }
 }

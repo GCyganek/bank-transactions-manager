@@ -12,11 +12,11 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
 import watcher.SourceObserver;
-import watcher.SourceObserverFactory;
 import watcher.SourceType;
+import watcher.builder.SourceObserverBuilder;
+import watcher.exceptions.InvalidSourceConfigException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 public class AddDirectorySourceWindowController implements SourceAdditionWindowController {
@@ -83,11 +83,14 @@ public class AddDirectorySourceWindowController implements SourceAdditionWindowC
     }
 
     @Override
-    public Optional<SourceObserver> getAddedSourceObserver() throws IOException {
+    public Optional<SourceObserver> getAddedSourceObserver() throws InvalidSourceConfigException {
         if (checkIfNewSourceWasAdded()) {
-            String path = getSelectedDirectory().getAbsolutePath();
-            SourceObserver sourceObserver =
-                    SourceObserverFactory.initializeSourceObserver(bankType, path, SourceType.DIRECTORY);
+            SourceObserver sourceObserver = SourceObserverBuilder.with()
+                    .withSourceType(SourceType.DIRECTORY)
+                    .withBankType(bankType)
+                    .withDescription(getSelectedDirectory().getAbsolutePath())
+                    .build();
+
             return Optional.of(sourceObserver);
         }
 

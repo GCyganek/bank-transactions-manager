@@ -9,3 +9,4 @@ uploads
 __pycache__
 env
 instance
+config.json

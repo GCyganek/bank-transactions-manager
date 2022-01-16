@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
+import settings.SettingsConfigurator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -27,9 +28,12 @@ public class TransactionsManagerAppController {
 
     @Inject
     public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage,
-                                            TransactionSourcesViewController transactionSourcesViewController) {
+                                            TransactionSourcesViewController transactionSourcesViewController,
+                                            SettingsConfigurator settingsConfigurator)
+    {
         this.primaryStage = primaryStage;
         this.transactionSourcesViewController = transactionSourcesViewController;
+        settingsConfigurator.loadSettings();
     }
 
     public void initRootLayout(Injector injector) {

@@ -9,17 +9,21 @@ import watcher.SourceUpdate;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class DirectoryObserver extends AbstractSourceObserver {
     private final Path path;
     private final WatchService watchService;
 
-    public DirectoryObserver(Path path, BankType bankType) throws IOException {
-        super(path.toString(), bankType, SourceType.DIRECTORY);
+    public DirectoryObserver(Path path, BankType bankType,
+                             LocalDateTime lastUpdateTime, boolean isActive) throws IOException {
+        super(path.toString(), bankType, SourceType.DIRECTORY, lastUpdateTime, isActive);
         this.path = path;
 
         this.watchService = initializeWatchService();
+
+        // TODO at init we should check if something new was added since lastUpdateTime, then use polling
     }
 
     private WatchService initializeWatchService() throws IOException {
@@ -44,6 +48,8 @@ public class DirectoryObserver extends AbstractSourceObserver {
                 }
                 key.reset();
             }
+
+            lastUpdateTimeProperty().setValue(LocalDateTime.now());
             emitter.onComplete();
         });
     }
