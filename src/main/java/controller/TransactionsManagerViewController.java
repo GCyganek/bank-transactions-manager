@@ -19,7 +19,8 @@ import model.util.DocumentType;
 import model.util.ImportSession;
 import model.util.TransactionCategory;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
-import watcher.SourcesSupervisor;
+import settings.SettingsConfigurator;
+import watcher.SourcesRefresher;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -33,17 +34,21 @@ public class TransactionsManagerViewController {
     private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
     private final Account account;
-    private final SourcesSupervisor sourcesSupervisor;
+    private final SourcesRefresher sourcesRefresher;
+    private final SettingsConfigurator settingsConfigurator;
 
     private TransactionsManagerAppController appController;
 
     @Inject
     public TransactionsManagerViewController(TransactionsSupervisor transactionsSupervisor,
-                                             Importer importer, Account account, SourcesSupervisor sourcesSupervisor) {
+                                             Importer importer, Account account,
+                                             SettingsConfigurator settingsConfigurator,
+                                             SourcesRefresher sourcesRefresher) {
         this.transactionsSupervisor = transactionsSupervisor;
+        this.settingsConfigurator = settingsConfigurator;
         this.importer = importer;
         this.account = account;
-        this.sourcesSupervisor = sourcesSupervisor;
+        this.sourcesRefresher = sourcesRefresher;
 
         this.bankTransactions = account.getTransactionObservableList();
     }
@@ -91,6 +96,9 @@ public class TransactionsManagerViewController {
     public ContextMenu contextMenu;
 
     @FXML
+    public Label updatesCountLabel;
+
+    @FXML
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
         updateCategoryComboBox();
@@ -111,6 +119,8 @@ public class TransactionsManagerViewController {
 
         contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
         transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
+
+        updatesCountLabel.textProperty().bind(sourcesRefresher.getAvailableUpdatesCount().asString());
     }
 
     private void updateCategoryComboBox() {
@@ -148,7 +158,7 @@ public class TransactionsManagerViewController {
                 DocumentType selectedDocType = DocumentType.CSV;
                 String filePath = addStatementViewController.getFile().getAbsolutePath();
 
-                handleImport(selectedBank, selectedDocType, new LocalFSLoader(filePath));
+                handleImport(new LocalFSLoader(filePath, selectedBank, selectedDocType));
             }
         } catch (IOException e) {
             System.out.println("Failed to load window");
@@ -156,12 +166,12 @@ public class TransactionsManagerViewController {
         }
     }
 
-    private void handleImport(BankType selectedBank, DocumentType selectedDocType, Loader loader) {
+    private void handleImport(Loader loader) {
         ImportSession importSession = transactionsSupervisor.startImportSession();
         String loaderDescritpion = loader.getDescription();
 
         try {
-            importer.importBankStatement(selectedBank, selectedDocType, loader)
+            importer.importBankStatement(loader)
                     .subscribeOn(Schedulers.io())
                     .filter(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())
@@ -223,13 +233,17 @@ public class TransactionsManagerViewController {
     }
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
-        sourcesSupervisor.checkForUpdates()
+        importFromSourcesButton.disableProperty().setValue(true);
+
+        sourcesRefresher.getUpdates()
                 .subscribeOn(Schedulers.io())
-                .subscribe(sourceUpdate ->
-                        sourceUpdate.getUpdateDataLoader().subscribe(loader ->
-                                handleImport(sourceUpdate.getBankType(), sourceUpdate.getDocumentType(), loader)
-                        )
-                );
+                .flatMap(sourceUpdate -> sourceUpdate.getUpdateDataLoader().toObservable())
+                .subscribe(this::handleImport,
+                        err -> System.out.println("update failed" + err), // TODO
+                        () -> {
+                            settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
+                            importFromSourcesButton.disableProperty().setValue(false);
+                        });
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {

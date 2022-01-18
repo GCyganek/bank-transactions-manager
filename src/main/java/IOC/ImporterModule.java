@@ -3,6 +3,7 @@ package IOC;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import configurator.BankConfiguratorFactory;
+import controller.sources.TransactionSourcesViewController;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;

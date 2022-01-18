@@ -3,7 +3,6 @@ package watcher.restapi;
 import importer.loader.StreamLoader;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Single;
-import model.util.BankType;
 import model.util.DocumentType;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -19,11 +18,11 @@ public class RestApiSourceUpdate extends AbstractSourceUpdate {
     private final RestApiClient client;
     private final URL remoteUrl;
 
-    public RestApiSourceUpdate(BankType bankType, RestApiClient client, URL remoteUrl, RestUpdatesResponse response) {
-        super(bankType, DocumentType.fromString(response.getExtension()).orElseThrow());
+    public RestApiSourceUpdate(RestApiObserver restApiObserver, RestUpdatesResponse response) {
+        super(restApiObserver, DocumentType.fromString(response.getExtension()).orElseThrow());
         this.statementId = response.getStatementId();
-        this.client = client;
-        this.remoteUrl = remoteUrl;
+        this.client = restApiObserver.getClient();
+        this.remoteUrl = restApiObserver.getRemoteUrl();
     }
 
     @Override
@@ -34,7 +33,7 @@ public class RestApiSourceUpdate extends AbstractSourceUpdate {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    emitter.onSuccess(new StreamLoader(response.body().byteStream(), remoteUrl.toString()));
+                    emitter.onSuccess(new StreamLoader(response.body().byteStream(), remoteUrl.toString(), bankType, documentType));
                 }
                 else {
                     emitter.onError(new Exception("Request for " + statementId + " failed")); // TODO custom exception

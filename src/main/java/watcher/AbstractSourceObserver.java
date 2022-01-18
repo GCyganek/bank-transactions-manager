@@ -4,40 +4,29 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import model.util.BankType;
 
 import java.time.LocalDateTime;
 
 public abstract class AbstractSourceObserver implements SourceObserver {
-    protected final StringProperty descriptionProperty = new SimpleStringProperty();
-    protected final ObjectProperty<BankType> bankType = new SimpleObjectProperty<>();
+    protected final String description;
+    protected final BankType bankType;
+    protected final SourceType sourceType;
+
     protected final ObjectProperty<Boolean> active = new SimpleObjectProperty<>();
     protected final ObjectProperty<LocalDateTime> lastUpdateTimeProperty = new SimpleObjectProperty<>();
     protected final PublishSubject<Throwable> sourceFailedPublisher;
-    protected final SourceType sourceType;
 
     public AbstractSourceObserver(String description, BankType bankType, SourceType sourceType,
                                   LocalDateTime lastUpdateTime, boolean isActive)
     {
-        this.descriptionProperty.setValue(description);
-        this.bankType.setValue(bankType);
+        this.description = description;
+        this.bankType = bankType;
+        this.sourceType = sourceType;
+
         this.active.setValue(isActive);
         this.lastUpdateTimeProperty.setValue(lastUpdateTime);
         this.sourceFailedPublisher = PublishSubject.create();
-        this.sourceType = sourceType;
-    }
-
-
-    @Override
-    public StringProperty descriptionProperty() {
-        return descriptionProperty;
-    }
-
-    @Override
-    public ObjectProperty<BankType> bankTypeProperty() {
-        return bankType;
     }
 
     @Override
@@ -56,6 +45,11 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     }
 
     @Override
+    public boolean isActive() {
+        return this.active.get();
+    }
+
+    @Override
     public SourceType getSourceType() {
         return sourceType;
     }
@@ -63,5 +57,29 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     @Override
     public ObjectProperty<LocalDateTime> lastUpdateTimeProperty() {
         return lastUpdateTimeProperty;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public BankType getBankType() {
+        return bankType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+
+        if (other instanceof SourceObserver that) {
+            return this.sourceType == that.getSourceType() &&
+                    this.bankType.equals(that.getBankType()) &&
+                    this.description.equals(that.getDescription());
+        }
+
+        return false;
     }
 }

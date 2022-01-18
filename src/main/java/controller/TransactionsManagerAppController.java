@@ -11,13 +11,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
-import settings.SettingsConfigurator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Optional;
 
 public class TransactionsManagerAppController {
@@ -28,12 +26,11 @@ public class TransactionsManagerAppController {
 
     @Inject
     public TransactionsManagerAppController(@Named("primaryStage") Stage primaryStage,
-                                            TransactionSourcesViewController transactionSourcesViewController,
-                                            SettingsConfigurator settingsConfigurator)
+                                            TransactionSourcesViewController transactionSourcesViewController)
     {
         this.primaryStage = primaryStage;
         this.transactionSourcesViewController = transactionSourcesViewController;
-        settingsConfigurator.loadSettings();
+        this.transactionSourcesViewController.setAppController(this);
     }
 
     public void initRootLayout(Injector injector) {
@@ -110,7 +107,6 @@ public class TransactionsManagerAppController {
             );
             TransactionSourcesViewController transactionSourcesViewController = fxmlLoader.getController();
             transactionSourcesViewController.setStage(stage);
-            transactionSourcesViewController.setAppController(this);
 
             stage.showAndWait();
         } catch (IOException e) {

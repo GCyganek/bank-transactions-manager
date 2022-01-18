@@ -56,6 +56,10 @@
                </Button>
             </children>
          </VBox>
+            <VBox>
+                <Label text="Updates ready for import: "/>
+                <Label fx:id="updatesCountLabel" text="0"/>
+            </VBox>
          <cursor>
             <Cursor fx:constant="DEFAULT" />
          </cursor>

@@ -4,8 +4,10 @@ import com.google.inject.Singleton;
 import controller.TransactionsManagerAppController;
 import controller.sources.util.SourceTable;
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,29 +17,38 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import model.util.BankType;
+import settings.SettingsConfigurator;
 import watcher.SourceObserver;
 import watcher.SourceType;
-import watcher.SourcesSupervisor;
+import watcher.SourcesRefresher;
 import watcher.exceptions.DuplicateSourceException;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class TransactionSourcesViewController {
+    private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
 
     private Stage stage;
 
     private TransactionsManagerAppController appController;
 
-    private final SourcesSupervisor sourcesSupervisor;
+    private final SourcesRefresher sourcesRefresher;
 
-    private final ObservableList<SourceObserver> sourceObservers = FXCollections.observableArrayList();
+    private final SettingsConfigurator settingsConfigurator;
+
     @Inject
-    public TransactionSourcesViewController(SourcesSupervisor sourcesSupervisor) {
-        this.sourcesSupervisor = sourcesSupervisor;
+    public TransactionSourcesViewController(SourcesRefresher sourcesRefresher,
+                                            SettingsConfigurator settingsConfigurator)
+    {
+        this.sourcesRefresher = sourcesRefresher;
+        this.settingsConfigurator = settingsConfigurator;
         this.sourceTables = new ArrayList<>();
+
+        setupSettings();
     }
 
     @FXML
@@ -100,14 +111,32 @@ public class TransactionSourcesViewController {
         });
     }
 
+    private void setupSettings() {
+        for (var sourceObserver: settingsConfigurator.loadSourcesSettings()) {
+            try {
+                addSourceObserver(sourceObserver);
+            } catch (DuplicateSourceException e) {
+                // just ignore it
+                e.printStackTrace();
+            }
+        }
+
+        settingsConfigurator.listenForSourcesExistenceChange(sourcesRefresher.getSourceObservers());
+
+        // TODO check in settings if this should be started
+        sourcesRefresher.startPeriodicalUpdateChecks(SOURCES_REFRESH_PERIOD, TimeUnit.SECONDS);
+    }
+
     private void setupSourceTable(SourceTable sourceTable, SourceType sourceType) {
+        ObservableList<SourceObserver> sourceObservers = sourcesRefresher.getSourceObservers();
+
         sourceTable.tableView().getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         sourceTable.tableView()
                 .setItems(sourceObservers.filtered(sourceObserver -> sourceObserver.getSourceType() == sourceType));
 
-        sourceTable.descriptionColumn().setCellValueFactory(description -> description.getValue().descriptionProperty());
-        sourceTable.bankTypeColumn().setCellValueFactory(bankType -> bankType.getValue().bankTypeProperty());
-        sourceTable.activeColumn().setCellValueFactory(active -> active.getValue().activeProperty());
+        sourceTable.descriptionColumn().setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getDescription()));
+        sourceTable.bankTypeColumn().setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getBankType()));
+        sourceTable.activeColumn().setCellValueFactory(row -> row.getValue().activeProperty());
 
         sourceTable.deleteButton().disableProperty()
                 .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
@@ -119,29 +148,28 @@ public class TransactionSourcesViewController {
         this.appController = appController;
     }
 
-    private void handleAddSourceButton(SourceAdditionWindowController controller) throws DuplicateSourceException, InvalidSourceConfigException {
-        Optional<SourceObserver> sourceObserverOptional = controller.getAddedSourceObserver();
+    private void handleAddSourceButton(SourceAdditionWindowController controller, String errorMsg) {
+        try {
+            Optional<SourceObserver> sourceObserverOptional = controller.getAddedSourceObserver();
 
-        if (sourceObserverOptional.isPresent()) {
-            SourceObserver sourceObserver = sourceObserverOptional.get();
-            String description = sourceObserver.descriptionProperty().get();
-
-            if (checkDuplicate(description, sourceObservers))
-                throw new DuplicateSourceException(description);
-
-            sourcesSupervisor.addSourceObserver(sourceObserver);
-            sourceObservers.add(sourceObserver);
-
-            setupSourceFailureObserver(sourceObserver);
+            if (sourceObserverOptional.isPresent()) {
+                addSourceObserver(sourceObserverOptional.get());
+            }
+        } catch (InvalidSourceConfigException | DuplicateSourceException e) {
+            this.appController.showErrorWindow(errorMsg, e.getMessage());
         }
+    }
 
+    private void addSourceObserver(SourceObserver sourceObserver) throws DuplicateSourceException {
+        sourcesRefresher.addSourceObserver(sourceObserver);
+        setupSourceFailureObserver(sourceObserver);
     }
 
     private void setupSourceFailureObserver(SourceObserver sourceObserver) {
         sourceObserver
                 .getSourceFailedObservable()
                 .subscribe(err -> {
-                    String sourceDescription = sourceObserver.descriptionProperty().get();
+                    String sourceDescription = sourceObserver.getDescription();
                     Platform.runLater(
                             () -> {
                                 this.appController.showErrorWindow(
@@ -150,54 +178,46 @@ public class TransactionSourcesViewController {
                                 );
                             }
                     );
-                    sourceObserver.setActive(false);
+                    sourcesRefresher.deactivateSource(sourceObserver);
                 });
     }
 
-    public void handleAddDirectoryButton(ActionEvent actionEvent) {
-        this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
-            try {
-                handleAddSourceButton(addDirectoryController);
-            } catch (InvalidSourceConfigException | DuplicateSourceException e) {
-                this.appController.showErrorWindow("Failed to add directory source", e.getMessage());
-            }
-        });
-    }
-
-    public void handleAddRemoteButton(ActionEvent actionEvent) {
-        this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
-            try {
-                handleAddSourceButton(addRemoteController);
-            } catch (DuplicateSourceException | InvalidSourceConfigException e) {
-                this.appController.showErrorWindow("Failed to add remote source", e.getMessage());
-            }
-        });
-    }
-
-    private void removeSource(SourceType sourceType) {
+    private void removeSources(SourceType sourceType) {
         SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
-        List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
-        selectedItems.forEach(x -> System.out.println(x.descriptionProperty().get()));
-        selectedItems.forEach(sourcesSupervisor::removeSourceObserver);
-        sourceObservers.removeAll(selectedItems);
+        List<SourceObserver> selectedItems = List.copyOf(sourceTable.tableView().getSelectionModel().getSelectedItems());
+        selectedItems.forEach(sourcesRefresher::removeSourceObserver);
     }
 
     private void reactivateSources(SourceType sourceType) {
         SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
         List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
-        selectedItems.forEach(sourceObserver -> {
-            System.out.println(sourceObserver.descriptionProperty().get() + " " + sourceObserver.activeProperty().get());
-            if (sourceObserver.activeProperty().get()) return;
-            sourceObserver.setActive(true);
+        selectedItems.forEach(sourcesRefresher::reactivateSource);
+    }
+
+    private void deactivateSources(SourceType sourceType) {
+        SourceTable sourceTable = sourceTables.get(sourceType.ordinal());
+        List<SourceObserver> selectedItems = sourceTable.tableView().getSelectionModel().getSelectedItems();
+        selectedItems.forEach(sourcesRefresher::deactivateSource);
+    }
+
+    public void handleAddDirectoryButton(ActionEvent actionEvent) {
+        this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
+            handleAddSourceButton(addDirectoryController, "Failed to add directory source");
+        });
+    }
+
+    public void handleAddRemoteButton(ActionEvent actionEvent) {
+        this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
+                handleAddSourceButton(addRemoteController, "Failed to add remote source");
         });
     }
 
     public void handleDeleteDirectoryButton(ActionEvent actionEvent) {
-        removeSource(SourceType.DIRECTORY);
+        removeSources(SourceType.DIRECTORY);
     }
 
     public void handleDeleteRemoteButton(ActionEvent actionEvent) {
-        removeSource(SourceType.REST_API);
+        removeSources(SourceType.REST_API);
     }
 
     public void handleReactivateDirectoryButton(ActionEvent actionEvent) {
@@ -208,15 +228,7 @@ public class TransactionSourcesViewController {
         reactivateSources(SourceType.REST_API);
     }
 
-    private boolean checkDuplicate(String source, List<SourceObserver> sourceObservers) {
-        return sourceObservers.stream().anyMatch(sourceObserver -> sourceObserver.descriptionProperty().get().equals(source));
-    }
-
     public void setStage(Stage stage) {
         this.stage = stage;
-    }
-
-    public ObservableList<SourceObserver> getSourceObservers() {
-        return sourceObservers;
     }
 }

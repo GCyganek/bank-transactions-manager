@@ -1,19 +1,16 @@
 package importer.loader;
 
+import model.util.BankType;
+import model.util.DocumentType;
+
 import java.io.*;
 
-public class StreamLoader implements Loader {
+public class StreamLoader extends AbstractLoader{
     private final InputStream stream;
-    private final String source;
 
-    public StreamLoader(InputStream stream, String sourceDescription) {
+    public StreamLoader(InputStream stream, String sourceDescription, BankType bankType, DocumentType documentType) {
+        super(sourceDescription, bankType, documentType);
         this.stream = stream;
-        this.source = sourceDescription;
-    }
-
-    @Override
-    public String getDescription() {
-        return source;
     }
 
     @Override

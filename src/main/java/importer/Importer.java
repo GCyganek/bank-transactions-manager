@@ -22,17 +22,14 @@ public class Importer {
     }
 
     /**
-     * @param bankType     - one of supported banks
-     * @param documentType - file extension
      * @param loader - loader configured to load required resource
      * @return Observable that emits Bank Transactions, which have reference to imported BankStatement.
      */
-    public Observable<BankTransaction> importBankStatement(BankType bankType,
-                                       DocumentType documentType, Loader loader) throws IOException
+    public Observable<BankTransaction> importBankStatement(Loader loader) throws IOException
     {
-        BankConfigurator configurator = configFactory.createBankConfigurator(bankType);
+        BankConfigurator configurator = configFactory.createBankConfigurator(loader.getBankType());
         Reader dataReader = loader.load();
-        BankParser<?, ?> parser = configurator.getConfiguredParser(documentType);
+        BankParser<?, ?> parser = configurator.getConfiguredParser(loader.getDocumentType());
 
         return parser.parse(dataReader)
 //                .doOnNext(x -> Thread.sleep(2500)) // emulate heavy computation

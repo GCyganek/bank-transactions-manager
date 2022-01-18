@@ -1,7 +1,6 @@
 package watcher.restapi;
 
 import io.reactivex.rxjava3.core.Observable;
-import javafx.beans.property.ObjectProperty;
 import model.util.BankType;
 import model.util.DocumentType;
 import retrofit2.Retrofit;
@@ -45,6 +44,14 @@ public class RestApiObserver extends AbstractSourceObserver {
         }
     }
 
+    public URL getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    public RestApiClient getClient() {
+        return client;
+    }
+
     @Override
     public Observable<SourceUpdate> getChanges() {
         String lastUpdateString = lastUpdateTimeProperty().getValue().format(dateTimeFormatter);
@@ -55,6 +62,6 @@ public class RestApiObserver extends AbstractSourceObserver {
                 .onErrorResumeWith(Observable.empty())
                 .flatMap(updateList -> Observable.fromIterable(updateList.getRestUpdatesResponseList()))
                 .filter(response -> DocumentType.fromString(response.getExtension()).isPresent())
-                .map(response -> new RestApiSourceUpdate(bankType.get(), client, remoteUrl, response));
+                .map(response -> new RestApiSourceUpdate(this, response));
     }
 }

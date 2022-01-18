@@ -9,4 +9,6 @@ public interface SourceUpdate {
     Single<Loader> getUpdateDataLoader();
     BankType getBankType();
     DocumentType getDocumentType();
+
+    SourceObserver getSourceObserver();
 }

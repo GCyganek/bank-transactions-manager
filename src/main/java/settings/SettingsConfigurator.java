@@ -1,37 +1,31 @@
 package settings;
 
-import controller.sources.TransactionSourcesViewController;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import watcher.SourceObserver;
-import watcher.SourcesSupervisor;
 import watcher.builder.SourceObserverBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 @Singleton
 public class SettingsConfigurator {
-    private final SourcesSupervisor sourcesSupervisor;
     private final SettingsFactory settingsFactory;
-    private final ObservableList<SourceObserver> sourceObservers;
 
     @Inject
-    public SettingsConfigurator(SettingsFactory settingsFactory,
-                                SourcesSupervisor sourcesSupervisor,
-                                TransactionSourcesViewController transactionSourcesViewController)
-    {
+    public SettingsConfigurator(SettingsFactory settingsFactory) {
         this.settingsFactory = settingsFactory;
-        this.sourcesSupervisor = sourcesSupervisor;
-        this.sourceObservers = transactionSourcesViewController.getSourceObservers();
+
     }
 
 
-    public void loadSettings() {
+    public List<SourceObserver> loadSourcesSettings() {
         SettingsConfig settingsConfig;
         try {
             settingsConfig = settingsFactory.createSettingsParser().loadSettingsConfig();
@@ -45,35 +39,16 @@ public class SettingsConfigurator {
             settingsConfig = settingsFactory.createSettingsConfig();
         }
 
-        configureSources(settingsConfig);
+        return configureSources(settingsConfig);
     }
 
-    private void setupListenningForSourceChanges() {
-        sourceObservers.addListener(new ListChangeListener<SourceObserver>() {
-            @Override
-            public void onChanged(Change<? extends SourceObserver> change) {
-                boolean updateRequired = false;
 
-                while (change.next()) {
-                    if (change.wasAdded()) {
-                        change.getAddedSubList().forEach(sourceObserver -> bindSourceChanges(sourceObserver));
-                        updateRequired = true;
-                    }
-                    else if (change.wasRemoved()) {
-                        updateRequired = true;
-                    }
-                }
+    private List<SourceObserver> configureSources(SettingsConfig config) {
+        List<SourceObserver> sourceObservers = new LinkedList<>();
 
-                if (updateRequired)
-                    updateConfig();
-            }
-        });
-    }
-
-    private void configureSources(SettingsConfig config) {
-        config.getSourceConfigs().forEach(sourceConfig -> {
+        for (var sourceConfig: config.getSourceConfigs()) {
             try {
-                SourceObserver sourceObserver = SourceObserverBuilder.with()
+               SourceObserver sourceObserver = SourceObserverBuilder.with()
                         .withSourceType(sourceConfig.getSourceType())
                         .withBankType(sourceConfig.getBankType())
                         .withDescription(sourceConfig.getDescription())
@@ -81,26 +56,37 @@ public class SettingsConfigurator {
                         .withActiveSetTo(sourceConfig.isActive())
                         .build();
 
-                sourceObservers.add(sourceObserver);
-                sourcesSupervisor.addSourceObserver(sourceObserver);
-                bindSourceChanges(sourceObserver);
+               sourceObservers.add(sourceObserver);
             } catch (InvalidSourceConfigException e) {
-                // TODO remove 'dead' source or display as inactive
+                // nothing to do
+                System.out.println("Source config for " + sourceConfig.getDescription() + " was invalid, ignoring");
                 e.printStackTrace();
             }
+        }
+
+        return sourceObservers;
+    }
+
+    public void listenForSourcesExistenceChange(ObservableList<SourceObserver> sourceObservers) {
+        sourceObservers.addListener(new ListChangeListener<SourceObserver>() {
+            @Override
+            public void onChanged(Change<? extends SourceObserver> change) {
+                boolean updateRequired = false;
+
+                while (change.next()) {
+                    if (change.wasAdded() || change.wasRemoved()) {
+                        updateRequired = true;
+                    }
+                }
+
+                if (updateRequired)
+                    updateSourcesConfig(sourceObservers);
+            }
         });
-
-        setupListenningForSourceChanges();
     }
 
-    private void bindSourceChanges(SourceObserver sourceObserver) {
-        // TODO updating once change is detected is very inefficient, implement caching
 
-        sourceObserver.activeProperty().addListener(x -> updateConfig());
-        sourceObserver.lastUpdateTimeProperty().addListener(x -> updateConfig());
-    }
-
-    private void updateConfig() {
+    public void updateSourcesConfig(List<SourceObserver> sourceObservers) {
         SettingsConfig settingsConfig = settingsFactory.createSettingsConfig(sourceObservers);
         Observable
                 .just(settingsFactory.createSettingsParser())
@@ -115,6 +101,5 @@ public class SettingsConfigurator {
                     System.out.println("Failed to update config");
                     err.printStackTrace();
                 });
-
     }
 }

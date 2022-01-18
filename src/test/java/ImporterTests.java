@@ -106,11 +106,11 @@ public class ImporterTests {
         BankType bankType = BankType.MBANK;
         DocumentType documentType = DocumentType.CSV;
         String path = "invalid_path.txt";
-        Loader loader = new LocalFSLoader(path);
+        Loader loader = new LocalFSLoader(path, bankType, documentType);
 
         // then
         assertThrows(IOException.class, () -> getImporter()
-                .importBankStatement(bankType, documentType, loader)
+                .importBankStatement(loader)
                 .subscribe());
     }
 
@@ -162,8 +162,8 @@ public class ImporterTests {
     private Flowable<BankTransaction> importAsFlowable(BankType bankType,
                                           DocumentType documentType, String uri) throws IOException
     {
-        Loader loader = new LocalFSLoader(uri);
-        return getImporter().importBankStatement(bankType, documentType, loader)
+        Loader loader = new LocalFSLoader(uri, bankType, documentType);
+        return getImporter().importBankStatement(loader)
             .toFlowable(BackpressureStrategy.BUFFER);
     }
 }

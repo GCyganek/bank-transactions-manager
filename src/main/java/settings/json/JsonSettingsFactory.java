@@ -45,10 +45,10 @@ public class JsonSettingsFactory implements SettingsFactory {
         JsonSourceConfig sourceConfig = new JsonSourceConfig();
 
         sourceConfig.setSourceType(sourceObserver.getSourceType());
-        sourceConfig.setBankType(sourceObserver.bankTypeProperty().get());
+        sourceConfig.setBankType(sourceObserver.getBankType());
+        sourceConfig.setDescription(sourceObserver.getDescription());
         sourceConfig.setLastUpdateTime(sourceObserver.lastUpdateTimeProperty().get());
         sourceConfig.setActive(sourceObserver.activeProperty().get());
-        sourceConfig.setDescription(sourceObserver.descriptionProperty().get());
 
         return sourceConfig;
     }

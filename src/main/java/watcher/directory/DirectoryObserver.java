@@ -43,7 +43,7 @@ public class DirectoryObserver extends AbstractSourceObserver {
                     String absoluteFilePathString = path + "/" + relativeFilePath.toString();
                     getDocumentType(absoluteFilePathString)
                         .ifPresent(documentType -> emitter
-                            .onNext(new DirectorySourceUpdate(bankType.get(), documentType, absoluteFilePathString)));
+                            .onNext(new DirectorySourceUpdate(this, documentType, absoluteFilePathString)));
 
                 }
                 key.reset();
