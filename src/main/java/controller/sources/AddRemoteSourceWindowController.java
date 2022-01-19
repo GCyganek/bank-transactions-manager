@@ -11,8 +11,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.util.BankType;
 import watcher.SourceObserver;
-import watcher.SourceType;
-import watcher.builder.SourceObserverBuilder;
+import model.util.SourceType;
+import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import java.net.MalformedURLException;
@@ -41,6 +41,7 @@ public class AddRemoteSourceWindowController implements SourceAdditionWindowCont
     @FXML
     private void initialize() {
         remoteBankChoiceBox.getItems().addAll(BankType.values());
+        remoteBankChoiceBox.setValue(BankType.SANTANDER);
         addRemoteSourceButton.disableProperty().bind(
                 Bindings.length(remoteSourceTextField.textProperty()).isEqualTo(0)
                         .or(Bindings.isNull(remoteBankChoiceBox.valueProperty()))
@@ -84,7 +85,7 @@ public class AddRemoteSourceWindowController implements SourceAdditionWindowCont
             if (!url.endsWith("/"))
                 url += "/";
 
-            SourceObserver sourceObserver = SourceObserverBuilder.with()
+            SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
                     .withSourceType(SourceType.REST_API)
                     .withBankType(bankType)
                     .withDescription(url)

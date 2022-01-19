@@ -1,7 +1,7 @@
 package settings;
 
 import model.util.BankType;
-import watcher.SourceType;
+import model.util.SourceType;
 
 import java.time.LocalDateTime;
 

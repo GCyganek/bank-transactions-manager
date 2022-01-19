@@ -53,6 +53,11 @@
                                           <Insets left="10.0" right="10.0" />
                                        </HBox.margin>
                                     </Button>
+                                     <Button fx:id="deactivateDirectoryButton" layoutX="360.0" layoutY="33.0" mnemonicParsing="false" onAction="#handleDeactivateDirectoryButton" prefWidth="100.0" text="Deactivate">
+                                         <HBox.margin>
+                                             <Insets left="10.0" right="10.0" />
+                                         </HBox.margin>
+                                     </Button>
                                  </children></HBox>
                            </children>
                            <opaqueInsets>
@@ -100,6 +105,11 @@
                                           <Insets left="10.0" right="10.0" />
                                        </HBox.margin>
                                     </Button>
+                                     <Button fx:id="deactivateRemoteButton" layoutX="360.0" layoutY="33.0" minWidth="100.0" mnemonicParsing="false" onAction="#handleDeactivateRemoteButton" text="Deactivate">
+                                         <HBox.margin>
+                                             <Insets left="10.0" right="10.0" />
+                                         </HBox.margin>
+                                     </Button>
                                  </children></HBox>
                            </children>
                            <padding>

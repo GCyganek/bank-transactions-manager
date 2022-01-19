@@ -12,17 +12,19 @@ import watcher.AbstractSourceUpdate;
 import watcher.restapi.response.RestUpdatesResponse;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 
 public class RestApiSourceUpdate extends AbstractSourceUpdate {
     private final int statementId;
     private final RestApiClient client;
     private final URL remoteUrl;
 
-    public RestApiSourceUpdate(RestApiObserver restApiObserver, RestUpdatesResponse response) {
-        super(restApiObserver, DocumentType.fromString(response.getExtension()).orElseThrow());
+    public RestApiSourceUpdate(RestApiObserver restApiObserver, RestUpdatesResponse response, LocalDateTime updateTime) {
+        super(restApiObserver, DocumentType.fromString(response.getExtension()).orElseThrow(), updateTime);
         this.statementId = response.getStatementId();
         this.client = restApiObserver.getClient();
         this.remoteUrl = restApiObserver.getRemoteUrl();
+
     }
 
     @Override

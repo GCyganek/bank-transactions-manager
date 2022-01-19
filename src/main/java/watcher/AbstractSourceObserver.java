@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import model.util.BankType;
+import model.util.SourceType;
 
 import java.time.LocalDateTime;
 
@@ -17,12 +18,15 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     protected final ObjectProperty<LocalDateTime> lastUpdateTimeProperty = new SimpleObjectProperty<>();
     protected final PublishSubject<Throwable> sourceFailedPublisher;
 
+    protected LocalDateTime lastUpdateCheckTime;
+
     public AbstractSourceObserver(String description, BankType bankType, SourceType sourceType,
                                   LocalDateTime lastUpdateTime, boolean isActive)
     {
         this.description = description;
         this.bankType = bankType;
         this.sourceType = sourceType;
+        this.lastUpdateCheckTime = lastUpdateTime;
 
         this.active.setValue(isActive);
         this.lastUpdateTimeProperty.setValue(lastUpdateTime);
@@ -42,6 +46,10 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     @Override
     public void setActive(boolean active) {
         this.active.setValue(active);
+
+        if (!active) {
+            lastUpdateCheckTime = lastUpdateTimeProperty.get();
+        }
     }
 
     @Override
@@ -81,5 +89,11 @@ public abstract class AbstractSourceObserver implements SourceObserver {
         }
 
         return false;
+    }
+
+    @Override
+    public void changeImported(SourceUpdate sourceUpdate) {
+        if (sourceUpdate.getUpdateCheckTime().compareTo(lastUpdateTimeProperty.get()) > 0)
+            lastUpdateTimeProperty.setValue(lastUpdateCheckTime);
     }
 }

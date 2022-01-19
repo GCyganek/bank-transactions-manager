@@ -3,6 +3,7 @@ package watcher;
 import com.google.inject.Singleton;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.collections.FXCollections;
@@ -19,6 +20,8 @@ public class SourcesRefresher {
     private final ObservableList<SourceObserver> sourceObservers;
     private final ObservableList<SourceUpdate> availableUpdates;
 
+    private final PublishSubject<SourceUpdate> updateFetchedSubject;
+
     private boolean isCheckingPeriodically;
     private boolean periodicalChecksDisabled;
 
@@ -28,20 +31,26 @@ public class SourcesRefresher {
     public SourcesRefresher() {
         sourceObservers = FXCollections.observableArrayList();
         availableUpdates = FXCollections.observableArrayList();
+        updateFetchedSubject = PublishSubject.create();
+
         isCheckingPeriodically = false;
         periodicalChecksDisabled = false;
     }
 
 
+    public Observable<SourceUpdate> getCachedSourceUpdates() {
+        List<SourceUpdate> sourceUpdates = List.copyOf(availableUpdates);
+        availableUpdates.clear();
+
+        return Observable.fromIterable(sourceUpdates);
+    }
+
     public Observable<SourceUpdate> getUpdates() {
         periodicalChecksDisabled = true;
-        List<SourceUpdate> sourceUpdates = List.copyOf(availableUpdates);
-
-        availableUpdates.clear();
 
         return Observable
                 .merge(
-                    Observable.fromIterable(sourceUpdates),
+                    getCachedSourceUpdates(),
                     checkForUpdates()
                 )
                 .doOnTerminate(() -> periodicalChecksDisabled = false);
@@ -49,6 +58,10 @@ public class SourcesRefresher {
 
     public IntegerBinding getAvailableUpdatesCount() {
         return Bindings.size(availableUpdates);
+    }
+
+    public Observable<SourceUpdate> getUpdateFetchedObservable() {
+        return Observable.wrap(updateFetchedSubject);
     }
 
 
@@ -95,7 +108,10 @@ public class SourcesRefresher {
                 .subscribeOn(Schedulers.io())
 //                .delay(period + 1, TimeUnit.SECONDS)
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe(availableUpdates::add,
+                .subscribe(sourceUpdate -> {
+                                availableUpdates.add(sourceUpdate);
+                                updateFetchedSubject.onNext(sourceUpdate);
+                        },
                         System.out::println,
                         this::setupTimer);
     }
@@ -104,9 +120,9 @@ public class SourcesRefresher {
         return sourceObservers;
     }
 
-
     public void deactivateSource(SourceObserver sourceObserver) {
         sourceObserver.setActive(false);
+        availableUpdates.removeIf(sourceUpdate -> sourceUpdate.getSourceObserver().equals(sourceObserver));
     }
 
     public void reactivateSource(SourceObserver sourceObserver) {
@@ -123,7 +139,6 @@ public class SourcesRefresher {
     public void removeSourceObserver(SourceObserver sourceObserver) {
         deactivateSource(sourceObserver);
         sourceObservers.remove(sourceObserver);
-        availableUpdates.removeIf(sourceUpdate -> sourceUpdate.getSourceObserver().equals(sourceObserver));
     }
 
     private boolean isDuplicated(SourceObserver sourceObserver) {

@@ -3,7 +3,7 @@ package settings.json;
 import com.google.gson.*;
 import settings.SettingsConfig;
 import settings.SettingsParser;
-import watcher.SourceType;
+import model.util.SourceType;
 
 import java.io.*;
 import java.lang.reflect.Type;

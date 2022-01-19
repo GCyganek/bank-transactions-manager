@@ -4,7 +4,7 @@ import io.reactivex.rxjava3.core.Observable;
 import model.util.BankType;
 import model.util.DocumentType;
 import watcher.AbstractSourceObserver;
-import watcher.SourceType;
+import model.util.SourceType;
 import watcher.SourceUpdate;
 
 import java.io.IOException;
@@ -15,15 +15,15 @@ import java.util.Optional;
 public class DirectoryObserver extends AbstractSourceObserver {
     private final Path path;
     private final WatchService watchService;
+    private boolean firstCheck;
 
     public DirectoryObserver(Path path, BankType bankType,
                              LocalDateTime lastUpdateTime, boolean isActive) throws IOException {
         super(path.toString(), bankType, SourceType.DIRECTORY, lastUpdateTime, isActive);
         this.path = path;
+        this.firstCheck = true;
 
         this.watchService = initializeWatchService();
-
-        // TODO at init we should check if something new was added since lastUpdateTime, then use polling
     }
 
     private WatchService initializeWatchService() throws IOException {
@@ -35,23 +35,32 @@ public class DirectoryObserver extends AbstractSourceObserver {
 
     @Override
     public Observable<SourceUpdate> getChanges() {
+//        if (firstCheck)
+//            return handleFirstCheck();
+
         return Observable.create(emitter -> {
             WatchKey key;
+            lastUpdateCheckTime = LocalDateTime.now();
             while ((key = watchService.poll()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     Path relativeFilePath = (Path) event.context();
                     String absoluteFilePathString = path + "/" + relativeFilePath.toString();
                     getDocumentType(absoluteFilePathString)
                         .ifPresent(documentType -> emitter
-                            .onNext(new DirectorySourceUpdate(this, documentType, absoluteFilePathString)));
+                            .onNext(new DirectorySourceUpdate(this, documentType, absoluteFilePathString, lastUpdateCheckTime)));
 
                 }
                 key.reset();
             }
 
-            lastUpdateTimeProperty().setValue(LocalDateTime.now());
             emitter.onComplete();
         });
+    }
+
+    private Observable<SourceUpdate> handleFirstCheck() {
+        // TODO first we should check if something new was added since lastUpdateTime, then use polling
+        firstCheck = false;
+        return Observable.empty();
     }
 
     private Optional<DocumentType> getDocumentType(String path) {

@@ -12,8 +12,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
 import watcher.SourceObserver;
-import watcher.SourceType;
-import watcher.builder.SourceObserverBuilder;
+import model.util.SourceType;
+import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import java.io.File;
@@ -44,6 +44,7 @@ public class AddDirectorySourceWindowController implements SourceAdditionWindowC
     @FXML
     private void initialize() {
         directoryBankChoiceBox.getItems().addAll(BankType.values());
+        directoryBankChoiceBox.setValue(BankType.SANTANDER);
         addDirectoryButton.disableProperty().bind(
                 Bindings.isNull(selectedDirectory)
                         .or(Bindings.isNull(directoryBankChoiceBox.valueProperty()))
@@ -85,7 +86,7 @@ public class AddDirectorySourceWindowController implements SourceAdditionWindowC
     @Override
     public Optional<SourceObserver> getAddedSourceObserver() throws InvalidSourceConfigException {
         if (checkIfNewSourceWasAdded()) {
-            SourceObserver sourceObserver = SourceObserverBuilder.with()
+            SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
                     .withSourceType(SourceType.DIRECTORY)
                     .withBankType(bankType)
                     .withDescription(getSelectedDirectory().getAbsolutePath())

@@ -8,5 +8,5 @@ public interface SettingsFactory {
     SettingsParser createSettingsParser();
     SourceConfig createSourceConfig(SourceObserver sourceObserver);
     SettingsConfig createSettingsConfig();
-    SettingsConfig createSettingsConfig(List<SourceObserver> sourceObservers);
+    SettingsConfig getUpdatedSettingsConfig(SettingsConfig old, List<SourceObserver> sourceObservers);
 }

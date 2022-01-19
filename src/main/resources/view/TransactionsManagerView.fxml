@@ -56,7 +56,10 @@
                </Button>
             </children>
          </VBox>
-            <VBox>
+            <HBox>
+                <CheckBox fx:id="autoImportCheckbox" text="auto import"></CheckBox>
+            </HBox>
+            <VBox fx:id="sourceUpdatesStatus">
                 <Label text="Updates ready for import: "/>
                 <Label fx:id="updatesCountLabel" text="0"/>
             </VBox>

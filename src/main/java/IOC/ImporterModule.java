@@ -14,11 +14,15 @@ import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
 import repository.dao.PgBankTransactionDao;
+import settings.SettingsConfig;
+import settings.SettingsConfigurator;
 import settings.SettingsFactory;
 import settings.json.JsonSettingsFactory;
+import watcher.SourceObserver;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.List;
 
 public class ImporterModule extends AbstractModule {
 
@@ -70,5 +74,4 @@ public class ImporterModule extends AbstractModule {
     String provideConfigPath() {
         return "config.json";
     }
-
 }

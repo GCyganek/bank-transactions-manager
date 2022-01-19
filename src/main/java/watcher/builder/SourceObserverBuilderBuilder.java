@@ -2,7 +2,7 @@ package watcher.builder;
 
 import model.util.BankType;
 import watcher.SourceObserver;
-import watcher.SourceType;
+import model.util.SourceType;
 import watcher.directory.DirectoryObserver;
 import watcher.exceptions.InvalidSourceConfigException;
 import watcher.restapi.RestApiObserver;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 
-public class SourceObserverBuilder implements SourceTypeStep, BankTypeStep,
-        DescriptionStep, OptionalStep
+public class SourceObserverBuilderBuilder implements SourceTypeStepBuilder, BankTypeStepBuilder,
+        DescriptionStepBuilder, OptionalStepBuilder
 {
     private final static LocalDateTime INITIAL_FETCH_UPDATES_AFTER =
             LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
@@ -29,41 +29,41 @@ public class SourceObserverBuilder implements SourceTypeStep, BankTypeStep,
     private LocalDateTime lastUpdateTime;
     private boolean isActive;
 
-    private SourceObserverBuilder() {
+    private SourceObserverBuilderBuilder() {
         lastUpdateTime = INITIAL_FETCH_UPDATES_AFTER;
         isActive = true;
     }
 
-    public static SourceTypeStep with() {
-        return new SourceObserverBuilder();
+    public static SourceTypeStepBuilder with() {
+        return new SourceObserverBuilderBuilder();
     }
 
     @Override
-    public BankTypeStep withSourceType(SourceType sourceType) {
+    public BankTypeStepBuilder withSourceType(SourceType sourceType) {
         this.sourceType = sourceType;
         return this;
     }
 
     @Override
-    public DescriptionStep withBankType(BankType bankType) {
+    public DescriptionStepBuilder withBankType(BankType bankType) {
         this.bankType = bankType;
         return this;
     }
 
     @Override
-    public OptionalStep withDescription(String description) {
+    public OptionalStepBuilder withDescription(String description) {
         this.description = description;
         return this;
     }
 
     @Override
-    public OptionalStep withLastUpdateTime(LocalDateTime lastUpdateTime) {
+    public OptionalStepBuilder withLastUpdateTime(LocalDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
         return this;
     }
 
     @Override
-    public OptionalStep withActiveSetTo(boolean active) {
+    public OptionalStepBuilder withActiveSetTo(boolean active) {
         this.isActive = active;
         return this;
     }

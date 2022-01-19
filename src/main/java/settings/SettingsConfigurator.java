@@ -5,7 +5,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import watcher.SourceObserver;
-import watcher.builder.SourceObserverBuilder;
+import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
@@ -17,38 +17,35 @@ import java.util.List;
 @Singleton
 public class SettingsConfigurator {
     private final SettingsFactory settingsFactory;
+    private SettingsConfig settingsConfig;
 
     @Inject
     public SettingsConfigurator(SettingsFactory settingsFactory) {
         this.settingsFactory = settingsFactory;
-
+        loadSettings();
     }
 
+    private void loadSettings() {
+        settingsConfig = settingsFactory.createSettingsConfig();
 
-    public List<SourceObserver> loadSourcesSettings() {
-        SettingsConfig settingsConfig;
         try {
             settingsConfig = settingsFactory.createSettingsParser().loadSettingsConfig();
         } catch (IOException exception) {
-            System.out.println("Failed to load config, creating defaults. error:\n" + exception.getMessage());
+            System.out.println("Failed to load config, using defaults. error:\n" + exception.getMessage());
             exception.printStackTrace();
-            settingsConfig = settingsFactory.createSettingsConfig();
         } catch (Exception exception) {
             System.out.println("Config file is likely corrupted, using defaults. error:\n" + exception.getMessage());
             exception.printStackTrace();
-            settingsConfig = settingsFactory.createSettingsConfig();
         }
-
-        return configureSources(settingsConfig);
     }
 
 
-    private List<SourceObserver> configureSources(SettingsConfig config) {
+    public List<SourceObserver> getStoredSources() {
         List<SourceObserver> sourceObservers = new LinkedList<>();
 
-        for (var sourceConfig: config.getSourceConfigs()) {
+        for (var sourceConfig: settingsConfig.getSourceConfigs()) {
             try {
-               SourceObserver sourceObserver = SourceObserverBuilder.with()
+               SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
                         .withSourceType(sourceConfig.getSourceType())
                         .withBankType(sourceConfig.getBankType())
                         .withDescription(sourceConfig.getDescription())
@@ -65,6 +62,10 @@ public class SettingsConfigurator {
         }
 
         return sourceObservers;
+    }
+
+    public boolean getAutoImportStatus() {
+        return settingsConfig.getAutoImportState();
     }
 
     public void listenForSourcesExistenceChange(ObservableList<SourceObserver> sourceObservers) {
@@ -87,7 +88,16 @@ public class SettingsConfigurator {
 
 
     public void updateSourcesConfig(List<SourceObserver> sourceObservers) {
-        SettingsConfig settingsConfig = settingsFactory.createSettingsConfig(sourceObservers);
+        settingsConfig = settingsFactory.getUpdatedSettingsConfig(this.settingsConfig, sourceObservers);
+        saveSettings();
+    }
+
+    public void setAutoImportStatus(Boolean newValue) {
+        settingsConfig.setAutoImportState(newValue);
+        saveSettings(); // TODO lazy saving would be more efficient
+    }
+
+    private void saveSettings() {
         Observable
                 .just(settingsFactory.createSettingsParser())
                 .subscribeOn(Schedulers.newThread())

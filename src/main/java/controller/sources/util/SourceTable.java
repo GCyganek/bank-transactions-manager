@@ -12,5 +12,5 @@ public record SourceTable(TableView<SourceObserver> tableView,
                           TableColumn<SourceObserver, String> descriptionColumn,
                           TableColumn<SourceObserver, BankType> bankTypeColumn,
                           TableColumn<SourceObserver, Boolean> activeColumn,
-                          Button deleteButton, Button reactivateButton) {
+                          Button deleteButton, Button reactivateButton, Button deactivateButton) {
 }

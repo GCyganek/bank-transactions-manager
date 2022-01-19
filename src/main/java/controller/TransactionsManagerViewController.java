@@ -5,8 +5,11 @@ import importer.Importer;
 import importer.exceptions.ParserException;
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -20,6 +23,7 @@ import model.util.ImportSession;
 import model.util.TransactionCategory;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import settings.SettingsConfigurator;
+import watcher.SourceUpdate;
 import watcher.SourcesRefresher;
 
 import javax.inject.Inject;
@@ -99,6 +103,9 @@ public class TransactionsManagerViewController {
     public Label updatesCountLabel;
 
     @FXML
+    public CheckBox autoImportCheckbox;
+
+    @FXML
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
         updateCategoryComboBox();
@@ -120,12 +127,37 @@ public class TransactionsManagerViewController {
         contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
         transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
 
-        updatesCountLabel.textProperty().bind(sourcesRefresher.getAvailableUpdatesCount().asString());
+        setupAutoImportCheckbox();
+        listenForNewUpdates();
     }
 
     private void updateCategoryComboBox() {
         categoryComboBox.getItems().addAll(TransactionCategory.values());
         categoryComboBox.getSelectionModel().select(TransactionCategory.UNCATEGORIZED);
+    }
+
+    private void listenForNewUpdates() {
+        IntegerBinding availableUpdatesCount = sourcesRefresher.getAvailableUpdatesCount();
+
+        updatesCountLabel.textProperty().bind(availableUpdatesCount.asString());
+
+        sourcesRefresher
+                .getUpdateFetchedObservable()
+                .subscribe(sourceUpdate -> {
+                    if (autoImportCheckbox.isSelected())
+                        importFromSources(sourcesRefresher.getCachedSourceUpdates());
+                });
+    }
+
+    private void setupAutoImportCheckbox() {
+        autoImportCheckbox.setSelected(settingsConfigurator.getAutoImportStatus());
+
+        autoImportCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            settingsConfigurator.setAutoImportStatus(newValue);
+            if (newValue) {
+                importFromSources(sourcesRefresher.getCachedSourceUpdates());
+            }
+        });
     }
 
     public void setAppController(TransactionsManagerAppController appController) {
@@ -235,11 +267,17 @@ public class TransactionsManagerViewController {
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
         importFromSourcesButton.disableProperty().setValue(true);
 
-        sourcesRefresher.getUpdates()
+        importFromSources(sourcesRefresher.getUpdates());
+    }
+
+    private void importFromSources(Observable<SourceUpdate> sourceUpdates) {
+        sourceUpdates
                 .subscribeOn(Schedulers.io())
+                .doOnNext(sourceUpdate -> sourceUpdate.getSourceObserver().changeImported(sourceUpdate))
                 .flatMap(sourceUpdate -> sourceUpdate.getUpdateDataLoader().toObservable())
+                .observeOn(JavaFxScheduler.platform())
                 .subscribe(this::handleImport,
-                        err -> System.out.println("update failed" + err), // TODO
+                        err -> this.appController.showErrorWindow("Failed to get update", err.getMessage()),
                         () -> {
                             settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
                             importFromSourcesButton.disableProperty().setValue(false);

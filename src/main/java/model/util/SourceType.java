@@ -1,4 +1,4 @@
-package watcher;
+package model.util;
 
 import java.util.Locale;
 import java.util.Optional;

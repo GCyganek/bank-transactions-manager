@@ -4,8 +4,8 @@ import com.google.inject.Singleton;
 import controller.TransactionsManagerAppController;
 import controller.sources.util.SourceTable;
 import javafx.application.Platform;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 import model.util.BankType;
 import settings.SettingsConfigurator;
 import watcher.SourceObserver;
-import watcher.SourceType;
+import model.util.SourceType;
 import watcher.SourcesRefresher;
 import watcher.exceptions.DuplicateSourceException;
 import watcher.exceptions.InvalidSourceConfigException;
@@ -67,7 +67,13 @@ public class TransactionSourcesViewController {
     public Button reactivateDirectoryButton;
 
     @FXML
+    public Button deactivateDirectoryButton;
+
+    @FXML
     public Button reactivateRemoteButton;
+
+    @FXML
+    public Button deactivateRemoteButton;
 
     @FXML
     public TableView<SourceObserver> directoriesTable;
@@ -101,10 +107,10 @@ public class TransactionSourcesViewController {
             SourceTable sourceTable = switch (sourceType) {
                 case REST_API ->
                         new SourceTable(remotesTable, remoteUrlColumn, remoteBankColumn,
-                                remoteActiveColumn, deleteRemoteButton, reactivateRemoteButton);
+                                remoteActiveColumn, deleteRemoteButton, reactivateRemoteButton, deactivateRemoteButton);
                 case DIRECTORY ->
                         new SourceTable(directoriesTable, directoryNameColumn, directoryBankColumn,
-                                directoryActiveColumn, deleteDirectoryButton, reactivateDirectoryButton);
+                                directoryActiveColumn, deleteDirectoryButton, reactivateDirectoryButton, deactivateDirectoryButton);
             };
             sourceTables.add(sourceType.ordinal(), sourceTable);
             setupSourceTable(sourceTables.get(sourceType.ordinal()), sourceType);
@@ -112,7 +118,7 @@ public class TransactionSourcesViewController {
     }
 
     private void setupSettings() {
-        for (var sourceObserver: settingsConfigurator.loadSourcesSettings()) {
+        for (var sourceObserver: settingsConfigurator.getStoredSources()) {
             try {
                 addSourceObserver(sourceObserver);
             } catch (DuplicateSourceException e) {
@@ -139,9 +145,15 @@ public class TransactionSourcesViewController {
         sourceTable.activeColumn().setCellValueFactory(row -> row.getValue().activeProperty());
 
         sourceTable.deleteButton().disableProperty()
-                .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
+                .bind(selectionEmpty(sourceTable));
         sourceTable.reactivateButton().disableProperty()
-                .bind(Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0));
+                .bind(selectionEmpty(sourceTable));
+        sourceTable.deactivateButton().disableProperty()
+                .bind(selectionEmpty(sourceTable));
+    }
+
+    private BooleanBinding selectionEmpty(SourceTable sourceTable) {
+       return Bindings.size(sourceTable.tableView().getSelectionModel().getSelectedItems()).isEqualTo(0);
     }
 
     public void setAppController(TransactionsManagerAppController appController) {
@@ -176,9 +188,9 @@ public class TransactionSourcesViewController {
                                         "Stopped listening to the source: " + sourceDescription,
                                         err.getMessage()
                                 );
+                                sourcesRefresher.deactivateSource(sourceObserver);
                             }
                     );
-                    sourcesRefresher.deactivateSource(sourceObserver);
                 });
     }
 
@@ -224,8 +236,16 @@ public class TransactionSourcesViewController {
         reactivateSources(SourceType.DIRECTORY);
     }
 
+    public void handleDeactivateDirectoryButton(ActionEvent actionEvent) {
+        deactivateSources(SourceType.DIRECTORY);
+    }
+
     public void handleReactivateRemoteButton(ActionEvent actionEvent) {
         reactivateSources(SourceType.REST_API);
+    }
+
+    public void handleDeactivateRemoteButton(ActionEvent actionEvent) {
+        deactivateSources(SourceType.REST_API);
     }
 
     public void setStage(Stage stage) {

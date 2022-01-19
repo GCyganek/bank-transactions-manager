@@ -7,7 +7,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import watcher.AbstractSourceObserver;
-import watcher.SourceType;
+import model.util.SourceType;
 import watcher.SourceUpdate;
 import watcher.exceptions.InvalidSourceConfigException;
 
@@ -54,14 +54,14 @@ public class RestApiObserver extends AbstractSourceObserver {
 
     @Override
     public Observable<SourceUpdate> getChanges() {
-        String lastUpdateString = lastUpdateTimeProperty().getValue().format(dateTimeFormatter);
-        lastUpdateTimeProperty().setValue(LocalDateTime.now());
+        String lastUpdateString = lastUpdateCheckTime.format(dateTimeFormatter);
+        lastUpdateCheckTime = LocalDateTime.now();
 
         return client.listUpdates(lastUpdateString)
                 .doOnError(sourceFailedPublisher::onNext)
                 .onErrorResumeWith(Observable.empty())
                 .flatMap(updateList -> Observable.fromIterable(updateList.getRestUpdatesResponseList()))
                 .filter(response -> DocumentType.fromString(response.getExtension()).isPresent())
-                .map(response -> new RestApiSourceUpdate(this, response));
+                .map(response -> new RestApiSourceUpdate(this, response, lastUpdateCheckTime));
     }
 }

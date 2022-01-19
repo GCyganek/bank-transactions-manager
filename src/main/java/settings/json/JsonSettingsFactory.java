@@ -16,7 +16,8 @@ public class JsonSettingsFactory implements SettingsFactory {
     private final String configPath;
 
     @Inject
-    public JsonSettingsFactory(@Named("config_path") String configPath) {
+    public JsonSettingsFactory(@Named("config_path") String configPath)
+    {
         this.configPath = configPath;
     }
 
@@ -36,9 +37,9 @@ public class JsonSettingsFactory implements SettingsFactory {
     }
 
     @Override
-    public SettingsConfig createSettingsConfig(List<SourceObserver> sourceObservers) {
+    public SettingsConfig getUpdatedSettingsConfig(SettingsConfig old, List<SourceObserver> sourceObservers) {
         List<JsonSourceConfig> sourceConfigs = sourceObservers.stream().map(this::createJsonSettingsConfig).toList();
-        return new JsonSettingsConfig(sourceConfigs);
+        return new JsonSettingsConfig(sourceConfigs, old.getAutoImportState());
     }
 
     private JsonSourceConfig createJsonSettingsConfig(SourceObserver sourceObserver) {

@@ -3,7 +3,7 @@ package settings.json;
 import com.google.gson.annotations.SerializedName;
 import model.util.BankType;
 import settings.SourceConfig;
-import watcher.SourceType;
+import model.util.SourceType;
 
 import java.time.LocalDateTime;
 

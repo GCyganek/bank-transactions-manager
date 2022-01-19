@@ -1,7 +1,8 @@
 FROM python:3.8-alpine
 
-RUN pip install flask
-RUN pip install pytz
+COPY ./requirements.txt .
+
+RUN pip install -r requirements.txt
 
 EXPOSE 5000/tcp
 
