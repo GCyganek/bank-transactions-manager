@@ -5,6 +5,7 @@ import controller.sources.AddDirectorySourceWindowController;
 import controller.sources.AddRemoteSourceWindowController;
 import controller.sources.SourceAdditionWindowController;
 import controller.sources.TransactionSourcesViewController;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -31,6 +32,11 @@ public class TransactionsManagerAppController {
         this.primaryStage = primaryStage;
         this.transactionSourcesViewController = transactionSourcesViewController;
         this.transactionSourcesViewController.setAppController(this);
+
+        primaryStage.setOnCloseRequest(t -> {
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
     public void initRootLayout(Injector injector) {

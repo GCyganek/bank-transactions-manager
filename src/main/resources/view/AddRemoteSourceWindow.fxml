@@ -10,7 +10,7 @@
         <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Remote source:" textAlignment="CENTER" />
-            <TextField fx:id="remoteSourceTextField" />
+            <TextField fx:id="remoteSourceTextField" promptText="http://localhost:5000/"/>
                 <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                     <children>
                   <ChoiceBox fx:id="remoteBankChoiceBox" prefWidth="250.0" />

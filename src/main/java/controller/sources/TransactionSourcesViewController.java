@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class TransactionSourcesViewController {
-    private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
 
     private Stage stage;
 
@@ -128,9 +127,6 @@ public class TransactionSourcesViewController {
         }
 
         settingsConfigurator.listenForSourcesExistenceChange(sourcesRefresher.getSourceObservers());
-
-        // TODO check in settings if this should be started
-        sourcesRefresher.startPeriodicalUpdateChecks(SOURCES_REFRESH_PERIOD, TimeUnit.SECONDS);
     }
 
     private void setupSourceTable(SourceTable sourceTable, SourceType sourceType) {

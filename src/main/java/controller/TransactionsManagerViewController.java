@@ -31,9 +31,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TransactionsManagerViewController {
-
+    private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
+    
     private final ObservableList<BankTransaction> bankTransactions;
     private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
@@ -137,6 +139,9 @@ public class TransactionsManagerViewController {
     }
 
     private void listenForNewUpdates() {
+        // TODO check in settings if this should be started
+        sourcesRefresher.startPeriodicalUpdateChecks(SOURCES_REFRESH_PERIOD, TimeUnit.SECONDS);
+
         IntegerBinding availableUpdatesCount = sourcesRefresher.getAvailableUpdatesCount();
 
         updatesCountLabel.textProperty().bind(availableUpdatesCount.asString());
