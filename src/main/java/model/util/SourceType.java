@@ -14,13 +14,6 @@ public enum SourceType {
         };
     }
 
-    public String getFxmlViewFilename() {
-        return switch (this) {
-            case REST_API -> "AddRemoteSourceWindow.fxml";
-            case DIRECTORY -> "AddDirectorySourceWindow.fxml";
-        };
-    }
-
     @Override
     public String toString() {
         return switch (this) {

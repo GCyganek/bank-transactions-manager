@@ -66,7 +66,7 @@ public class TransactionsManagerAppController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             Stage stage = buildStage(
-                    fxmlLoader, "Add source", sourceType.getFxmlViewFilename(),
+                    fxmlLoader, "Add source", getFxmlViewFilename(sourceType),
                     primaryStage, Modality.APPLICATION_MODAL
             );
             SourceAdditionWindowController sourceAdditionWindowController = fxmlLoader.getController();
@@ -80,6 +80,13 @@ public class TransactionsManagerAppController {
             showErrorWindow("Can't load new window", e.getMessage());
         }
         return Optional.empty();
+    }
+
+    private String getFxmlViewFilename(SourceType sourceType) {
+        return switch (sourceType) {
+            case REST_API -> "AddRemoteSourceWindow.fxml";
+            case DIRECTORY -> "AddDirectorySourceWindow.fxml";
+        };
     }
 
     public void showTransactionSourcesWindow() {
