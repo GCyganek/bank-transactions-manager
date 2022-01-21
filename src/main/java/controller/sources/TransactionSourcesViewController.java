@@ -211,15 +211,15 @@ public class TransactionSourcesViewController {
     }
 
     public void handleAddDirectoryButton(ActionEvent actionEvent) {
-        this.appController.showAddDirectorySourceWindow().ifPresent(addDirectoryController -> {
+        this.appController.showAddSourceWindow(SourceType.DIRECTORY).ifPresent(addDirectoryController -> {
             handleAddSourceButton(addDirectoryController, "Failed to add directory source");
         });
     }
 
     public void handleAddRemoteButton(ActionEvent actionEvent) {
-        this.appController.showAddRemoteSourceWindow().ifPresent(addRemoteController -> {
-                handleAddSourceButton(addRemoteController, "Failed to add remote source");
-        });
+        this.appController.showAddSourceWindow(SourceType.REST_API).ifPresent(addRemoteController ->
+                handleAddSourceButton(addRemoteController, "Failed to add remote source")
+        );
     }
 
     public void handleDeleteDirectoryButton(ActionEvent actionEvent) {

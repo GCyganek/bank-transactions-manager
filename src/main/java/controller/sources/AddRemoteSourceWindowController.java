@@ -1,6 +1,5 @@
 package controller.sources;
 
-import controller.TransactionsManagerAppController;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -8,21 +7,16 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import model.util.BankType;
 import model.util.SourceType;
 import watcher.SourceObserver;
-import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import java.util.Optional;
 
-public class AddRemoteSourceWindowController implements SourceAdditionWindowController {
-    private Stage stage;
+public class AddRemoteSourceWindowController extends AbstractSourceAdditionWindowController {
 
     private BankType bankType;
-
-    private TransactionsManagerAppController appController;
 
     private final SimpleStringProperty remoteUrl = new SimpleStringProperty();
 
@@ -55,29 +49,14 @@ public class AddRemoteSourceWindowController implements SourceAdditionWindowCont
         return remoteUrl.get() != null && bankType != null;
     }
 
-    public void setAppController(TransactionsManagerAppController appController) {
-        this.appController = appController;
-    }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     @Override
     public Optional<SourceObserver> getAddedSourceObserver() throws InvalidSourceConfigException {
         if (checkIfNewSourceWasAdded()) {
-
             String url = remoteUrl.get();
             if (!url.endsWith("/"))
                 url += "/";
 
-            SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
-                    .withSourceType(SourceType.REST_API)
-                    .withBankType(bankType)
-                    .withDescription(url)
-                    .build();
-
-            return Optional.of(sourceObserver);
+            return buildAddedSourceObserver(SourceType.REST_API, bankType, url);
         }
 
         return Optional.empty();

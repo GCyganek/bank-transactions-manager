@@ -9,19 +9,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
 import model.util.BankType;
 import model.util.SourceType;
 import watcher.SourceObserver;
-import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import java.io.File;
 import java.util.Optional;
 
-public class AddDirectorySourceWindowController implements SourceAdditionWindowController {
-
-    private Stage stage;
+public class AddDirectorySourceWindowController extends AbstractSourceAdditionWindowController {
 
     private BankType bankType;
 
@@ -79,22 +75,11 @@ public class AddDirectorySourceWindowController implements SourceAdditionWindowC
 
     private File getSelectedDirectory() { return this.selectedDirectory.get(); }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     @Override
     public Optional<SourceObserver> getAddedSourceObserver() throws InvalidSourceConfigException {
         if (checkIfNewSourceWasAdded()) {
-            SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
-                    .withSourceType(SourceType.DIRECTORY)
-                    .withBankType(bankType)
-                    .withDescription(getSelectedDirectory().getAbsolutePath())
-                    .build();
-
-            return Optional.of(sourceObserver);
+            return buildAddedSourceObserver(SourceType.DIRECTORY, bankType, getSelectedDirectory().getAbsolutePath());
         }
-
         return Optional.empty();
     }
 }

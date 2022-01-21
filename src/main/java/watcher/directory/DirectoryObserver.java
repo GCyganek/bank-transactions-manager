@@ -14,7 +14,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.Optional;
 
 public class DirectoryObserver extends AbstractSourceObserver {
@@ -49,27 +48,36 @@ public class DirectoryObserver extends AbstractSourceObserver {
     @Override
     public Observable<SourceUpdate> getChanges() {
         return Observable.create(emitter -> {
+            lastUpdateCheckTime = LocalDateTime.now();
+
             if (firstCheck) {
                 firstCheck = false;
-                Arrays.stream(handleFirstCheck())
-                        .forEach(file -> fileToSourceUpdate(file.getAbsolutePath()).ifPresent(emitter::onNext));
+                for (File file : handleFirstCheck()) {
+                    if (emitter.isDisposed()) break;
+                    fileToSourceUpdate(file.getAbsolutePath()).ifPresent(emitter::onNext);
+                }
             }
+
             WatchKey key;
-            lastUpdateCheckTime = LocalDateTime.now();
-            while ((key = watchService.poll()) != null) {
+            while (!emitter.isDisposed() && (key = watchService.poll()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
+                    if (emitter.isDisposed()) {
+                        key.reset();
+                        break;
+                    }
                     Path relativeFilePath = (Path) event.context();
                     String absoluteFilePathString = path + "/" + relativeFilePath.toString();
                     fileToSourceUpdate(absoluteFilePathString).ifPresent(emitter::onNext);
                 }
                 key.reset();
             }
+
             emitter.onComplete();
         });
     }
 
     // working properly only on windows, linux doesn't save a file creation time -> for example file copied from another
-    // folder that was last modified before lastUpdateCheckTime will be ignored here on linux
+    // folder that was last modified before lastUpdateTimeProperty value will be ignored here on linux
     private File[] handleFirstCheck() {
         File observedDirectory = new File(path.toUri());
         return observedDirectory.listFiles(file -> {

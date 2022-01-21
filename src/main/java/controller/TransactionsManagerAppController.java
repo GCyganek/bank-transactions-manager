@@ -1,8 +1,6 @@
 package controller;
 
 import com.google.inject.Injector;
-import controller.sources.AddDirectorySourceWindowController;
-import controller.sources.AddRemoteSourceWindowController;
 import controller.sources.SourceAdditionWindowController;
 import controller.sources.TransactionSourcesViewController;
 import javafx.application.Platform;
@@ -12,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.BankTransaction;
+import model.util.SourceType;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -63,41 +62,20 @@ public class TransactionsManagerAppController {
             showErrorWindow("Can't load new window", e.getMessage());
         }
     }
-
-    public Optional<SourceAdditionWindowController> showAddRemoteSourceWindow() {
+    public Optional<SourceAdditionWindowController> showAddSourceWindow(SourceType sourceType) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             Stage stage = buildStage(
-                    fxmlLoader, "Add remote source", "AddRemoteSourceWindow.fxml",
+                    fxmlLoader, "Add source", sourceType.getFxmlViewFilename(),
                     primaryStage, Modality.APPLICATION_MODAL
             );
-            AddRemoteSourceWindowController addRemoteSourceWindowController = fxmlLoader.getController();
-            addRemoteSourceWindowController.setStage(stage);
-            addRemoteSourceWindowController.setAppController(this);
+            SourceAdditionWindowController sourceAdditionWindowController = fxmlLoader.getController();
+            sourceAdditionWindowController.setStage(stage);
+            sourceAdditionWindowController.setAppController(this);
 
             stage.showAndWait();
 
-            return Optional.of(addRemoteSourceWindowController);
-        } catch (IOException e) {
-            showErrorWindow("Can't load new window", e.getMessage());
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SourceAdditionWindowController> showAddDirectorySourceWindow() {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            Stage stage = buildStage(
-                    fxmlLoader, "Add directory source", "AddDirectorySourceWindow.fxml",
-                    primaryStage, Modality.APPLICATION_MODAL
-            );
-
-            AddDirectorySourceWindowController addDirectorySourceWindowController = fxmlLoader.getController();
-            addDirectorySourceWindowController.setStage(stage);
-
-            stage.showAndWait();
-
-            return Optional.of(addDirectorySourceWindowController);
+            return Optional.of(sourceAdditionWindowController);
         } catch (IOException e) {
             showErrorWindow("Can't load new window", e.getMessage());
         }

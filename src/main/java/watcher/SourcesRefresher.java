@@ -12,6 +12,7 @@ import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import watcher.exceptions.DuplicateSourceException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
@@ -142,6 +143,6 @@ public class SourcesRefresher {
     }
 
     private boolean isDuplicated(SourceObserver sourceObserver) {
-        return sourceObservers.stream().anyMatch(sourceObserver::equals);
+        return sourceObservers.stream().anyMatch(that -> Objects.equals(sourceObserver.getDescription(), that.getDescription()));
     }
 }
