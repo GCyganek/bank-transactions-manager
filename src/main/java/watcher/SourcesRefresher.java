@@ -107,8 +107,6 @@ public class SourcesRefresher {
     private void cacheUpdates() {
         checkForUpdates()
                 .subscribeOn(Schedulers.io())
-//                .delay(period + 1, TimeUnit.SECONDS)
-                .observeOn(JavaFxScheduler.platform())
                 .subscribe(sourceUpdate -> {
                                 availableUpdates.add(sourceUpdate);
                                 updateFetchedSubject.onNext(sourceUpdate);
@@ -144,5 +142,9 @@ public class SourcesRefresher {
 
     private boolean isDuplicated(SourceObserver sourceObserver) {
         return sourceObservers.stream().anyMatch(that -> Objects.equals(sourceObserver.getDescription(), that.getDescription()));
+    }
+
+    public ObservableList<SourceUpdate> getAvailableUpdates() {
+        return availableUpdates;
     }
 }

@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 
-public class SourceObserverBuilderBuilder implements SourceTypeStepBuilder, BankTypeStepBuilder,
+public class SourceObserverBuilder implements SourceTypeStepBuilder, BankTypeStepBuilder,
         DescriptionStepBuilder, OptionalStepBuilder
 {
     private final static LocalDateTime INITIAL_FETCH_UPDATES_AFTER =
@@ -29,13 +29,13 @@ public class SourceObserverBuilderBuilder implements SourceTypeStepBuilder, Bank
     private LocalDateTime lastUpdateTime;
     private boolean isActive;
 
-    private SourceObserverBuilderBuilder() {
+    private SourceObserverBuilder() {
         lastUpdateTime = INITIAL_FETCH_UPDATES_AFTER;
         isActive = true;
     }
 
     public static SourceTypeStepBuilder with() {
-        return new SourceObserverBuilderBuilder();
+        return new SourceObserverBuilder();
     }
 
     @Override

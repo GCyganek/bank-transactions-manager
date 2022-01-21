@@ -5,7 +5,7 @@ import javafx.stage.Stage;
 import model.util.BankType;
 import model.util.SourceType;
 import watcher.SourceObserver;
-import watcher.builder.SourceObserverBuilderBuilder;
+import watcher.builder.SourceObserverBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import java.util.Optional;
@@ -27,7 +27,7 @@ public abstract class AbstractSourceAdditionWindowController implements SourceAd
 
     protected Optional<SourceObserver> buildAddedSourceObserver(SourceType sourceType, BankType bankType, String uri)
             throws InvalidSourceConfigException {
-        SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
+        SourceObserver sourceObserver = SourceObserverBuilder.with()
                 .withSourceType(sourceType)
                 .withBankType(bankType)
                 .withDescription(uri)

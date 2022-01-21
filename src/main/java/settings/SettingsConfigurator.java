@@ -5,7 +5,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import watcher.SourceObserver;
-import watcher.builder.SourceObserverBuilderBuilder;
+import watcher.builder.SourceObserverBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
@@ -45,7 +45,7 @@ public class SettingsConfigurator {
 
         for (var sourceConfig: settingsConfig.getSourceConfigs()) {
             try {
-               SourceObserver sourceObserver = SourceObserverBuilderBuilder.with()
+               SourceObserver sourceObserver = SourceObserverBuilder.with()
                         .withSourceType(sourceConfig.getSourceType())
                         .withBankType(sourceConfig.getBankType())
                         .withDescription(sourceConfig.getDescription())

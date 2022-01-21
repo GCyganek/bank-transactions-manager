@@ -20,6 +20,7 @@ public class DirectoryObserver extends AbstractSourceObserver {
     private final Path path;
     private final WatchService watchService;
     private boolean firstCheck;
+    private final LocalDateTime initializationTime;
 
     public DirectoryObserver(Path path, BankType bankType,
                              LocalDateTime lastUpdateCheckTime, boolean isActive) throws IOException {
@@ -27,6 +28,7 @@ public class DirectoryObserver extends AbstractSourceObserver {
         this.path = path;
         this.firstCheck = true;
 
+        this.initializationTime = LocalDateTime.now();
         this.watchService = initializeWatchService();
     }
 
@@ -40,9 +42,6 @@ public class DirectoryObserver extends AbstractSourceObserver {
     @Override
     public void setActive(boolean active) {
         super.setActive(active);
-        if (active) {
-            firstCheck = true;
-        }
     }
 
     @Override
@@ -85,7 +84,8 @@ public class DirectoryObserver extends AbstractSourceObserver {
                 BasicFileAttributes fileAttr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
                 FileTime creationTime = fileAttr.creationTime();
                 LocalDateTime convertedCreationTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
-                return convertedCreationTime.isAfter(lastUpdateTimeProperty().get());
+                return convertedCreationTime.isAfter(lastUpdateTimeProperty().get())
+                        && convertedCreationTime.isBefore(initializationTime);
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
