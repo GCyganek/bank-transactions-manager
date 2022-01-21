@@ -11,8 +11,8 @@ import javafx.scene.control.TextArea;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
-import watcher.SourceObserver;
 import model.util.SourceType;
+import watcher.SourceObserver;
 import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 

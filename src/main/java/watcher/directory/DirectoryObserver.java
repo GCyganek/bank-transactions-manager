@@ -3,8 +3,8 @@ package watcher.directory;
 import io.reactivex.rxjava3.core.Observable;
 import model.util.BankType;
 import model.util.DocumentType;
-import watcher.AbstractSourceObserver;
 import model.util.SourceType;
+import watcher.AbstractSourceObserver;
 import watcher.SourceUpdate;
 
 import java.io.IOException;

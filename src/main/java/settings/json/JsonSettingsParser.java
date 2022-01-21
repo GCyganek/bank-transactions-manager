@@ -1,9 +1,9 @@
 package settings.json;
 
 import com.google.gson.*;
+import model.util.SourceType;
 import settings.SettingsConfig;
 import settings.SettingsParser;
-import model.util.SourceType;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class JsonSettingsParser implements SettingsParser {
-    private String path;
-    private String dateTimeFormat;
-    private Gson gson;
+    private final String path;
+    private final String dateTimeFormat;
+    private final Gson gson;
 
     private class SourceTypeDeserializer implements JsonDeserializer<SourceType> {
         @Override

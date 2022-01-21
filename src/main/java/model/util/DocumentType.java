@@ -17,10 +17,10 @@ public enum DocumentType {
 
     public static Optional<DocumentType> fromString(String repr) {
         String lowerRepr = repr.toLowerCase(Locale.ROOT);
-        return Optional.ofNullable(switch (lowerRepr) {
-            case "csv" -> DocumentType.CSV;
-            case "pdf" -> DocumentType.PDF;
-            default -> null;
-        });
+        return switch (lowerRepr) {
+            case "csv" -> Optional.of(DocumentType.CSV);
+            case "pdf" -> Optional.of(DocumentType.PDF);
+            default -> Optional.empty();
+        };
     }
 }

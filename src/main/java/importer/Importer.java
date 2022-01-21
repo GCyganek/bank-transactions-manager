@@ -5,8 +5,6 @@ import configurator.BankConfiguratorFactory;
 import importer.loader.Loader;
 import io.reactivex.rxjava3.core.Observable;
 import model.BankTransaction;
-import model.util.BankType;
-import model.util.DocumentType;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,7 +30,6 @@ public class Importer {
         BankParser<?, ?> parser = configurator.getConfiguredParser(loader.getDocumentType());
 
         return parser.parse(dataReader)
-//                .doOnNext(x -> Thread.sleep(2500)) // emulate heavy computation
                 .doFinally(dataReader::close);
     }
 }

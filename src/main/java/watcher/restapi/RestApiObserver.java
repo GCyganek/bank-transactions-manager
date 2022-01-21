@@ -3,11 +3,11 @@ package watcher.restapi;
 import io.reactivex.rxjava3.core.Observable;
 import model.util.BankType;
 import model.util.DocumentType;
+import model.util.SourceType;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import watcher.AbstractSourceObserver;
-import model.util.SourceType;
 import watcher.SourceUpdate;
 import watcher.exceptions.InvalidSourceConfigException;
 

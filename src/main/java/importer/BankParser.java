@@ -5,8 +5,8 @@ import importer.raw.RawDataParser;
 import importer.utils.ParserField;
 import io.reactivex.rxjava3.core.Observable;
 import model.BankStatement;
-import model.builder.BankStatementBuilder;
 import model.BankTransaction;
+import model.builder.BankStatementBuilder;
 import model.builder.BankTransactionBuilder;
 
 import java.io.Reader;

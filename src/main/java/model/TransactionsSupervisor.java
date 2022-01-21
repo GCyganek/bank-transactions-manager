@@ -5,7 +5,8 @@ import repository.BankStatementsRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 
 @Singleton
 public class TransactionsSupervisor {

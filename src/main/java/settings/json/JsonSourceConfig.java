@@ -2,8 +2,8 @@ package settings.json;
 
 import com.google.gson.annotations.SerializedName;
 import model.util.BankType;
-import settings.SourceConfig;
 import model.util.SourceType;
+import settings.SourceConfig;
 
 import java.time.LocalDateTime;
 

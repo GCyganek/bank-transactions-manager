@@ -3,26 +3,18 @@ package IOC;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import configurator.BankConfiguratorFactory;
-import controller.sources.TransactionSourcesViewController;
-import importer.loader.Loader;
-import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
 import model.Account;
 import model.TransactionStatsManager;
-import org.checkerframework.checker.units.qual.A;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
 import repository.dao.PgBankTransactionDao;
-import settings.SettingsConfig;
-import settings.SettingsConfigurator;
 import settings.SettingsFactory;
 import settings.json.JsonSettingsFactory;
-import watcher.SourceObserver;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.List;
 
 public class ImporterModule extends AbstractModule {
 

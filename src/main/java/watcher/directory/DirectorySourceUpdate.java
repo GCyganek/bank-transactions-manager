@@ -2,12 +2,9 @@ package watcher.directory;
 
 import importer.loader.Loader;
 import importer.loader.LocalFSLoader;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
-import model.util.BankType;
 import model.util.DocumentType;
 import watcher.AbstractSourceUpdate;
-import watcher.SourceObserver;
 
 import java.time.LocalDateTime;
 

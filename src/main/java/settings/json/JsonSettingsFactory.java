@@ -2,8 +2,8 @@ package settings.json;
 
 import settings.SettingsConfig;
 import settings.SettingsFactory;
-import settings.SourceConfig;
 import settings.SettingsParser;
+import settings.SourceConfig;
 import watcher.SourceObserver;
 
 import javax.inject.Inject;

@@ -8,6 +8,7 @@ import model.util.BankType;
 import model.util.SourceType;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public abstract class AbstractSourceObserver implements SourceObserver {
     protected final String description;
@@ -78,17 +79,17 @@ public abstract class AbstractSourceObserver implements SourceObserver {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other)
-            return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractSourceObserver that = (AbstractSourceObserver) o;
+        return Objects.equals(description, that.description) && Objects.equals(bankType, that.bankType) &&
+                Objects.equals(sourceType, that.sourceType);
+    }
 
-        if (other instanceof SourceObserver that) {
-            return this.sourceType == that.getSourceType() &&
-                    this.bankType.equals(that.getBankType()) &&
-                    this.description.equals(that.getDescription());
-        }
-
-        return false;
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, bankType, sourceType);
     }
 
     @Override

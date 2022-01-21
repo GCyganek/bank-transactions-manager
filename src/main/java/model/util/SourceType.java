@@ -7,13 +7,11 @@ public enum SourceType {
     REST_API, DIRECTORY;
 
     public static Optional<SourceType> fromString(String repr) {
-        SourceType sourceType = switch(repr.toLowerCase(Locale.ROOT)) {
-            case "directory" -> DIRECTORY;
-            case "rest_api" -> REST_API;
-            default -> null;
+        return switch(repr.toLowerCase(Locale.ROOT)) {
+            case "directory" -> Optional.of(DIRECTORY);
+            case "rest_api" -> Optional.of(REST_API);
+            default -> Optional.empty();
         };
-
-        return Optional.ofNullable(sourceType);
     }
 
     @Override

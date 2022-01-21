@@ -1,7 +1,7 @@
 package watcher.restapi;
 
-import importer.loader.StreamLoader;
 import importer.loader.Loader;
+import importer.loader.StreamLoader;
 import io.reactivex.rxjava3.core.Single;
 import model.util.DocumentType;
 import okhttp3.ResponseBody;

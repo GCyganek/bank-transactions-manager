@@ -17,16 +17,18 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import model.util.BankType;
+import model.util.SourceType;
 import settings.SettingsConfigurator;
 import watcher.SourceObserver;
-import model.util.SourceType;
 import watcher.SourcesRefresher;
 import watcher.exceptions.DuplicateSourceException;
 import watcher.exceptions.InvalidSourceConfigException;
 
 import javax.inject.Inject;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Singleton
 public class TransactionSourcesViewController {

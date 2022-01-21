@@ -1,5 +1,6 @@
 import IOC.TestingModule;
-import com.google.inject.*;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import model.Account;
 import model.BankStatement;
 import model.BankTransaction;
@@ -8,15 +9,15 @@ import model.util.ImportSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import repository.BankStatementsRepository;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class TransactionManagerTests {

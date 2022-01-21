@@ -1,8 +1,8 @@
 package watcher.builder;
 
 import model.util.BankType;
-import watcher.SourceObserver;
 import model.util.SourceType;
+import watcher.SourceObserver;
 import watcher.directory.DirectoryObserver;
 import watcher.exceptions.InvalidSourceConfigException;
 import watcher.restapi.RestApiObserver;

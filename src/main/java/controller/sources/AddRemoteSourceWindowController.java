@@ -10,14 +10,11 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.util.BankType;
-import watcher.SourceObserver;
 import model.util.SourceType;
+import watcher.SourceObserver;
 import watcher.builder.SourceObserverBuilderBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Optional;
 
 public class AddRemoteSourceWindowController implements SourceAdditionWindowController {
@@ -52,17 +49,6 @@ public class AddRemoteSourceWindowController implements SourceAdditionWindowCont
         remoteUrl.setValue(remoteSourceTextField.getText());
         bankType = remoteBankChoiceBox.getValue();
         stage.close();
-    }
-
-    private boolean validateUrl(String urlToValidate) {
-        try {
-            URL url = new URL(urlToValidate);
-            url.toURI();
-            return true;
-        } catch (MalformedURLException | URISyntaxException e) {
-            this.appController.showErrorWindow("Invalid remote source URL", e.getMessage());
-            return false;
-        }
     }
 
     private boolean checkIfNewSourceWasAdded() {

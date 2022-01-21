@@ -9,7 +9,6 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,7 +34,9 @@ import java.util.concurrent.TimeUnit;
 
 public class TransactionsManagerViewController {
     private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
-    
+    private static final String INITIAL_IMPORT_BUTTON_TEXT = "Force import from sources";
+    private static final String IMPORT_IN_PROGRESS = "Import in progress...";
+
     private final ObservableList<BankTransaction> bankTransactions;
     private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
@@ -270,12 +271,11 @@ public class TransactionsManagerViewController {
     }
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
-        importFromSourcesButton.disableProperty().setValue(true);
-
         importFromSources(sourcesRefresher.getUpdates());
     }
 
     private void importFromSources(Observable<SourceUpdate> sourceUpdates) {
+        updateImportFromSourcesButton(true, IMPORT_IN_PROGRESS);
         sourceUpdates
                 .subscribeOn(Schedulers.io())
                 .doOnNext(sourceUpdate -> sourceUpdate.getSourceObserver().changeImported(sourceUpdate))
@@ -285,8 +285,13 @@ public class TransactionsManagerViewController {
                         err -> this.appController.showErrorWindow("Failed to get update", err.getMessage()),
                         () -> {
                             settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
-                            importFromSourcesButton.disableProperty().setValue(false);
+                            updateImportFromSourcesButton(false, INITIAL_IMPORT_BUTTON_TEXT);
                         });
+    }
+
+    private void updateImportFromSourcesButton(boolean disable, String text) {
+        importFromSourcesButton.disableProperty().setValue(disable);
+        importFromSourcesButton.textProperty().setValue(text);
     }
 
     public void handleManageSourcesButton(ActionEvent actionEvent) {
