@@ -14,6 +14,7 @@ import model.util.TransactionCategory;
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -151,7 +152,11 @@ public class EditTransactionViewPresenter {
     }
 
     private BigDecimal getEditedAmount() throws ParseException {
-        DecimalFormat decimalFormatter = new DecimalFormat();
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(',');
+        symbols.setDecimalSeparator('.');
+        String pattern = "#,##0.00";
+        DecimalFormat decimalFormatter = new DecimalFormat(pattern, symbols);
         decimalFormatter.setParseBigDecimal(true);
         return (BigDecimal) decimalFormatter.parse(amountTextField.getText());
     }

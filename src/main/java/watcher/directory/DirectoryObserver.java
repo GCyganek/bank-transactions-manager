@@ -7,9 +7,14 @@ import model.util.SourceType;
 import watcher.AbstractSourceObserver;
 import watcher.SourceUpdate;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class DirectoryObserver extends AbstractSourceObserver {
@@ -18,8 +23,8 @@ public class DirectoryObserver extends AbstractSourceObserver {
     private boolean firstCheck;
 
     public DirectoryObserver(Path path, BankType bankType,
-                             LocalDateTime lastUpdateTime, boolean isActive) throws IOException {
-        super(path.toString(), bankType, SourceType.DIRECTORY, lastUpdateTime, isActive);
+                             LocalDateTime lastUpdateCheckTime, boolean isActive) throws IOException {
+        super(path.toString(), bankType, SourceType.DIRECTORY, lastUpdateCheckTime, isActive);
         this.path = path;
         this.firstCheck = true;
 
@@ -34,33 +39,57 @@ public class DirectoryObserver extends AbstractSourceObserver {
     }
 
     @Override
-    public Observable<SourceUpdate> getChanges() {
-//        if (firstCheck)
-//            return handleFirstCheck();
+    public void setActive(boolean active) {
+        super.setActive(active);
+        if (active) {
+            firstCheck = true;
+        }
+    }
 
+    @Override
+    public Observable<SourceUpdate> getChanges() {
         return Observable.create(emitter -> {
+            if (firstCheck) {
+                firstCheck = false;
+                Arrays.stream(handleFirstCheck())
+                        .forEach(file -> fileToSourceUpdate(file.getAbsolutePath()).ifPresent(emitter::onNext));
+            }
             WatchKey key;
             lastUpdateCheckTime = LocalDateTime.now();
             while ((key = watchService.poll()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     Path relativeFilePath = (Path) event.context();
                     String absoluteFilePathString = path + "/" + relativeFilePath.toString();
-                    getDocumentType(absoluteFilePathString)
-                        .ifPresent(documentType -> emitter
-                            .onNext(new DirectorySourceUpdate(this, documentType, absoluteFilePathString, lastUpdateCheckTime)));
-
+                    fileToSourceUpdate(absoluteFilePathString).ifPresent(emitter::onNext);
                 }
                 key.reset();
             }
-
             emitter.onComplete();
         });
     }
 
-    private Observable<SourceUpdate> handleFirstCheck() {
-        // TODO first we should check if something new was added since lastUpdateTime, then use polling
-        firstCheck = false;
-        return Observable.empty();
+    // working properly only on windows, linux doesn't save a file creation time -> for example file copied from another
+    // folder that was last modified before lastUpdateCheckTime will be ignored here on linux
+    private File[] handleFirstCheck() {
+        File observedDirectory = new File(path.toUri());
+        return observedDirectory.listFiles(file -> {
+            try {
+                BasicFileAttributes fileAttr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+                FileTime creationTime = fileAttr.creationTime();
+                LocalDateTime convertedCreationTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
+                return convertedCreationTime.isAfter(lastUpdateTimeProperty().get());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        });
+    }
+
+    private Optional<SourceUpdate> fileToSourceUpdate(String absoluteFilePathString) {
+        Optional<DocumentType> documentType = getDocumentType(absoluteFilePathString);
+        return documentType.map(type ->
+                new DirectorySourceUpdate(this, type, absoluteFilePathString, lastUpdateCheckTime)
+        );
     }
 
     private Optional<DocumentType> getDocumentType(String path) {

@@ -149,10 +149,9 @@ public class TransactionsManagerViewController {
 
         sourcesRefresher
                 .getUpdateFetchedObservable()
-                .subscribe(sourceUpdate -> {
-                    if (autoImportCheckbox.isSelected())
-                        importFromSources(sourcesRefresher.getCachedSourceUpdates());
-                });
+                .filter(sourceUpdate -> autoImportCheckbox.isSelected())
+                .flatMap(sourceUpdate -> importFromSources(sourcesRefresher.getCachedSourceUpdates()))
+                .subscribe();
     }
 
     private void setupAutoImportCheckbox() {
@@ -161,7 +160,7 @@ public class TransactionsManagerViewController {
         autoImportCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             settingsConfigurator.setAutoImportStatus(newValue);
             if (newValue) {
-                importFromSources(sourcesRefresher.getCachedSourceUpdates());
+                importFromSources(sourcesRefresher.getCachedSourceUpdates()).subscribe();
             }
         });
     }
@@ -174,13 +173,11 @@ public class TransactionsManagerViewController {
         BankTransaction bankTransaction = transactionsTable.getSelectionModel().getSelectedItem();
         BigDecimal amountBeforeEdit = bankTransaction.getAmount();
 
-        if (bankTransaction != null) {
-            appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
-                if (amountAfterEdit.compareTo(amountBeforeEdit) != 0) {
-                    account.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
-                }
-            });
-        }
+        appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
+            if (amountAfterEdit.compareTo(amountBeforeEdit) != 0) {
+                account.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
+            }
+        });
     }
 
     public void handleShowStatistics(ActionEvent actionEvent) {
@@ -271,22 +268,22 @@ public class TransactionsManagerViewController {
     }
 
     public void handleImportFromSourcesButton(ActionEvent actionEvent) {
-        importFromSources(sourcesRefresher.getUpdates());
+        importFromSources(sourcesRefresher.getUpdates()).subscribe();
     }
 
-    private void importFromSources(Observable<SourceUpdate> sourceUpdates) {
+    private Observable<Loader> importFromSources(Observable<SourceUpdate> sourceUpdates) {
         updateImportFromSourcesButton(true, IMPORT_IN_PROGRESS);
-        sourceUpdates
+        return sourceUpdates
                 .subscribeOn(Schedulers.io())
                 .doOnNext(sourceUpdate -> sourceUpdate.getSourceObserver().changeImported(sourceUpdate))
                 .flatMap(sourceUpdate -> sourceUpdate.getUpdateDataLoader().toObservable())
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe(this::handleImport,
-                        err -> this.appController.showErrorWindow("Failed to get update", err.getMessage()),
-                        () -> {
-                            settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
-                            updateImportFromSourcesButton(false, INITIAL_IMPORT_BUTTON_TEXT);
-                        });
+                .doOnNext(this::handleImport)
+                .doOnError(err -> this.appController.showErrorWindow("Failed to get update", err.getMessage()))
+                .doOnComplete(() -> {
+                    settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
+                    updateImportFromSourcesButton(false, INITIAL_IMPORT_BUTTON_TEXT);
+                });
     }
 
     private void updateImportFromSourcesButton(boolean disable, String text) {

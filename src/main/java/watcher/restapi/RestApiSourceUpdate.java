@@ -9,6 +9,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import watcher.AbstractSourceUpdate;
+import watcher.exceptions.StatementRemoteRequestFailedException;
 import watcher.restapi.response.RestUpdatesResponse;
 
 import java.net.URL;
@@ -19,12 +20,11 @@ public class RestApiSourceUpdate extends AbstractSourceUpdate {
     private final RestApiClient client;
     private final URL remoteUrl;
 
-    public RestApiSourceUpdate(RestApiObserver restApiObserver, RestUpdatesResponse response, LocalDateTime updateTime) {
-        super(restApiObserver, DocumentType.fromString(response.getExtension()).orElseThrow(), updateTime);
+    public RestApiSourceUpdate(RestApiObserver restApiObserver, RestUpdatesResponse response, LocalDateTime updateCheckTime) {
+        super(restApiObserver, DocumentType.fromString(response.getExtension()).orElseThrow(), updateCheckTime);
         this.statementId = response.getStatementId();
         this.client = restApiObserver.getClient();
         this.remoteUrl = restApiObserver.getRemoteUrl();
-
     }
 
     @Override
@@ -38,7 +38,7 @@ public class RestApiSourceUpdate extends AbstractSourceUpdate {
                     emitter.onSuccess(new StreamLoader(response.body().byteStream(), remoteUrl.toString(), bankType, documentType));
                 }
                 else {
-                    emitter.onError(new Exception("Request for " + statementId + " failed")); // TODO custom exception
+                    emitter.onError(new StatementRemoteRequestFailedException("Request for " + statementId + " failed"));
                 }
             }
 
