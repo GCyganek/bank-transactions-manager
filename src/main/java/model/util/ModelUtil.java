@@ -21,6 +21,7 @@ public final class ModelUtil {
     public static Comparator<BankTransaction> getDateThenAmountThenDescriptionComparator() {
         return Comparator.comparing(BankTransaction::getDate)
                 .thenComparing(BankTransaction::getAmount)
-                .thenComparing(BankTransaction::getDescription);
+                .thenComparing(BankTransaction::getDescription)
+                .thenComparing(BankTransaction::getCategory);
     }
 }
