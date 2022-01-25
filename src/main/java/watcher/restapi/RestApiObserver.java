@@ -40,6 +40,7 @@ public class RestApiObserver extends AbstractSourceObserver {
 
             return retrofit.create(RestApiClient.class);
         } catch (Exception e) {
+            sourceFailedPublisher.onNext(e);
             throw new InvalidSourceConfigException(e.getMessage());
         }
     }

@@ -107,12 +107,13 @@ public class SourcesRefresher {
     private void cacheUpdates() {
         checkForUpdates()
                 .subscribeOn(Schedulers.io())
+                .doOnTerminate(this::setupTimer)
+                .observeOn(JavaFxScheduler.platform())
                 .subscribe(sourceUpdate -> {
-                                availableUpdates.add(sourceUpdate);
-                                updateFetchedSubject.onNext(sourceUpdate);
+                            availableUpdates.add(sourceUpdate);
+                            updateFetchedSubject.onNext(sourceUpdate);
                         },
-                        System.out::println,
-                        this::setupTimer);
+                        System.out::println);
     }
 
     public ObservableList<SourceObserver> getSourceObservers() {

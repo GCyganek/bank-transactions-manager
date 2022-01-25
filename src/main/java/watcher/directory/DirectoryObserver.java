@@ -47,31 +47,36 @@ public class DirectoryObserver extends AbstractSourceObserver {
     @Override
     public Observable<SourceUpdate> getChanges() {
         return Observable.create(emitter -> {
-            lastUpdateCheckTime = LocalDateTime.now();
+            try {
+                lastUpdateCheckTime = LocalDateTime.now();
 
-            if (firstCheck) {
-                firstCheck = false;
-                for (File file : handleFirstCheck()) {
-                    if (emitter.isDisposed()) break;
-                    fileToSourceUpdate(file.getAbsolutePath()).ifPresent(emitter::onNext);
-                }
-            }
-
-            WatchKey key;
-            while (!emitter.isDisposed() && (key = watchService.poll()) != null) {
-                for (WatchEvent<?> event : key.pollEvents()) {
-                    if (emitter.isDisposed()) {
-                        key.reset();
-                        break;
+                if (firstCheck) {
+                    firstCheck = false;
+                    for (File file : handleFirstCheck()) {
+                        if (emitter.isDisposed()) break;
+                        fileToSourceUpdate(file.getAbsolutePath()).ifPresent(emitter::onNext);
                     }
-                    Path relativeFilePath = (Path) event.context();
-                    String absoluteFilePathString = path + "/" + relativeFilePath.toString();
-                    fileToSourceUpdate(absoluteFilePathString).ifPresent(emitter::onNext);
                 }
-                key.reset();
-            }
 
-            emitter.onComplete();
+                WatchKey key;
+                while (!emitter.isDisposed() && (key = watchService.poll()) != null) {
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        if (emitter.isDisposed()) {
+                            key.reset();
+                            break;
+                        }
+                        Path relativeFilePath = (Path) event.context();
+                        String absoluteFilePathString = path + "/" + relativeFilePath.toString();
+                        fileToSourceUpdate(absoluteFilePathString).ifPresent(emitter::onNext);
+                    }
+                    key.reset();
+                }
+
+                emitter.onComplete();
+            } catch (Exception e) {
+                emitter.onError(e);
+                sourceFailedPublisher.onNext(e);
+            }
         });
     }
 
@@ -87,6 +92,7 @@ public class DirectoryObserver extends AbstractSourceObserver {
                 return convertedCreationTime.isAfter(lastUpdateTimeProperty().get())
                         && convertedCreationTime.isBefore(initializationTime);
             } catch (IOException e) {
+                sourceFailedPublisher.onNext(e);
                 e.printStackTrace();
                 return false;
             }
