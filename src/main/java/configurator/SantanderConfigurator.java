@@ -1,8 +1,8 @@
 package configurator;
 
-import configurator.config.util.ConfigWrapper;
 import configurator.config.StatementBuilderConfig;
 import configurator.config.TransactionBuilderConfig;
+import configurator.config.util.ConfigWrapper;
 import importer.raw.CSVRawDataParser;
 import importer.utils.Cell;
 import importer.utils.converters.Converter;

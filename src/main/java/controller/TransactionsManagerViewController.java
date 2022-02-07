@@ -3,43 +3,59 @@ package controller;
 import controller.util.ContextMenuRowFactory;
 import importer.Importer;
 import importer.exceptions.ParserException;
+import importer.loader.Loader;
+import importer.loader.LocalFSLoader;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import model.Account;
+import model.BankTransaction;
 import model.TransactionsSupervisor;
 import model.util.BankType;
 import model.util.DocumentType;
 import model.util.ImportSession;
-import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
-import javafx.beans.binding.Bindings;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import model.BankTransaction;
 import model.util.TransactionCategory;
+import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
+import settings.SettingsConfigurator;
+import watcher.SourceUpdate;
+import watcher.SourcesRefresher;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TransactionsManagerViewController {
+    private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
+    private static final String INITIAL_IMPORT_BUTTON_TEXT = "Force import from sources";
+    private static final String IMPORT_IN_PROGRESS = "Import in progress...";
 
     private final ObservableList<BankTransaction> bankTransactions;
     private final TransactionsSupervisor transactionsSupervisor;
     private final Importer importer;
     private final Account account;
+    private final SourcesRefresher sourcesRefresher;
+    private final SettingsConfigurator settingsConfigurator;
 
     private TransactionsManagerAppController appController;
 
-
     @Inject
     public TransactionsManagerViewController(TransactionsSupervisor transactionsSupervisor,
-                                             Importer importer, Account account) {
+                                             Importer importer, Account account,
+                                             SettingsConfigurator settingsConfigurator,
+                                             SourcesRefresher sourcesRefresher) {
         this.transactionsSupervisor = transactionsSupervisor;
+        this.settingsConfigurator = settingsConfigurator;
         this.importer = importer;
         this.account = account;
+        this.sourcesRefresher = sourcesRefresher;
 
         this.bankTransactions = account.getTransactionObservableList();
     }
@@ -69,6 +85,12 @@ public class TransactionsManagerViewController {
     public Button statsButton;
 
     @FXML
+    public Button importFromSourcesButton;
+
+    @FXML
+    public Button manageSourcesButton;
+
+    @FXML
     public TextField balanceTextField;
 
     @FXML
@@ -81,6 +103,12 @@ public class TransactionsManagerViewController {
     public ContextMenu contextMenu;
 
     @FXML
+    public Label updatesCountLabel;
+
+    @FXML
+    public CheckBox autoImportCheckbox;
+
+    @FXML
     private void initialize() {
         transactionsTable.setItems(bankTransactions);
         updateCategoryComboBox();
@@ -91,9 +119,9 @@ public class TransactionsManagerViewController {
                 .balanceProperty().asString("Transactions Balance: %.2f"));
 
         dateColumn.setCellValueFactory(dataValue -> dataValue.getValue().dateProperty());
-        descriptionColumn.setCellValueFactory(dataValue -> dataValue.getValue().descriptionProperty());
-        amountColumn.setCellValueFactory(dataValue -> dataValue.getValue().amountProperty());
-        categoryColumn.setCellValueFactory(dataValue -> dataValue.getValue().categoryProperty());
+        descriptionColumn.setCellValueFactory(descriptionValue -> descriptionValue.getValue().descriptionProperty());
+        amountColumn.setCellValueFactory(amountValue -> amountValue.getValue().amountProperty());
+        categoryColumn.setCellValueFactory(categoryValue -> categoryValue.getValue().categoryProperty());
 
         editButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         categoryChangeButton.disableProperty().bind(Bindings.size(transactionsTable.getSelectionModel().getSelectedItems()).isEqualTo(0));
@@ -101,11 +129,40 @@ public class TransactionsManagerViewController {
 
         contextMenu.setStyle("-fx-min-width: 120.0; -fx-min-height: 40.0;");
         transactionsTable.setRowFactory(new ContextMenuRowFactory<>(contextMenu));
+
+        setupAutoImportCheckbox();
+        listenForNewUpdates();
     }
 
     private void updateCategoryComboBox() {
         categoryComboBox.getItems().addAll(TransactionCategory.values());
         categoryComboBox.getSelectionModel().select(TransactionCategory.UNCATEGORIZED);
+    }
+
+    private void listenForNewUpdates() {
+        // TODO check in settings if this should be started
+        sourcesRefresher.startPeriodicalUpdateChecks(SOURCES_REFRESH_PERIOD, TimeUnit.SECONDS);
+
+        IntegerBinding availableUpdatesCount = sourcesRefresher.getAvailableUpdatesCount();
+
+        updatesCountLabel.textProperty().bind(availableUpdatesCount.asString());
+
+        sourcesRefresher
+                .getUpdateFetchedObservable()
+                .filter(sourceUpdate -> autoImportCheckbox.isSelected())
+                .flatMap(sourceUpdate -> importFromSources(sourcesRefresher.getCachedSourceUpdates()))
+                .subscribe();
+    }
+
+    private void setupAutoImportCheckbox() {
+        autoImportCheckbox.setSelected(settingsConfigurator.getAutoImportStatus());
+
+        autoImportCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            settingsConfigurator.setAutoImportStatus(newValue);
+            if (newValue) {
+                importFromSources(sourcesRefresher.getCachedSourceUpdates()).subscribe();
+            }
+        });
     }
 
     public void setAppController(TransactionsManagerAppController appController) {
@@ -116,13 +173,11 @@ public class TransactionsManagerViewController {
         BankTransaction bankTransaction = transactionsTable.getSelectionModel().getSelectedItem();
         BigDecimal amountBeforeEdit = bankTransaction.getAmount();
 
-        if (bankTransaction != null) {
-            appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
-                if (amountAfterEdit.compareTo(amountBeforeEdit) != 0) {
-                    account.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
-                }
-            });
-        }
+        appController.showEditTransactionWindow(bankTransaction).ifPresent(amountAfterEdit -> {
+            if (amountAfterEdit.compareTo(amountBeforeEdit) != 0) {
+                account.addToBalance(amountAfterEdit.subtract(amountBeforeEdit));
+            }
+        });
     }
 
     public void handleShowStatistics(ActionEvent actionEvent) {
@@ -138,7 +193,7 @@ public class TransactionsManagerViewController {
                 DocumentType selectedDocType = DocumentType.CSV;
                 String filePath = addStatementViewController.getFile().getAbsolutePath();
 
-                handleImport(selectedBank, selectedDocType, filePath);
+                handleImport(new LocalFSLoader(filePath, selectedBank, selectedDocType));
             }
         } catch (IOException e) {
             System.out.println("Failed to load window");
@@ -146,20 +201,21 @@ public class TransactionsManagerViewController {
         }
     }
 
-    private void handleImport(BankType selectedBank, DocumentType selectedDocType, String uri) {
+    private void handleImport(Loader loader) {
         ImportSession importSession = transactionsSupervisor.startImportSession();
+        String loaderDescritpion = loader.getDescription();
 
         try {
-            importer.importBankStatement(selectedBank, selectedDocType, uri)
+            importer.importBankStatement(loader)
                     .subscribeOn(Schedulers.io())
                     .filter(transaction -> transactionsSupervisor.tryToAddTransaction(importSession, transaction))
                     .observeOn(JavaFxScheduler.platform())
                     .subscribe(account::addTransaction,
                           err -> handleImportError(importSession, err),
-                          () -> handleImportComplete(importSession, uri));
+                          () -> handleImportComplete(importSession, loaderDescritpion));
 
         } catch (IOException e) {
-            this.appController.showErrorWindow("Failed to read statement from " + uri, e.getMessage());
+            this.appController.showErrorWindow("Failed to read statement from " + loaderDescritpion, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -209,5 +265,33 @@ public class TransactionsManagerViewController {
         editedTransaction.setCategory(transactionCategory);
 
         return editedTransaction;
+    }
+
+    public void handleImportFromSourcesButton(ActionEvent actionEvent) {
+        importFromSources(sourcesRefresher.getUpdates()).subscribe();
+    }
+
+    private Observable<Loader> importFromSources(Observable<SourceUpdate> sourceUpdates) {
+        updateImportFromSourcesButton(true, IMPORT_IN_PROGRESS);
+        return sourceUpdates
+                .subscribeOn(Schedulers.io())
+                .doOnNext(sourceUpdate -> sourceUpdate.getSourceObserver().changeImported(sourceUpdate))
+                .flatMap(sourceUpdate -> sourceUpdate.getUpdateDataLoader().toObservable())
+                .observeOn(JavaFxScheduler.platform())
+                .doOnNext(this::handleImport)
+                .doOnError(err -> this.appController.showErrorWindow("Failed to get update", err.getMessage()))
+                .doOnComplete(() -> {
+                    settingsConfigurator.updateSourcesConfig(sourcesRefresher.getSourceObservers());
+                    updateImportFromSourcesButton(false, INITIAL_IMPORT_BUTTON_TEXT);
+                });
+    }
+
+    private void updateImportFromSourcesButton(boolean disable, String text) {
+        importFromSourcesButton.disableProperty().setValue(disable);
+        importFromSourcesButton.textProperty().setValue(text);
+    }
+
+    public void handleManageSourcesButton(ActionEvent actionEvent) {
+        this.appController.showTransactionSourcesWindow();
     }
 }

@@ -58,7 +58,7 @@ public class AddStatementViewController {
         chosenFileArea.clear();
         fileChooser.setTitle("Choose statement");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
-        fileChooser.setInitialDirectory(new File("src/test/resources")); // TODO
+        fileChooser.setInitialDirectory(new File("src/test/resources"));
         file.setValue(fileChooser.showOpenDialog(stage));
 
         if(file.get() != null) {

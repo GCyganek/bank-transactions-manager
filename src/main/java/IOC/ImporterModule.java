@@ -3,8 +3,6 @@ package IOC;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import configurator.BankConfiguratorFactory;
-import importer.loader.Loader;
-import importer.loader.LocalFSLoader;
 import javafx.stage.Stage;
 import model.Account;
 import model.TransactionStatsManager;
@@ -12,6 +10,8 @@ import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
 import repository.dao.PgBankTransactionDao;
+import settings.SettingsFactory;
+import settings.json.JsonSettingsFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -36,10 +36,6 @@ public class ImporterModule extends AbstractModule {
         return new BankConfiguratorFactory();
     }
 
-    @Provides
-    Loader provideDefaultLoader() {
-        return new LocalFSLoader();
-    }
 
     @Provides
     @Singleton
@@ -59,4 +55,15 @@ public class ImporterModule extends AbstractModule {
         return this.primaryStage;
     }
 
+    @Provides
+    @Singleton
+    SettingsFactory provideSettingsFactory(JsonSettingsFactory jsonSettingsFactory) {
+        return jsonSettingsFactory;
+    }
+
+    @Provides
+    @Named("config_path")
+    String provideConfigPath() {
+        return "config.json";
+    }
 }

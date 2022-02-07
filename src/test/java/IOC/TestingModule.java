@@ -2,8 +2,6 @@ package IOC;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import importer.loader.Loader;
-import importer.loader.LocalFSLoader;
 import repository.dao.BankStatementDao;
 import repository.dao.BankTransactionDao;
 import repository.dao.PgBankStatementDao;
@@ -25,6 +23,4 @@ public class TestingModule extends AbstractModule {
         return new PgBankTransactionDao();
     }
 
-    @Provides
-    Loader provideLoader() { return new LocalFSLoader();}
 }

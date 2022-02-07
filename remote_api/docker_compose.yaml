@@ -1,0 +1,14 @@
+version: '3'
+services:
+  santander:
+    image: api-example:1.0
+    ports:
+      - 5000:5000
+    environment:
+      - bank=Santander
+  mbank:
+    image: api-example:1.0
+    ports:
+      - 5001:5000
+    environment:
+      - bank=MBank

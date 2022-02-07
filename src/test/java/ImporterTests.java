@@ -4,6 +4,8 @@ import com.google.inject.Injector;
 import configurator.BankConfiguratorFactory;
 import importer.Importer;
 import importer.exceptions.ParserException;
+import importer.loader.Loader;
+import importer.loader.LocalFSLoader;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
@@ -18,11 +20,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import repository.BankStatementsRepository;
-import static org.junit.jupiter.api.Assertions.*;
-
 
 import java.io.IOException;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class ImporterTests {
@@ -104,10 +106,11 @@ public class ImporterTests {
         BankType bankType = BankType.MBANK;
         DocumentType documentType = DocumentType.CSV;
         String path = "invalid_path.txt";
+        Loader loader = new LocalFSLoader(path, bankType, documentType);
 
         // then
         assertThrows(IOException.class, () -> getImporter()
-                .importBankStatement(bankType, documentType, path)
+                .importBankStatement(loader)
                 .subscribe());
     }
 
@@ -159,7 +162,8 @@ public class ImporterTests {
     private Flowable<BankTransaction> importAsFlowable(BankType bankType,
                                           DocumentType documentType, String uri) throws IOException
     {
-        return getImporter().importBankStatement(bankType, documentType, uri)
+        Loader loader = new LocalFSLoader(uri, bankType, documentType);
+        return getImporter().importBankStatement(loader)
             .toFlowable(BackpressureStrategy.BUFFER);
     }
 }
