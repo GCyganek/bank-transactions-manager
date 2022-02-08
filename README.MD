@@ -1,12 +1,10 @@
-## Spiulkolot
+Repository imported from BitBucket containing application for OOP Technologies course
+-------------------------
 
-- Joanna Klimek
-- Szymon Stępień
-- Gabriel Cyganek
-
-### [Changelog](https://docs.google.com/document/d/1Vyp1YqVOeKj18xWjpPsnheaGF2UTj5wKMQ9HgkNeinM/edit#)
-
-### [Prezentacja](https://docs.google.com/presentation/d/1y4WxF_TrLM_5GSd2P4KgdXwFFenhV8Q8asMNpHuSdq0/edit#slide=id.g10354a724da_2_12)
+Contributors:
+- Joanna Klimek ([@jklimekk](https://github.com/jklimekk))
+- Szymon Stępień ([@Fl0k3n](https://github.com/Fl0k3n))
+- Gabriel Cyganek (me c:)
 
 
 
