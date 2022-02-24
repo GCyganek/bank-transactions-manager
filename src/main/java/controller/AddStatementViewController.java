@@ -10,10 +10,13 @@ import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.util.BankType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
 public class AddStatementViewController {
+    private static final Logger LOGGER = LogManager.getLogger(AddStatementViewController.class);
 
     final FileChooser fileChooser = new FileChooser();
 
@@ -64,7 +67,7 @@ public class AddStatementViewController {
         if(file.get() != null) {
             chosenFileArea.appendText(file.get().getAbsolutePath());
         } else {
-            System.out.println("Invalid file");
+            LOGGER.info("Invalid file");
         }
     }
 

@@ -8,6 +8,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import watcher.exceptions.DuplicateSourceException;
 
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class SourcesRefresher {
+    private static final Logger LOGGER = LogManager.getLogger(SourcesRefresher.class);
 
     private final ObservableList<SourceObserver> sourceObservers;
     private final ObservableList<SourceUpdate> availableUpdates;
@@ -83,7 +86,7 @@ public class SourcesRefresher {
                 .timer(period, timeUnit)
                 .filter(tick -> isCheckingPeriodically)
                 .subscribe(tick -> {
-                    System.out.println("TICK");
+                    LOGGER.debug("TICK");
                     // recursive call instead of Observable.interval so time needed
                     // to execute this will be included
                     if (!periodicalChecksDisabled)

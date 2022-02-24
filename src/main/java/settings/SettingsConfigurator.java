@@ -4,6 +4,8 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import watcher.SourceObserver;
 import watcher.builder.SourceObserverBuilder;
 import watcher.exceptions.InvalidSourceConfigException;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Singleton
 public class SettingsConfigurator {
+    private static final Logger LOGGER = LogManager.getLogger(SettingsConfigurator.class);
+
     private final SettingsFactory settingsFactory;
     private SettingsConfig settingsConfig;
 
@@ -31,11 +35,9 @@ public class SettingsConfigurator {
         try {
             settingsConfig = settingsFactory.createSettingsParser().loadSettingsConfig();
         } catch (IOException exception) {
-            System.out.println("Failed to load config, using defaults. error:\n" + exception.getMessage());
-            exception.printStackTrace();
+            LOGGER.warn("Failed to load config, using defaults.", exception);
         } catch (Exception exception) {
-            System.out.println("Config file is likely corrupted, using defaults. error:\n" + exception.getMessage());
-            exception.printStackTrace();
+            LOGGER.warn("Config file is likely corrupted, using defaults.", exception);
         }
     }
 
@@ -56,8 +58,7 @@ public class SettingsConfigurator {
                sourceObservers.add(sourceObserver);
             } catch (InvalidSourceConfigException e) {
                 // nothing to do
-                System.out.println("Source config for " + sourceConfig.getDescription() + " was invalid, ignoring");
-                e.printStackTrace();
+                LOGGER.debug("Source config for " + sourceConfig.getDescription() + " was invalid, ignoring", e);
             }
         }
 
@@ -108,8 +109,7 @@ public class SettingsConfigurator {
                     }
                 }, err -> {
                     // user can't really do anything if this fails
-                    System.out.println("Failed to update config");
-                    err.printStackTrace();
+                    LOGGER.error("Failed to update config", err);
                 });
     }
 }

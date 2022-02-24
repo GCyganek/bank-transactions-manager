@@ -20,6 +20,8 @@ import model.util.BankType;
 import model.util.DocumentType;
 import model.util.ImportSession;
 import model.util.TransactionCategory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.pdfsam.rxjavafx.schedulers.JavaFxScheduler;
 import settings.SettingsConfigurator;
 import watcher.SourceUpdate;
@@ -33,6 +35,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class TransactionsManagerViewController {
+    private static final Logger LOGGER = LogManager.getLogger(TransactionsManagerViewController.class);
+
     private static final long SOURCES_REFRESH_PERIOD = 5; // TODO make this configurable from gui and save in config file
     private static final String INITIAL_IMPORT_BUTTON_TEXT = "Force import from sources";
     private static final String IMPORT_IN_PROGRESS = "Import in progress...";
@@ -196,8 +200,7 @@ public class TransactionsManagerViewController {
                 handleImport(new LocalFSLoader(filePath, selectedBank, selectedDocType));
             }
         } catch (IOException e) {
-            System.out.println("Failed to load window");
-            e.printStackTrace();
+            LOGGER.error("Failed to load window", e);
         }
     }
 
@@ -216,7 +219,7 @@ public class TransactionsManagerViewController {
 
         } catch (IOException e) {
             this.appController.showErrorWindow("Failed to read statement from " + loaderDescritpion, e.getMessage());
-            e.printStackTrace();
+            LOGGER.debug("Failed to read statement from " + loaderDescritpion, e);
         }
     }
 
