@@ -87,8 +87,8 @@ public class StatisticsViewController {
     public void handlePieChartApplyButton(ActionEvent actionEvent) { categoryOutcomeChart(); }
 
     public void incomeOutcomeChart() {
-        LocalDate fromDate = dateFromString(barChartFromDateTextField.getText()).minusDays(1);
-        LocalDate toDate = dateFromString(barChartToDateTextField.getText()).plusDays(1);
+        LocalDate fromDate = dateFromString(barChartFromDateTextField.getText());
+        LocalDate toDate = dateFromString(barChartToDateTextField.getText());
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.getData().add(new XYChart.Data<>(INCOME, statsManager.getIncome(fromDate, toDate)));
@@ -99,8 +99,8 @@ public class StatisticsViewController {
     }
 
     public void categoryOutcomeChart() {
-        LocalDate fromDate = dateFromString(pieChartFromDateTextField.getText()).minusDays(1);
-        LocalDate toDate = dateFromString(pieChartToDateTextField.getText()).plusDays(1);
+        LocalDate fromDate = dateFromString(pieChartFromDateTextField.getText());
+        LocalDate toDate = dateFromString(pieChartToDateTextField.getText());
 
         HashMap<TransactionCategory, BigDecimal> outcomesInCategories =
                 statsManager.getOutcomesInCategories(fromDate, toDate);
