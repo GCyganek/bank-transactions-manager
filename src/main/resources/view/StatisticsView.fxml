@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.chart.BarChart?>
-<?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+
 <AnchorPane prefHeight="350.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.StatisticsViewController">
    <children>
       <TabPane prefHeight="350.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE">
@@ -30,14 +28,14 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextField fx:id="barChartFromDateTextField" />
+                              <TextField fx:id="barChartFromDateTextField" focusTraversable="false" />
                               <Label text="To">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextField fx:id="barChartToDateTextField" />
-                              <Button fx:id="barChartApplyButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handleBarChartApplyButton" text="Apply">
+                              <TextField fx:id="barChartToDateTextField" focusTraversable="false" />
+                              <Button fx:id="barChartApplyButton" alignment="CENTER_RIGHT" focusTraversable="false" mnemonicParsing="false" onAction="#handleBarChartApplyButton" text="Apply">
                                  <VBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -58,14 +56,14 @@
                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                      </VBox.margin>
                                  </Label>
-                                 <TextField fx:id="pieChartFromDateTextField" />
+                                 <TextField fx:id="pieChartFromDateTextField" focusTraversable="false" />
                                  <Label text="To">
                                      <VBox.margin>
                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                      </VBox.margin>
                                  </Label>
-                                 <TextField fx:id="pieChartToDateTextField" />
-                                 <Button fx:id="pieChartApplyButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handlePieChartApplyButton" text="Apply">
+                                 <TextField fx:id="pieChartToDateTextField" focusTraversable="false" />
+                                 <Button fx:id="pieChartApplyButton" alignment="CENTER_RIGHT" focusTraversable="false" mnemonicParsing="false" onAction="#handlePieChartApplyButton" text="Apply">
                                      <VBox.margin>
                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                      </VBox.margin>

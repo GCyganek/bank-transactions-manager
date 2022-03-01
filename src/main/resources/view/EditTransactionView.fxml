@@ -3,16 +3,17 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EditTransactionViewPresenter">
+
+<AnchorPane prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EditTransactionViewPresenter">
    <children>
       <HBox alignment="CENTER" layoutX="211.0" layoutY="300.0" prefHeight="70.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Button fx:id="okButton" minWidth="100.0" mnemonicParsing="false" onAction="#handleOkAction" text="Ok">
+            <Button fx:id="okButton" focusTraversable="false" minWidth="100.0" mnemonicParsing="false" onAction="#handleOkAction" text="Ok">
                <HBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </HBox.margin>
             </Button>
-            <Button fx:id="cancelButton" minWidth="100.0" mnemonicParsing="false" onAction="#handleCancelAction" text="Cancel">
+            <Button fx:id="cancelButton" focusTraversable="false" minWidth="100.0" mnemonicParsing="false" onAction="#handleCancelAction" text="Cancel">
                <HBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </HBox.margin>
@@ -35,22 +36,22 @@
             <Label alignment="CENTER" minWidth="75.0" text="Description" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
             <Label alignment="CENTER" minWidth="75.0" text="Amount" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
             <Label alignment="CENTER" minWidth="75.0" text="Category" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
-            <ComboBox fx:id="categoryComboBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+            <ComboBox fx:id="categoryComboBox" focusTraversable="false" prefWidth="150.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
                <GridPane.margin>
                   <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
                </GridPane.margin>
             </ComboBox>
-            <TextField fx:id="dateTextField" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <TextField fx:id="dateTextField" focusTraversable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <GridPane.margin>
                   <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="descriptionTextField" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+            <TextField fx:id="descriptionTextField" focusTraversable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                <GridPane.margin>
                   <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="amountTextField" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+            <TextField fx:id="amountTextField" focusTraversable="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                <GridPane.margin>
                   <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
                </GridPane.margin>

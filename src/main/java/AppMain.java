@@ -21,6 +21,7 @@ public class AppMain extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        primaryStage.setResizable(false);
         Injector injector = Guice.createInjector(
                 new ImporterModule(primaryStage)
         );

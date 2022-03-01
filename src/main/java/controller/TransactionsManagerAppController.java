@@ -180,6 +180,7 @@ public class TransactionsManagerAppController {
         Scene stageScene = new Scene(fxmlLoader.load());
 
         Stage stage = new Stage();
+        stage.setResizable(false);
         stage.setTitle(title);
         stage.setScene(stageScene);
         stage.initOwner(initOwner);

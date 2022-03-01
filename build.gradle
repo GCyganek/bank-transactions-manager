@@ -13,7 +13,7 @@ repositories {
 }
 
 application {
-    mainClassName = 'AppMain'
+    mainClassName = 'Main'
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_16
