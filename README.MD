@@ -18,7 +18,7 @@ Application for management and visualisation of bank statements
 - have a centralized database containing the history of your statements from independent banks
 - import bank statements from your local file system
 ![import from local fs](https://j.gifs.com/jYJwQW.gif)
-- display statistics like total incomes and outcomes for chosen statements
+- display statistics like total incomes and outcomes for statements within a specified period of time
 ![editing transactions](https://j.gifs.com/79Jx3w.gif)
 - edit individual transactions to fix some mistakes or hide private data before sending them elsewhere
 ![editing transactions](https://j.gifs.com/28JpkJ.gif)
